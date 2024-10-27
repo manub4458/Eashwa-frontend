@@ -24,7 +24,7 @@ const Register = () => {
     e.preventDefault();
 
     try {
-      const response = await axios.post('https://backend-eashwa.onrender.com/api/user/register', { name, email, password });
+      const response = await axios.post('https://backend-eashwa-1.onrender.com/api/user/register', { name, email, password });
 
       if (response.data.ok) {
         // Store the auth token in cookies if needed
