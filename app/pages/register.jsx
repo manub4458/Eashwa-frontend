@@ -24,12 +24,12 @@ const Register = () => {
     e.preventDefault();
 
     try {
-      const response = await axios.post('https://e-ashwa-backend.onrender.com/api/user/register', { name, email, password });
+      const response = await axios.post('https://backend-eashwa.onrender.com/api/user/register', { name, email, password });
 
       if (response.data.ok) {
         // Store the auth token in cookies if needed
         Cookies.set('authToken', response.data.authToken, { expires: 1 });
-
+      
         // Redirect to login or dashboard
         if (isClient && router) {
           router.push('/login'); // Redirect to login page

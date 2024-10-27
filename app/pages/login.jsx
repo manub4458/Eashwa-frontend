@@ -23,10 +23,10 @@ const Login = () => {
     e.preventDefault();
 
     try {
-      const response = await axios.post('https://e-ashwa-backend.onrender.com/api/user/login', { email, password });
+      const response = await axios.post('https://backend-eashwa.onrender.com/api/user/login', { email, password });
       if (response.data.ok) {
         Cookies.set('authToken', response.data.authToken, { expires: 1 });
-
+        localStorage.setItem('token', response.data.authToken);
         // Redirect based on the email
         const emailToCheck = "admin@gmail.com"; // Email to check (case-insensitive)
         if (isClient && router) {
