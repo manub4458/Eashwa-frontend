@@ -7,6 +7,24 @@ import { useRouter } from "next/navigation";
 const Page = () => {
   const [token, setToken] = useState(null);
   const router = useRouter();
+  const optionLead = [
+    "12V 28AH",
+    "12V 30AH",
+    "12V 32AH",
+  ];
+  const optionLithium = [
+    "60V 24AH",
+    "60V 28AH",
+    "60V 30AH",
+    "60V 32AH",
+    "60V 34AH",
+    "60V 36AH",
+    "60V 38AH",
+    "60V 40AH",
+    "60V 42AH",
+  ];
+
+  const productType =["Lithium-ion Battery", "Lead Acid Battery"];
 
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
@@ -22,15 +40,10 @@ const Page = () => {
       updates: [
         {
           type: "Battery",
-          item: "Lithium-ion Battery",
-          quantity: data.stock1,
+          item: data.batteryType,
+          quantity: data.quantity,
           updatedBy: data.addedBy,
-        },
-        {
-          type: "Battery",
-          item: "Lead Acid Battery",
-          quantity: data.stock2,
-          updatedBy: data.addedBy,
+          specification: data.specification,
         },
       ],
     };
@@ -61,6 +74,9 @@ const Page = () => {
       secondItem="Lead Acid Battery"
       type="Add Battery Sold Stock"
       handleAddStock={handleAddStock}
+      optionLead = {optionLead}
+      optionLithium = {optionLithium}
+      productType={productType}
     />
   );
 };
