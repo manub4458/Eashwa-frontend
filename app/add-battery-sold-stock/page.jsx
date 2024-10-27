@@ -1,12 +1,22 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import AddStock from "../pages/StockAdd";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 
-const page = () => {
-  const token = localStorage.getItem("token");
+const Page = () => {
+  const [token, setToken] = useState(null);
   const router = useRouter();
+
+  useEffect(() => {
+    const storedToken = localStorage.getItem("token");
+    if (!storedToken) {
+      router.push("/404-page-not-found");
+    } else {
+      setToken(storedToken);
+    }
+  }, [router]);
+
   const handleAddStock = async (data) => {
     const formData = {
       updates: [
@@ -43,18 +53,16 @@ const page = () => {
     }
   };
 
-  if (!token) {
-    router.push("/404-page-not-found");
-  } else {
-    return (
-      <AddStock
-        firstItem="Lithium-ion Battery"
-        secondItem="Lead Acid Battery"
-        type="Add Battery Sold Stock"
-        handleAddStock={handleAddStock}
-      />
-    );
-  }
+  if (!token) return null;
+
+  return (
+    <AddStock
+      firstItem="Lithium-ion Battery"
+      secondItem="Lead Acid Battery"
+      type="Add Battery Sold Stock"
+      handleAddStock={handleAddStock}
+    />
+  );
 };
 
-export default page;
+export default Page;
