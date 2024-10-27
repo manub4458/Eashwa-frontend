@@ -1,22 +1,22 @@
 "use client";
 import { useForm, FormProvider } from "react-hook-form";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Input } from "../../components/ui/input";
+import { Button } from "../../components/ui/button";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "../../components/ui/select";
 import {
   Form,
   FormItem,
   FormLabel,
   FormControl,
   FormMessage,
-} from "@/components/ui/form";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+} from "../../components/ui/form";
+import { Card, CardHeader, CardTitle, CardContent } from "../../components/ui/card";
 import Link from "next/link";
 
 const AdminDashboard = () => {
