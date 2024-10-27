@@ -7,6 +7,18 @@ import { useRouter } from "next/navigation";
 const Page = () => {
   const [token, setToken] = useState(null);
   const router = useRouter();
+  const optionLead = [
+    "3 Amp",
+    "4 Amp",
+    "5 Amp",
+  ];
+  const optionLithium = [
+    "4 Amp",
+    "5 Amp",
+    "6 Amp",
+  ];
+
+  const productType =["Lithium-ion Charger", "Lead Acid Charger"];
 
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
@@ -22,16 +34,11 @@ const Page = () => {
       updates: [
         {
           type: "Charger",
-          item: "Lithium-ion Charger",
-          quantity: data.stock1,
+          item: data.batteryType,
+          quantity: data.quantity,
           updatedBy: data.addedBy,
-        },
-        {
-          type: "Charger",
-          item: "Lead Acid Charger",
-          quantity: data.stock2,
-          updatedBy: data.addedBy,
-        },
+          specification: data.specification,
+        }
       ],
     };
 
@@ -62,6 +69,9 @@ const Page = () => {
       secondItem="Lead Acid Charger"
       type="Add Charger Sold Stock"
       handleAddStock={handleAddStock}
+      optionLead={optionLead}
+      optionLithium={optionLithium}
+      productType={productType}
     />
   );
 };
