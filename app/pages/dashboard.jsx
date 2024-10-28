@@ -2,18 +2,29 @@
 import { Chart, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Sidebar from "../../components/ui/Dashboard";
 
 Chart.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const Dashboard = () => {
-  // State to track login status
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  // Toggle login/logout
-  const handleAuthToggle = () => {
-    setIsLoggedIn(!isLoggedIn);
+  // Check login status from localStorage on component mount
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    setIsLoggedIn(!!token); // Set to true if token exists
+  }, []);
+
+  const handleLogin = () => {
+    localStorage.setItem('token', 'your-auth-token'); // Set your token here
+    setIsLoggedIn(true);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setIsLoggedIn(false);
+    window.location.reload(); // This will refresh the page
   };
 
   const data = {
@@ -42,10 +53,10 @@ const Dashboard = () => {
 
           <div className="bg-white text-black p-2 rounded shadow-sm flex items-center">
             {isLoggedIn ? (
-              <button onClick={handleAuthToggle} className="text-white bg-red-600 px-3 py-1 rounded">Logout</button>
+              <button onClick={handleLogout} className="text-white bg-red-600 px-3 py-1 rounded">Logout</button>
             ) : (
               <Link href='/login'>
-                <button onClick={handleAuthToggle} className="text-white bg-green-600 px-3 py-1 rounded">Login</button>
+                <button onClick={handleLogin} className="text-white bg-green-600 px-3 py-1 rounded">Login</button>
               </Link>
             )}
           </div>

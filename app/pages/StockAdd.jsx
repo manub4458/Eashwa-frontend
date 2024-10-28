@@ -72,14 +72,7 @@ const AddStock = (props) => {
           </div>
         </Link>
 
-        <div className="bg-white text-black p-2 rounded shadow-sm flex items-center w-full max-w-xs">
-          <input
-            type="search"
-            placeholder="Search"
-            className="border-none w-full focus:ring-0 outline-none px-2"
-          />
-          <button className="text-white bg-green-600 px-3 py-1 rounded">Search</button>
-        </div>
+     
       </header>
 
       <div className="flex flex-col md:flex-row flex-1">

@@ -6,6 +6,8 @@ import { FaBatteryFull, FaCheckCircle, FaExclamationTriangle } from "react-icons
 import Dashboard from "../../components/ui/Dashboard";
 
 const BatteryPage = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
   const [batteryData, setBatteryData] = useState({
     leadAcid: { stock: 0, sold: 0, remaining: 0 },
     lithiumIon: { stock: 0, sold: 0, remaining: 0 },
@@ -31,24 +33,24 @@ const BatteryPage = () => {
     return <div>Loading...</div>;
   }
 
+  const handleLogin = () => {
+    localStorage.setItem('token', 'your-auth-token'); // Set your token here
+    setIsLoggedIn(true);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setIsLoggedIn(false);
+  };
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
-      <header className="w-full p-4 py-6 px-10 flex justify-between items-center shadow-lg">
-       <Link href='/'>
-       <div className="flex items-center space-x-3">
-          <img src="/logo.png" alt="Logo" className="h-14 w-auto" />
-        </div>
-       </Link>
+        <header className="w-full p-4 py-6 px-10 flex justify-between items-center shadow-lg">
+          <div className="flex items-center space-x-3">
+            <img src="/logo.png" alt="Logo" className="h-14 w-auto" />
+          </div>
 
-        <div className="bg-white text-black p-2 rounded shadow-sm flex items-center w-full max-w-xs">
-          <input
-            type="search"
-            placeholder="Search"
-            className="border-none w-full focus:ring-0 outline-none px-2"
-          />
-          <button className="text-white bg-green-600 px-3 py-1 rounded">Search</button>
-        </div>
-      </header>
+         
+        </header>
 
       <div className="flex flex-col md:flex-row flex-1">
         {/* Sidebar */}

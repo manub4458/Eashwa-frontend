@@ -14,8 +14,10 @@ import {
 } from "../../components/ui/form";
 import Link from "next/link";
 import Dashboard from "../../components/ui/Dashboard";
+import { useState } from "react";
 
 const BatteryForm = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const methods = useForm({
     defaultValues: {
@@ -31,24 +33,24 @@ const BatteryForm = () => {
     console.log("Form submitted:", data);
   };
 
+  const handleLogin = () => {
+    localStorage.setItem('token', 'your-auth-token'); // Set your token here
+    setIsLoggedIn(true);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setIsLoggedIn(false);
+  };
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
-   <header className="w-full  p-4 py-6 px-10  flex justify-between items-center shadow-lg">
-          {/* Logo */}
+     <header className="w-full p-4 py-6 px-10 flex justify-between items-center shadow-lg">
           <div className="flex items-center space-x-3">
             <img src="/logo.png" alt="Logo" className="h-14 w-auto" />
-           
           </div>
 
-          {/* Search Bar */}
-          <div className="bg-white text-black p-2 rounded shadow-sm flex items-center ">
-         
-          <Link href='/login'>
-          <button className="text-white bg-green-600 px-3 py-1 rounded">Login</button>
-          </Link>
-          </div>
+          
         </header>
-
       <div className="flex flex-col md:flex-row flex-1">
 
 
