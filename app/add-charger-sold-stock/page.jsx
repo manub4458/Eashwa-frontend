@@ -44,7 +44,9 @@ const Page = () => {
 
     try {
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/products/add-stock`,
+        // `${process.env.NEXT_PUBLIC_API_URL}/products/add-stock`,
+        `${process.env.NEXT_PUBLIC_API_URL}/products/add-sold-stock`,
+
         formData,
         {
           headers: {

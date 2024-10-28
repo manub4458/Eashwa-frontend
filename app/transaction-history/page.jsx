@@ -57,7 +57,8 @@ const page = () => {
                     <thead className="bg-green-600 text-white">
                         <tr>
                             <th className="px-4 py-2 text-left">Sr. No</th>
-                            <th className="px-4 py-2 text-left">Battery Type</th>
+                            <th className="px-4 py-2 text-left">{selectValue.charAt(0).toUpperCase()
+                        + selectValue.slice(1)} Type</th>
                             <th className="px-4 py-2 text-left">Action</th>
                             <th className="px-4 py-2 text-left">Quantity</th>
                             <th className="px-4 py-2 text-left">Updated By</th>

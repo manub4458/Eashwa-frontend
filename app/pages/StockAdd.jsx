@@ -33,19 +33,20 @@ const AddStock = (props) => {
       batteryType: batteryType,
       specification: specification,
       addedBy: formData.addedBy,
-      quantity: formData.quantity
+      quantity: parseInt(formData.quantity, 10) // Convert to integer
     };
-
+  
     const response = await props.handleAddStock(dataToSubmit);
     if (response) {
       setFormData({
         batteryType: '',
         specification: '',
         addedBy: '',
-        quantity: ''
+        quantity: '' // Keep this as a string if you want to clear it for user input
       });
     }
   };
+  
 
   useEffect(() => {
     if (batteryType === 'Lithium-ion Battery') {
