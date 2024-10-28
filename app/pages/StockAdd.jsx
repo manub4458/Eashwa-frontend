@@ -101,7 +101,7 @@ const AddStock = (props) => {
                 required
                 className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
               >
-                <option value="">Select Battery Type</option>
+                <option value="">Select Product Type</option>
                 {props.productType.map((item, ind) => {
                   return <option key={ind} value={item}>{item}</option>
                 })}
