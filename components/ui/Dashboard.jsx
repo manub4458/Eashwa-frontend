@@ -20,7 +20,7 @@ const Dashboard = () => {
 
     const navigation = [
         { title: "Overview", url: "/" },
-        { title: "Approved", url: "/form" },
+        { title: "Approval", url: "/form" },
     ];
 
     const batteryOptions = [
