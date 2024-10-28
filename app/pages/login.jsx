@@ -90,9 +90,7 @@ const Login = () => {
             Login
           </button>
         </form>
-        <p className="mt-6 text-center text-sm text-gray-600">
-          Don’t have an account? <a href="/register" className="text-green-500 hover:text-green-700">Register</a>
-        </p>
+       
       </div>
     </div>
   );
