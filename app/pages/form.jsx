@@ -33,24 +33,21 @@ const BatteryForm = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
- 
-      <header className="w-full p-4 py-6 px-10 flex flex-col md:flex-row justify-between items-center shadow-lg">
-     
-        <div className="flex items-center space-x-3 mb-4 md:mb-0">
-          <Link href='/'>
-            <img src="/logo.png" alt="Logo" className="h-12 w-auto" />
-          </Link>
-        </div>
+   <header className="w-full  p-4 py-6 px-10  flex justify-between items-center shadow-lg">
+          {/* Logo */}
+          <div className="flex items-center space-x-3">
+            <img src="/logo.png" alt="Logo" className="h-14 w-auto" />
+           
+          </div>
 
-        <div className="bg-white text-black p-2 rounded shadow-sm flex items-center w-full max-w-xs">
-          <input
-            type="search"
-            placeholder="Search"
-            className="border-none w-full focus:ring-0 outline-none px-2"
-          />
-          <button className="text-white bg-green-600 px-3 py-1 rounded">Search</button>
-        </div>
-      </header>
+          {/* Search Bar */}
+          <div className="bg-white text-black p-2 rounded shadow-sm flex items-center ">
+         
+          <Link href='/login'>
+          <button className="text-white bg-green-600 px-3 py-1 rounded">Login</button>
+          </Link>
+          </div>
+        </header>
 
       <div className="flex flex-col md:flex-row flex-1">
 

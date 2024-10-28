@@ -93,17 +93,23 @@ const Dashboard = () => {
             {/* Stock Cards */}
             <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               <div className="bg-white p-4 rounded-lg shadow">
-                <h2 className="text-lg font-semibold">Battery Model 1 Stock</h2>
+                <h2 className="text-lg font-semibold">Lead Acid Battery Stock</h2>
                 <p className="text-3xl font-bold text-green-600">200</p>
                 <p className="text-sm text-gray-500">Available</p>
               </div>
 
               <div className="bg-white p-4 rounded-lg shadow">
-                <h2 className="text-lg font-semibold">Battery Model 2 Stock</h2>
+                <h2 className="text-lg font-semibold">Lithium Ion Battery Stock</h2>
                 <p className="text-3xl font-bold text-green-600">150</p>
                 <p className="text-sm text-gray-500">Available</p>
               </div>
 
+              <div className="bg-white p-4 rounded-lg shadow">
+                <h2 className="text-lg font-semibold">Charger Stock</h2>
+                <p className="text-3xl font-bold text-green-600">75</p>
+                <p className="text-sm text-gray-500">Available</p>
+              </div>
+              
               <div className="bg-white p-4 rounded-lg shadow">
                 <h2 className="text-lg font-semibold">Charger Stock</h2>
                 <p className="text-3xl font-bold text-green-600">75</p>
