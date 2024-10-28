@@ -91,7 +91,7 @@ const AddStock = (props) => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="batteryType" className="block text-gray-700 font-medium">
-                Select Battery Type
+                Select Product Type
               </label>
               <select
                 id="batteryType"
@@ -109,7 +109,7 @@ const AddStock = (props) => {
             </div>
             <div>
               <label htmlFor="specification" className="block text-gray-700 font-medium">
-                Battery Specification
+                Product Specification
               </label>
               <select
                 id="specification"
