@@ -23,7 +23,7 @@ const Login = () => {
     e.preventDefault();
 
     try {
-      const response = await axios.post('https://backend-eashwa-1.onrender.com/api/user/login', { email, password });
+      const response = await axios.post('https://backend-eashwa.vercel.app/api/user/login', { email, password });
       if (response.data.ok) {
         Cookies.set('authToken', response.data.authToken, { expires: 1 });
         localStorage.setItem('token', response.data.authToken);
