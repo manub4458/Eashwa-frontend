@@ -4,12 +4,48 @@ import { Bar } from 'react-chartjs-2';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import Sidebar from "../../components/ui/Dashboard";
+import axios from 'axios';
 
 Chart.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const Dashboard = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [chargerData, setChargerData] = useState({
+    standardCharger: { stock: 0, sold: 0, remaining: 0 },
+    fastCharger: { stock: 0, sold: 0, remaining: 0 },
+  });
+  const [batteryData, setBatteryData] = useState({
+    leadAcid: { stock: 0, sold: 0, remaining: 0 },
+    lithiumIon: { stock: 0, sold: 0, remaining: 0 },
+  });
+  const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    const fetchBatteryData = async () => {
+      try {
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/products/batteries-stock`);
+        setBatteryData(response.data.products); // Assuming data is structured as { products: [ { month: 'Jan', leadAcid: { stock: 0, ... }, lithiumIon: { stock: 0, ... } }, ... ]}
+      } catch (error) {
+        console.error("Error fetching battery data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const fetchChargerData = async () => {
+      try {
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/products/chargers-stock`);
+        setChargerData(response.data.products); // Assuming similar structure as battery data
+      } catch (error) {
+        console.error("Error fetching charger data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBatteryData();
+    fetchChargerData();
+  }, []);
   // Check login status from localStorage on component mount
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -72,22 +108,35 @@ const Dashboard = () => {
             <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               <div className="bg-white p-4 rounded-lg shadow">
                 <h2 className="text-lg font-semibold">Lead Acid Battery Stock</h2>
-                <p className="text-3xl font-bold text-green-600">200</p>
+                <p className="text-3xl font-bold text-green-600">
+                  {batteryData && batteryData[1] ? batteryData[1].remainingStock : 'N/A'}
+                </p>
                 <p className="text-sm text-gray-500">Available</p>
               </div>
+
               <div className="bg-white p-4 rounded-lg shadow">
                 <h2 className="text-lg font-semibold">Lithium Ion Battery Stock</h2>
-                <p className="text-3xl font-bold text-green-600">150</p>
+                <p className="text-3xl font-bold text-green-600">
+                  {batteryData && batteryData[0] ? batteryData[0].remainingStock : 'N/A'}
+                </p>
                 <p className="text-sm text-gray-500">Available</p>
               </div>
               <div className="bg-white p-4 rounded-lg shadow">
                 <h2 className="text-lg font-semibold">Lead Acid Charger Stock</h2>
-                <p className="text-3xl font-bold text-green-600">75</p>
+                <p className="text-3xl font-bold text-green-600">
+                  {
+                    chargerData && chargerData[1] ? chargerData[1].remainingStock : 'N/A'
+                  }
+                </p>
                 <p className="text-sm text-gray-500">Available</p>
               </div>
               <div className="bg-white p-4 rounded-lg shadow">
                 <h2 className="text-lg font-semibold">Lithium Ion Charger Stock</h2>
-                <p className="text-3xl font-bold text-green-600">75</p>
+                <p className="text-3xl font-bold text-green-600">
+                  {
+                    chargerData && chargerData[0] ? chargerData[0].remainingStock : 'N/A'
+                  }
+                </p>
                 <p className="text-sm text-gray-500">Available</p>
               </div>
             </section>
@@ -98,11 +147,20 @@ const Dashboard = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <p className="text-xl font-bold">Total Batteries Sold</p>
-                    <p className="text-2xl font-semibold text-green-600">500</p>
+                    {/* <p className="text-2xl font-semibold text-green-600">
+  {batteryData[1].leadAcid && batteryData[0].lithiumIon 
+    ? (batteryData[1].leadAcid.sold || 0) + (batteryData[0].lithiumIon.sold || 0) 
+    : 0}
+</p> */}
+
                   </div>
                   <div>
                     <p className="text-xl font-bold">Total Chargers Sold</p>
-                    <p className="text-2xl font-semibold text-green-600">120</p>
+                    {/* <p className="text-2xl font-semibold text-green-600">
+                      {((chargerData.standardCharger && chargerData.standardCharger.sold) || 0) +
+                        (chargerData.fastCharger && chargerData.fastCharger.sold || 0)}
+                    </p> */}
+
                   </div>
                 </div>
               </div>

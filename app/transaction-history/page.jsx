@@ -25,6 +25,7 @@ const page = () => {
         const tabelData = async () => {
             try {
                 const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/products/stock-history/${selectValue}`);
+                console.log("response",response);
                 const sortedData = response.data.history.sort((a, b) => new Date(b.date) - new Date(a.date));
                 setData(sortedData);
             } catch (err) {
@@ -104,6 +105,8 @@ const page = () => {
                             <th className="px-4 py-2 text-left">Action</th>
                             <th className="px-4 py-2 text-left">Quantity</th>
                             <th className="px-4 py-2 text-left">Updated By</th>
+                            <th className="px-4 py-2 text-left">Specification</th>
+
                             <th className="px-4 py-2 text-left">Date</th>
                         </tr>
                     </thead>
@@ -115,7 +118,11 @@ const page = () => {
                                     <td className="px-4 py-2 capitalize">{item.item}</td>
                                     <td className="px-4 py-2 capitalize">{item.action}</td>
                                     <td className="px-4 py-2 capitalize">{item.quantity}</td>
+                                   
+
+                                    
                                     <td className="px-4 py-2 capitalize">{item.user}</td>
+                                    <td className="px-4 py-2 capitalize">{item.specification ? item.specification : '-'}</td>
                                     <td className="px-4 py-2 capitalize">{dayjs(item.date).format("D MMMM YYYY")}</td>
                                 </tr>
                             ))

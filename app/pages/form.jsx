@@ -123,6 +123,17 @@ const BatteryForm = () => {
                   </FormItem>
 
                   <FormItem>
+                    <FormLabel>Whatsapp Number</FormLabel>
+                    <FormControl>
+                      <Input
+                      type="Number"
+                        {...methods.register("whatsappNumber", { required: true })}
+                        placeholder="Enter your Whatsapp Number"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                  <FormItem>
                     <FormLabel>Date/Time</FormLabel>
                     <FormControl>
                       <Input
