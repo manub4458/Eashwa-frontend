@@ -7,6 +7,8 @@ const Dashboard = () => {
     const [token, setToken] = useState(null);
     const [batteryDropdownOpen, setBatteryDropdownOpen] = useState(false);
     const [chargerDropdownOpen, setChargerDropdownOpen] = useState(false);
+    const [vehicleDropdownOpen, setVehicleDropdownOpen] = useState(false);
+
 
     useEffect(() => {
         // Access localStorage only when in the browser environment
@@ -17,6 +19,8 @@ const Dashboard = () => {
 
     const toggleBatteryDropdown = () => setBatteryDropdownOpen(!batteryDropdownOpen);
     const toggleChargerDropdown = () => setChargerDropdownOpen(!chargerDropdownOpen);
+    const toggleVehicleDropdown = () => setVehicleDropdownOpen(!vehicleDropdownOpen);
+
 
     const navigation = [
         { title: "Overview", url: "/" },
@@ -33,6 +37,11 @@ const Dashboard = () => {
         { title: "Charger Stock", url: "/charger" },
         { title: "Add Charger Stock", url: "/add-charger-stock", requiresToken: true },
         { title: "Add Charger Sold Stock", url: "/add-charger-sold-stock", requiresToken: true },
+    ];
+    const vehicleOptions = [
+        { title: "Vehicle Stock", url: "/vehicle" },
+        { title: "Add Vehicle Stock", url: "/add-vehicle-stock", requiresToken: true },
+        { title: "Add Vehicle Sold Stock", url: "/add-vehicle-sold-stock", requiresToken: true },
     ];
 
     return (
@@ -78,6 +87,25 @@ const Dashboard = () => {
                     {chargerDropdownOpen && (
                         <ul className="pl-6 space-y-2">
                             {chargerOptions
+                                .filter(item => !item.requiresToken || token) // Filter based on token presence
+                                .map((item) => (
+                                    <Link href={item.url} key={item.url}>
+                                        <li className="hover:bg-green-700 p-2 rounded">{item.title}</li>
+                                    </Link>
+                                ))}
+                        </ul>
+                    )}
+                       {token&& (
+
+<li className="hover:bg-green-700 p-2 rounded flex justify-between items-center">
+<span>Vehicle Stock</span>
+<FaPlus onClick={toggleVehicleDropdown} className="cursor-pointer" />
+</li>
+                    )}
+                  
+                    {vehicleDropdownOpen && (
+                        <ul className="pl-6 space-y-2">
+                            {vehicleOptions
                                 .filter(item => !item.requiresToken || token) // Filter based on token presence
                                 .map((item) => (
                                     <Link href={item.url} key={item.url}>

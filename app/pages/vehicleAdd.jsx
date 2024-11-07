@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import Dashboard from '../../components/ui/Dashboard';
 import Link from 'next/link';
 
-const AddStock = (props) => {
+const  VehicleAdd= (props) => {
   const [formData, setFormData] = useState({
     quantity: '',
     type: '',
@@ -11,8 +11,8 @@ const AddStock = (props) => {
     addedBy: '',
   });
 
-  const [batteryType, setBatteryType] = useState('');
-  const [options, setoptions] = useState([]);
+  const [vehicleType, setVehicleType] = useState('');
+//   const [options, setoptions] = useState([]);
   const [specification, setspecification] = useState('')
 
   const handleChangeStock = (e) => {
@@ -24,13 +24,16 @@ const AddStock = (props) => {
   };
 
   const handleChange = (e) => {
-    setBatteryType(e.target.value);
+    setVehicleType(e.target.value);
+  }
+  const handleChangeSpecification = (e) => {
+    setspecification(e.target.value);
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const dataToSubmit = {
-      batteryType: batteryType,
+      vehicleType: vehicleType,
       specification: specification,
       addedBy: formData.addedBy,
       quantity: parseInt(formData.quantity, 10) // Convert to integer
@@ -39,7 +42,7 @@ const AddStock = (props) => {
     const response = await props.handleAddStock(dataToSubmit);
     if (response) {
       setFormData({
-        batteryType: '',
+        vehicleType: '',
         specification: '',
         addedBy: '',
         quantity: '' // Keep this as a string if you want to clear it for user input
@@ -48,15 +51,6 @@ const AddStock = (props) => {
   };
   
 
-    useEffect(() => {
-      if (batteryType === 'Lithium-ion Battery') {
-        setoptions(props.optionLithium);
-      }
-      else {
-        setoptions(props.optionLead);
-      }
-
-    }, [batteryType])
 
   const handleOptions = (e) => {
     setspecification(e.target.value);
@@ -87,9 +81,9 @@ const AddStock = (props) => {
                 Select Product Type
               </label>
               <select
-                id="batteryType"
-                name="batteryType"
-                value={batteryType}
+                id="vehicleType"
+                name="vehicleType"
+                value={vehicleType}
                 onChange={handleChange}
                 required
                 className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
@@ -108,12 +102,12 @@ const AddStock = (props) => {
                 id="specification"
                 name="specification"
                 value={specification}
-                onChange={handleOptions}
+                onChange={handleChangeSpecification}
                 required
                 className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
               >
                 <option value="">Select Specification</option>
-                {options.map((option, index) => (
+                {props.options.map((option, index) => (
                   <option key={index} value={option}>
                     {option}
                   </option>
@@ -168,4 +162,4 @@ const AddStock = (props) => {
   );
 };
 
-export default AddStock;
+export default VehicleAdd;
