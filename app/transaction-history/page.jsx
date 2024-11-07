@@ -1,7 +1,7 @@
 "use client";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import dayjs from 'dayjs';
+import dayjs from "dayjs";
 import Link from "next/link";
 
 const page = () => {
@@ -22,22 +22,27 @@ const page = () => {
     };
 
     useEffect(() => {
-        const tabelData = async () => {
+        const fetchData = async () => {
             try {
-                const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/products/stock-history/${selectValue}`);
-                console.log("response",response);
-                const sortedData = response.data.history.sort((a, b) => new Date(b.date) - new Date(a.date));
+                const response = await axios.get(
+                    `${process.env.NEXT_PUBLIC_API_URL}/products/stock-history/${selectValue}`
+                );
+                console.log("response", response);
+                const sortedData = response.data.history.sort(
+                    (a, b) => new Date(b.date) - new Date(a.date)
+                );
                 setData(sortedData);
             } catch (err) {
                 console.log(err);
             }
         };
-        tabelData();
+
+        fetchData();
     }, [selectValue]);
 
     // Filter data based on month selection
     const filteredData = monthFilter
-        ? data.filter(item => dayjs(item.date).format("MMMM") === monthFilter)
+        ? data.filter((item) => dayjs(item.date).format("MMMM") === monthFilter)
         : data;
 
     // Calculate total pages
@@ -50,11 +55,11 @@ const page = () => {
     );
 
     const handlePreviousPage = () => {
-        setCurrentPage(prevPage => Math.max(prevPage - 1, 1));
+        setCurrentPage((prevPage) => Math.max(prevPage - 1, 1));
     };
 
     const handleNextPage = () => {
-        setCurrentPage(prevPage => Math.min(prevPage + 1, totalPages));
+        setCurrentPage((prevPage) => Math.min(prevPage + 1, totalPages));
     };
 
     return (
@@ -74,6 +79,7 @@ const page = () => {
                     >
                         <option value="battery">Battery</option>
                         <option value="charger">Charger</option>
+                        <option value="vehicle">Vehicle</option> {/* Added option for vehicle */}
                     </select>
                     <select
                         value={monthFilter}
@@ -101,12 +107,15 @@ const page = () => {
                     <thead className="bg-green-600 text-white">
                         <tr>
                             <th className="px-4 py-2 text-left">Sr. No</th>
-                            <th className="px-4 py-2 text-left">{selectValue.charAt(0).toUpperCase() + selectValue.slice(1)} Type</th>
+                            <th className="px-4 py-2 text-left">
+                                {selectValue.charAt(0).toUpperCase() + selectValue.slice(1)} Type
+                            </th>
                             <th className="px-4 py-2 text-left">Action</th>
                             <th className="px-4 py-2 text-left">Quantity</th>
                             <th className="px-4 py-2 text-left">Updated By</th>
-                            <th className="px-4 py-2 text-left">Specification</th>
-
+                            <th className="px-4 py-2 text-left">
+                                {selectValue === "vehicle" ? "Specification" : "Specification"}
+                            </th>
                             <th className="px-4 py-2 text-left">Date</th>
                         </tr>
                     </thead>
@@ -114,16 +123,19 @@ const page = () => {
                         {paginatedData && paginatedData.length > 0 ? (
                             paginatedData.map((item, index) => (
                                 <tr key={index} className="border-b last:border-none">
-                                    <td className="px-4 py-2 capitalize">{(currentPage - 1) * entriesPerPage + index + 1}</td>
+                                    <td className="px-4 py-2 capitalize">
+                                        {(currentPage - 1) * entriesPerPage + index + 1}
+                                    </td>
                                     <td className="px-4 py-2 capitalize">{item.item}</td>
                                     <td className="px-4 py-2 capitalize">{item.action}</td>
                                     <td className="px-4 py-2 capitalize">{item.quantity}</td>
-                                   
-
-                                    
                                     <td className="px-4 py-2 capitalize">{item.user}</td>
-                                    <td className="px-4 py-2 capitalize">{item.specification ? item.specification : '-'}</td>
-                                    <td className="px-4 py-2 capitalize">{dayjs(item.date).format("D MMMM YYYY")}</td>
+                                    <td className="px-4 py-2 capitalize">
+                                        {selectValue === "vehicle" ? item.specification : item.specification || "-"}
+                                    </td>
+                                    <td className="px-4 py-2 capitalize">
+                                        {dayjs(item.date).format("D MMMM YYYY")}
+                                    </td>
                                 </tr>
                             ))
                         ) : (
@@ -144,7 +156,9 @@ const page = () => {
                 >
                     Previous
                 </button>
-                <span>Page {currentPage} of {totalPages}</span>
+                <span>
+                    Page {currentPage} of {totalPages}
+                </span>
                 <button
                     onClick={handleNextPage}
                     disabled={currentPage === totalPages}
