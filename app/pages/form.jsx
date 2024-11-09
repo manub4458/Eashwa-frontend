@@ -3,16 +3,13 @@ import { useForm, FormProvider } from "react-hook-form";
 import { Input } from "../../components/ui/input";
 import { Textarea } from "../../components/ui/textarea";
 import { Button } from "../../components/ui/button";
-import { Label } from "../../components/ui/label";
 import { Card, CardHeader, CardTitle, CardContent } from "../../components/ui/card";
 import {
-  Form,
   FormItem,
   FormLabel,
   FormControl,
   FormMessage,
 } from "../../components/ui/form";
-import Link from "next/link";
 import Dashboard from "../../components/ui/Dashboard";
 import { useState } from "react";
 
@@ -24,59 +21,89 @@ const BatteryForm = () => {
       name: "",
       batteryDescription: "",
       vendorName: "",
-      dateTime: "",
+      whatsappNumber: "",
+      date: "",
       amount: "",
     },
   });
+  function getFormattedDate() {
+    const date = new Date();
+  
+    const day = date.getDate();
+    const monthNames = [
+      "January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December"
+    ];
+    const month = monthNames[date.getMonth()];
+    const year = date.getFullYear();
+  
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    const ampm = hours >= 12 ? "PM" : "AM";
+  
+    const daySuffix = (day) => {
+      if (day > 3 && day < 21) return "th";
+      switch (day % 10) {
+        case 1: return "st";
+        case 2: return "nd";
+        case 3: return "rd";
+        default: return "th";
+      }
+    };
+  
+    const formattedHour = hours % 12 || 12;
+    const formattedMinute = minutes < 10 ? "0" + minutes : minutes.toString();
+  
+    return `${day}${daySuffix(day)} ${month} ${year}, ${formattedHour}:${formattedMinute} ${ampm}`;
+  }
+  
+  const onSubmit = async (data) => {
+    console.log("Submitted Data:", data); // Log form data
 
-  const onSubmit = (data) => {
-    console.log("Form submitted:", data);
+    const responseData = {
+      name: data.name,
+      productDescription: data.batteryDescription,
+      vendorName: data.vendorName,
+      userPhoneNumber: data.whatsappNumber.startsWith("+91")
+        ? data.whatsappNumber
+        : `+91${data.whatsappNumber}`, // Add country code if not present
+      amount: data.amount || "0",
+      time:getFormattedDate(),
+    };
+
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/request/submit-request`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(responseData),
+        }
+      );
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log("Request submitted successfully:", result);
+        methods.reset();
+      } else {
+        console.error("Failed to submit request:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Error submitting request:", error);
+    }
   };
 
-  const handleLogin = () => {
-    localStorage.setItem('token', 'your-auth-token'); // Set your token here
-    setIsLoggedIn(true);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    setIsLoggedIn(false);
-  };
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
-     <header className="w-full p-4 py-6 px-10 flex justify-between items-center shadow-lg">
-          <div className="flex items-center space-x-3">
-            <img src="/logo.png" alt="Logo" className="h-14 w-auto" />
-          </div>
-
-          
-        </header>
+      <header className="w-full p-4 py-6 px-10 flex justify-between items-center shadow-lg">
+        <div className="flex items-center space-x-3">
+          <img src="/logo.png" alt="Logo" className="h-14 w-auto" />
+        </div>
+      </header>
       <div className="flex flex-col md:flex-row flex-1">
-
-
-        {/* <aside className="w-full md:w-64 bg-[#d86331] text-white p-4">
-
-          <div className="font-bold text-2xl mb-8">Your Dashboard</div>
-          <nav>
-            <ul className="space-y-4">
-              <Link href='/'>
-                <li className="hover:bg-green-700 p-2 rounded">Overview</li>
-              </Link>
-              <Link href='/form'>
-                <li className="hover:bg-green-700 p-2 rounded">Form</li> 
-              </Link>
-              <Link href='/battery'>
-                <li className="hover:bg-green-700 p-2 rounded">Battery Stock</li>
-              </Link>
-              <Link href='/charger'>
-                <li className="hover:bg-green-700 p-2 rounded">Charger Stock</li>
-              </Link>
-              <li className="hover:bg-green-700 p-2 rounded">Transactions</li>
-            </ul>
-          </nav>
-        </aside> */}
-        <Dashboard/>
-
+        <Dashboard />
         <main className="flex-1 flex items-center justify-center bg-gray-100 p-4 sm:p-6">
           <Card className="w-full max-w-lg md:max-w-2xl shadow-lg rounded-lg">
             <CardHeader className="text-center">
@@ -86,15 +113,12 @@ const BatteryForm = () => {
             </CardHeader>
             <CardContent>
               <FormProvider {...methods}>
-                <Form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-6 sm:space-y-8">
-     
+                <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-6 sm:space-y-8">
+                  {/* Form Fields */}
                   <FormItem>
                     <FormLabel>Your Name</FormLabel>
                     <FormControl>
-                      <Input
-                        {...methods.register("name", { required: true })}
-                        placeholder="Enter your name"
-                      />
+                      <Input {...methods.register("name", { required: true })} placeholder="Enter your name" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -102,22 +126,15 @@ const BatteryForm = () => {
                   <FormItem>
                     <FormLabel>Battery Description</FormLabel>
                     <FormControl>
-                      <Textarea
-                        {...methods.register("batteryDescription", { required: true })}
-                        placeholder="Enter the battery description"
-                      />
+                      <Textarea {...methods.register("batteryDescription", { required: true })} placeholder="Enter the battery description" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
 
- 
                   <FormItem>
                     <FormLabel>Vendor Name</FormLabel>
                     <FormControl>
-                      <Input
-                        {...methods.register("vendorName", { required: true })}
-                        placeholder="Enter vendor name"
-                      />
+                      <Input {...methods.register("vendorName", { required: true })} placeholder="Enter vendor name" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -125,45 +142,33 @@ const BatteryForm = () => {
                   <FormItem>
                     <FormLabel>Whatsapp Number</FormLabel>
                     <FormControl>
-                      <Input
-                      type="Number"
-                        {...methods.register("whatsappNumber", { required: true })}
-                        placeholder="Enter your Whatsapp Number"
-                      />
+                      <Input type="number" {...methods.register("whatsappNumber", { required: true })} placeholder="Enter your Whatsapp Number" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
+{/* 
                   <FormItem>
-                    <FormLabel>Date/Time</FormLabel>
+                    <FormLabel>Date</FormLabel>
                     <FormControl>
-                      <Input
-                        type="datetime-local"
-                        {...methods.register("dateTime", { required: true })}
-                      />
+                      <Input type="date" {...methods.register("date", { required: true })} />
                     </FormControl>
                     <FormMessage />
-                  </FormItem>
+                  </FormItem> */}
 
-          
                   <FormItem>
                     <FormLabel>Amount</FormLabel>
                     <FormControl>
-                      <Input
-                        type="number"
-                        {...methods.register("amount", { required: true })}
-                        placeholder="Enter the amount"
-                      />
+                      <Input type="number" {...methods.register("amount", { required: true })} placeholder="Enter the amount" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
 
-            
                   <div className="flex justify-center mt-8">
                     <Button type="submit" className="w-full bg-[#d86331] hover:bg-green-700 text-white">
                       Submit
                     </Button>
                   </div>
-                </Form>
+                </form>
               </FormProvider>
             </CardContent>
           </Card>
