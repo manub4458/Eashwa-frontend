@@ -9,6 +9,8 @@ const  VehicleAdd= (props) => {
     type: '',
     specification: '',
     addedBy: '',
+    partyName: '', // New field for Party Name
+    location: '', // New field for Location
   });
 
   const [vehicleType, setVehicleType] = useState('');
@@ -36,7 +38,10 @@ const  VehicleAdd= (props) => {
       vehicleType: vehicleType,
       specification: specification,
       addedBy: formData.addedBy,
-      quantity: parseInt(formData.quantity, 10) // Convert to integer
+      quantity: parseInt(formData.quantity, 10), // Convert to integer
+      partyName: formData.partyName,
+      location: formData.location,
+      
     };
   
     const response = await props.handleAddStock(dataToSubmit);
@@ -45,7 +50,9 @@ const  VehicleAdd= (props) => {
         vehicleType: '',
         specification: '',
         addedBy: '',
-        quantity: '' // Keep this as a string if you want to clear it for user input
+        quantity: '' ,// Keep this as a string if you want to clear it for user input
+        partyName: '',
+        location: '',
       });
     }
   };
@@ -117,7 +124,7 @@ const  VehicleAdd= (props) => {
 
             <div>
               <label htmlFor="stock1" className="block text-gray-700 font-medium">
-                Stock
+                Stock Quantity
               </label>
               <input
                 type="number"
@@ -126,6 +133,38 @@ const  VehicleAdd= (props) => {
                 value={formData.quantity}
                 onChange={handleChangeStock}
                 placeholder={`Enter stock for ${props.firstItem}`}
+                required
+                className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="partyName" className="block text-gray-700 font-medium">
+                Party Name
+              </label>
+              <input
+                type="text"
+                id="partyName"
+                name="partyName"
+                value={formData.partyName}
+                onChange={handleChangeStock}
+                placeholder="Enter party name"
+                required
+                className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="location" className="block text-gray-700 font-medium">
+                Location
+              </label>
+              <input
+                type="text"
+                id="location"
+                name="location"
+                value={formData.location}
+                onChange={handleChangeStock}
+                placeholder="Enter location"
                 required
                 className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
               />

@@ -9,11 +9,13 @@ const AddStock = (props) => {
     type: '',
     specification: '',
     addedBy: '',
+    partyName: '', // New field for Party Name
+    location: '', // New field for Location
   });
 
   const [batteryType, setBatteryType] = useState('');
-  const [options, setoptions] = useState([]);
-  const [specification, setspecification] = useState('')
+  const [options, setOptions] = useState([]);
+  const [specification, setSpecification] = useState('');
 
   const handleChangeStock = (e) => {
     const { name, value } = e.target;
@@ -25,7 +27,7 @@ const AddStock = (props) => {
 
   const handleChange = (e) => {
     setBatteryType(e.target.value);
-  }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -33,53 +35,52 @@ const AddStock = (props) => {
       batteryType: batteryType,
       specification: specification,
       addedBy: formData.addedBy,
-      quantity: parseInt(formData.quantity, 10) // Convert to integer
+      quantity: parseInt(formData.quantity, 10), // Convert to integer
+      partyName: formData.partyName,
+      location: formData.location,
     };
   
     const response = await props.handleAddStock(dataToSubmit);
+    console.log("response",response);
     if (response) {
       setFormData({
         batteryType: '',
         specification: '',
         addedBy: '',
-        quantity: '' // Keep this as a string if you want to clear it for user input
+        quantity: '',
+        partyName: '',
+        location: '',
       });
     }
   };
   
-
-    useEffect(() => {
-      if (batteryType === 'Lithium-ion Battery') {
-        setoptions(props.optionLithium);
-      }
-      else {
-        setoptions(props.optionLead);
-      }
-
-    }, [batteryType])
+  useEffect(() => {
+    if (batteryType === 'Lithium-ion Battery') {
+      setOptions(props.optionLithium);
+    } else {
+      setOptions(props.optionLead);
+    }
+  }, [batteryType]);
 
   const handleOptions = (e) => {
-    setspecification(e.target.value);
-  }
+    setSpecification(e.target.value);
+  };
 
   return (
-    <div className='min-h-screen'>
+    <div className="min-h-screen">
       <header className="w-full p-4 py-6 px-10 flex justify-between items-center shadow-lg">
         <Link href='/'>
-
           <div className="flex items-center space-x-3">
             <img src="/logo.png" alt="Logo" className="h-14 w-auto" />
           </div>
         </Link>
-
-     
       </header>
 
       <div className="flex flex-col md:flex-row flex-1">
         <Dashboard />
         <div className="mx-auto bg-white p-6 rounded-lg shadow-md mt-10 flex-1">
           <h2 className="text-2xl font-bold text-center text-green-700 mb-6">
-           {`Select ${props.type} Type`}
+            {`Select ${props.type} Type`}
           </h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -95,11 +96,12 @@ const AddStock = (props) => {
                 className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
               >
                 <option value="">Select Product Type</option>
-                {props.productType.map((item, ind) => {
-                  return <option key={ind} value={item}>{item}</option>
-                })}
+                {props.productType.map((item, ind) => (
+                  <option key={ind} value={item}>{item}</option>
+                ))}
               </select>
             </div>
+
             <div>
               <label htmlFor="specification" className="block text-gray-700 font-medium">
                 Product Specification
@@ -122,12 +124,12 @@ const AddStock = (props) => {
             </div>
 
             <div>
-              <label htmlFor="stock1" className="block text-gray-700 font-medium">
-                Stock
+              <label htmlFor="quantity" className="block text-gray-700 font-medium">
+                Stock Quantity
               </label>
               <input
                 type="number"
-                id="stock1"
+                id="quantity"
                 name="quantity"
                 value={formData.quantity}
                 onChange={handleChangeStock}
@@ -137,7 +139,37 @@ const AddStock = (props) => {
               />
             </div>
 
+            <div>
+              <label htmlFor="partyName" className="block text-gray-700 font-medium">
+                Party Name
+              </label>
+              <input
+                type="text"
+                id="partyName"
+                name="partyName"
+                value={formData.partyName}
+                onChange={handleChangeStock}
+                placeholder="Enter party name"
+                required
+                className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              />
+            </div>
 
+            <div>
+              <label htmlFor="location" className="block text-gray-700 font-medium">
+                Location
+              </label>
+              <input
+                type="text"
+                id="location"
+                name="location"
+                value={formData.location}
+                onChange={handleChangeStock}
+                placeholder="Enter location"
+                required
+                className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              />
+            </div>
 
             <div>
               <label htmlFor="addedBy" className="block text-gray-700 font-medium">

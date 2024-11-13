@@ -107,15 +107,13 @@ const page = () => {
                     <thead className="bg-green-600 text-white">
                         <tr>
                             <th className="px-4 py-2 text-left">Sr. No</th>
-                            <th className="px-4 py-2 text-left">
-                                {selectValue.charAt(0).toUpperCase() + selectValue.slice(1)} Type
-                            </th>
+                            <th className="px-4 py-2 text-left">{selectValue.charAt(0).toUpperCase() + selectValue.slice(1)} Type</th>
                             <th className="px-4 py-2 text-left">Action</th>
                             <th className="px-4 py-2 text-left">Quantity</th>
                             <th className="px-4 py-2 text-left">Updated By</th>
-                            <th className="px-4 py-2 text-left">
-                                {selectValue === "vehicle" ? "Specification" : "Specification"}
-                            </th>
+                            <th className="px-4 py-2 text-left">Specification</th>
+                            <th className="px-4 py-2 text-left">Party Name</th>
+                            <th className="px-4 py-2 text-left">Location</th>
                             <th className="px-4 py-2 text-left">Date</th>
                         </tr>
                     </thead>
@@ -130,17 +128,17 @@ const page = () => {
                                     <td className="px-4 py-2 capitalize">{item.action}</td>
                                     <td className="px-4 py-2 capitalize">{item.quantity}</td>
                                     <td className="px-4 py-2 capitalize">{item.user}</td>
+                                    <td className="px-4 py-2 capitalize">{item.specification || "-"}</td>
+                                    <td className="px-4 py-2 capitalize">{item.partyName || "-"}</td>
+                                    <td className="px-4 py-2 capitalize">{item.location || "-"}</td>
                                     <td className="px-4 py-2 capitalize">
-                                        {selectValue === "vehicle" ? item.specification : item.specification || "-"}
-                                    </td>
-                                    <td className="px-4 py-2 capitalize">
-                                        {dayjs(item.date).format("D MMMM YYYY")}
+                                        {dayjs(item.date).format("D MMMM YYYY")} 
                                     </td>
                                 </tr>
                             ))
                         ) : (
                             <tr>
-                                <td colSpan="6" className="px-4 py-4 text-center text-gray-500">
+                                <td colSpan="9" className="px-4 py-4 text-center text-gray-500">
                                     No data available
                                 </td>
                             </tr>

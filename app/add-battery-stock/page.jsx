@@ -46,10 +46,12 @@ const Page = () => {
           quantity: data.quantity,
           updatedBy: data.addedBy,
           specification: data.specification,
+          partyName: data.partyName, // Adding partyName
+          location: data.location,   // Adding location
         }
       ],
     };
-
+  
     try {
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/products/add-stock`,
@@ -67,6 +69,7 @@ const Page = () => {
       throw error;
     }
   };
+  
 
   if (!token) return null;
 

@@ -41,6 +41,8 @@ const Page = () => {
           quantity: data.quantity,
           updatedBy: data.addedBy,
           specification: data.specification, // Ensure this is from `optionVehicle` if type is Vehicle
+          partyName: data.partyName, // Adding partyName
+          location: data.location, 
         },
       ],
     };
