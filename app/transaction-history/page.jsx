@@ -65,17 +65,17 @@ const page = () => {
     return (
         <div className="w-full max-w-4xl mx-auto mt-8 p-6 bg-white shadow-lg rounded-lg">
             <Link href="/">
-                <p>Go Back</p>
+                <p className="text-blue-500 underline mb-4">Go Back</p>
             </Link>
-            <div className="flex justify-between">
+            <div className="flex flex-col md:flex-row justify-between md:items-center">
                 <h2 className="text-2xl font-semibold text-green-700 mb-4">
                     {selectValue.charAt(0).toUpperCase() + selectValue.slice(1)} Stock Data
                 </h2>
-                <div className="mb-4 flex items-center space-x-4">
+                <div className="flex flex-col sm:flex-row mb-4 space-y-4 sm:space-y-0 sm:space-x-4">
                     <select
                         value={selectValue}
                         onChange={handleFilterChange}
-                        className="px-3 py-2 border border-gray-300 rounded-md text-gray-700 w-48"
+                        className="px-3 py-2 border border-gray-300 rounded-md text-gray-700 w-full sm:w-48"
                     >
                         <option value="battery">Battery</option>
                         <option value="charger">Charger</option>
@@ -84,7 +84,7 @@ const page = () => {
                     <select
                         value={monthFilter}
                         onChange={handleMonthChange}
-                        className="px-3 py-2 border border-gray-300 rounded-md text-gray-700 w-48"
+                        className="px-3 py-2 border border-gray-300 rounded-md text-gray-700 w-full sm:w-48"
                     >
                         <option value="">All Months</option>
                         <option value="January">January</option>
@@ -106,33 +106,33 @@ const page = () => {
                 <table className="w-full border border-gray-200 rounded-md overflow-hidden">
                     <thead className="bg-green-600 text-white">
                         <tr>
-                            <th className="px-4 py-2 text-left">Sr. No</th>
-                            <th className="px-4 py-2 text-left">{selectValue.charAt(0).toUpperCase() + selectValue.slice(1)} Type</th>
-                            <th className="px-4 py-2 text-left">Action</th>
-                            <th className="px-4 py-2 text-left">Quantity</th>
-                            <th className="px-4 py-2 text-left">Updated By</th>
-                            <th className="px-4 py-2 text-left">Specification</th>
-                            <th className="px-4 py-2 text-left">Party Name</th>
-                            <th className="px-4 py-2 text-left">Location</th>
-                            <th className="px-4 py-2 text-left">Date</th>
+                            <th className="px-2 sm:px-4 py-2 text-left">Sr. No</th>
+                            <th className="px-2 sm:px-4 py-2 text-left">{selectValue.charAt(0).toUpperCase() + selectValue.slice(1)} Type</th>
+                            <th className="px-2 sm:px-4 py-2 text-left">Action</th>
+                            <th className="px-2 sm:px-4 py-2 text-left">Quantity</th>
+                            <th className="px-2 sm:px-4 py-2 text-left">Updated By</th>
+                            <th className="px-2 sm:px-4 py-2 text-left">Specification</th>
+                            <th className="px-2 sm:px-4 py-2 text-left">Party Name</th>
+                            <th className="px-2 sm:px-4 py-2 text-left">Location</th>
+                            <th className="px-2 sm:px-4 py-2 text-left">Date</th>
                         </tr>
                     </thead>
                     <tbody>
                         {paginatedData && paginatedData.length > 0 ? (
                             paginatedData.map((item, index) => (
                                 <tr key={index} className="border-b last:border-none">
-                                    <td className="px-4 py-2 capitalize">
+                                    <td className="px-2 sm:px-4 py-2 capitalize">
                                         {(currentPage - 1) * entriesPerPage + index + 1}
                                     </td>
-                                    <td className="px-4 py-2 capitalize">{item.item}</td>
-                                    <td className="px-4 py-2 capitalize">{item.action}</td>
-                                    <td className="px-4 py-2 capitalize">{item.quantity}</td>
-                                    <td className="px-4 py-2 capitalize">{item.user}</td>
-                                    <td className="px-4 py-2 capitalize">{item.specification || "-"}</td>
-                                    <td className="px-4 py-2 capitalize">{item.partyName || "-"}</td>
-                                    <td className="px-4 py-2 capitalize">{item.location || "-"}</td>
-                                    <td className="px-4 py-2 capitalize">
-                                        {dayjs(item.date).format("D MMMM YYYY")} 
+                                    <td className="px-2 sm:px-4 py-2 capitalize">{item.item}</td>
+                                    <td className="px-2 sm:px-4 py-2 capitalize">{item.action}</td>
+                                    <td className="px-2 sm:px-4 py-2 capitalize">{item.quantity}</td>
+                                    <td className="px-2 sm:px-4 py-2 capitalize">{item.user}</td>
+                                    <td className="px-2 sm:px-4 py-2 capitalize">{item.specification || "-"}</td>
+                                    <td className="px-2 sm:px-4 py-2 capitalize">{item.partyName || "-"}</td>
+                                    <td className="px-2 sm:px-4 py-2 capitalize">{item.location || "-"}</td>
+                                    <td className="px-2 sm:px-4 py-2 capitalize">
+                                        {dayjs(item.date).format("D MMMM YYYY")}
                                     </td>
                                 </tr>
                             ))
@@ -146,7 +146,7 @@ const page = () => {
                     </tbody>
                 </table>
             </div>
-            <div className="flex justify-between items-center mt-4">
+            <div className="flex flex-col sm:flex-row justify-between items-center mt-4 space-y-4 sm:space-y-0">
                 <button
                     onClick={handlePreviousPage}
                     disabled={currentPage === 1}
@@ -154,7 +154,7 @@ const page = () => {
                 >
                     Previous
                 </button>
-                <span>
+                <span className="text-center">
                     Page {currentPage} of {totalPages}
                 </span>
                 <button
