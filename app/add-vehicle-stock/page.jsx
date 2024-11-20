@@ -14,7 +14,7 @@ const Page = () => {
     "Dangus plus",
     "Glide",
     "Glide plus",
-    "Nebo",
+    "Nebo plus",
     "Rakkit 100",
     "Velox",
     "Velox pro",
