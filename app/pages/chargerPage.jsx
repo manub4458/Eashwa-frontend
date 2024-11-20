@@ -88,15 +88,15 @@ const BatteryChargerPage = () => {
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <p className="text-xl font-semibold">Total Stock:</p>
-                  <p className="text-4xl font-bold text-white">{chargerData[0].currentStock}</p>
+                  <p className="text-4xl font-bold text-white">{chargerData[1].currentStock}</p>
                 </div>
                 <div className="flex justify-between items-center">
                   <p className="text-xl font-semibold">Sold:</p>
-                  <p className="text-4xl font-bold text-red-300">{chargerData[0].soldStock}</p>
+                  <p className="text-4xl font-bold text-red-300">{chargerData[1].soldStock}</p>
                 </div>
                 <div className="flex justify-between items-center">
                   <p className="text-xl font-semibold">Remaining:</p>
-                  <p className="text-4xl font-bold text-green-300">{chargerData[0].remainingStock}</p>
+                  <p className="text-4xl font-bold text-green-300">{chargerData[1].remainingStock}</p>
                 </div>
               </div>
             </div>
@@ -108,15 +108,15 @@ const BatteryChargerPage = () => {
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <p className="text-xl font-semibold">Total Stock:</p>
-                  <p className="text-4xl font-bold text-white">{chargerData[1].currentStock}</p>
+                  <p className="text-4xl font-bold text-white">{chargerData[0].currentStock}</p>
                 </div>
                 <div className="flex justify-between items-center">
                   <p className="text-xl font-semibold">Sold:</p>
-                  <p className="text-4xl font-bold text-red-300">{chargerData[1].soldStock}</p>
+                  <p className="text-4xl font-bold text-red-300">{chargerData[0].soldStock}</p>
                 </div>
                 <div className="flex justify-between items-center">
                   <p className="text-xl font-semibold">Remaining:</p>
-                  <p className="text-4xl font-bold text-green-300">{chargerData[1].remainingStock}</p>
+                  <p className="text-4xl font-bold text-green-300">{chargerData[0].remainingStock}</p>
                 </div>
               </div>
             </div>

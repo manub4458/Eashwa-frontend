@@ -9,14 +9,14 @@ const Page = () => {
   const router = useRouter();
 
   const optionLead = [
-    "3 Amp",
-    "4 Amp",
-    "5 Amp",
+    "48V",
+    "60V",
+    "72V",
   ];
   const optionLithium = [
-    "4 Amp",
-    "5 Amp",
-    "6 Amp",
+    "48V",
+    "60V",
+    "72V",
   ];
 
   const productType =["Lithium-ion Charger", "Lead Acid Charger"];
