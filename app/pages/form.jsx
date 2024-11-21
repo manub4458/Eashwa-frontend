@@ -26,12 +26,10 @@ const BatteryForm = () => {
       batteryDescription: "",
       vendorName: "",
       whatsappNumber: "",
-      date: "",
       amount: "",
     },
   });
 
-  // Check localStorage on component mount to set login state
   useEffect(() => {
     const savedLoginStatus = localStorage.getItem('isLoggedIn');
     if (savedLoginStatus === 'true') {
@@ -43,7 +41,7 @@ const BatteryForm = () => {
     if (email === "form@gmail.com" && password === "form@123") {
       setIsLoggedIn(true);
       setLoginError('');
-      localStorage.setItem('isLoggedIn', 'true'); // Save login status in localStorage
+      localStorage.setItem('isLoggedIn', 'true');
     } else {
       setLoginError('Invalid credentials, please try again!');
     }
@@ -51,12 +49,12 @@ const BatteryForm = () => {
 
   const handleLogout = () => {
     setIsLoggedIn(false);
-    localStorage.removeItem('isLoggedIn'); // Remove login status from localStorage
+    localStorage.removeItem('isLoggedIn');
   };
 
   function getFormattedDate() {
     const date = new Date();
-  
+
     const day = date.getDate();
     const monthNames = [
       "January", "February", "March", "April", "May", "June",
@@ -64,11 +62,11 @@ const BatteryForm = () => {
     ];
     const month = monthNames[date.getMonth()];
     const year = date.getFullYear();
-  
+
     const hours = date.getHours();
     const minutes = date.getMinutes();
     const ampm = hours >= 12 ? "PM" : "AM";
-  
+
     const daySuffix = (day) => {
       if (day > 3 && day < 21) return "th";
       switch (day % 10) {
@@ -78,10 +76,10 @@ const BatteryForm = () => {
         default: return "th";
       }
     };
-  
+
     const formattedHour = hours % 12 || 12;
     const formattedMinute = minutes < 10 ? "0" + minutes : minutes.toString();
-  
+
     return `${day}${daySuffix(day)} ${month} ${year}, ${formattedHour}:${formattedMinute} ${ampm}`;
   }
 
@@ -96,7 +94,7 @@ const BatteryForm = () => {
         ? data.whatsappNumber
         : `+91${data.whatsappNumber}`,
       amount: data.amount || "0",
-      time:getFormattedDate(),
+      time: getFormattedDate(),
     };
 
     try {
@@ -126,12 +124,12 @@ const BatteryForm = () => {
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
       <header className="w-full p-4 py-6 px-10 flex justify-between items-center shadow-lg">
-       <Link href='/'>
-       <div className="flex items-center space-x-3">
-          <img src="/logo.png" alt="Logo" className="h-14 w-auto" />
-        </div>
-       </Link>
-        
+        <Link href='/'>
+          <div className="flex items-center space-x-3">
+            <img src="/logo.png" alt="Logo" className="h-14 w-auto" />
+          </div>
+        </Link>
+
         {isLoggedIn && (
           <Button
             onClick={handleLogout}
@@ -207,41 +205,62 @@ const BatteryForm = () => {
                     <FormItem>
                       <FormLabel>Your Name</FormLabel>
                       <FormControl>
-                        <Input {...methods.register("name", { required: true })} placeholder="Enter your name" />
+                        <Input 
+                          {...methods.register("name", { required: "Name is required." })} 
+                          placeholder="Enter your name" 
+                        />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage>{methods.formState.errors.name?.message}</FormMessage>
                     </FormItem>
 
                     <FormItem>
                       <FormLabel>Battery Description</FormLabel>
                       <FormControl>
-                        <Textarea {...methods.register("batteryDescription", { required: true })} placeholder="Enter the battery description" />
+                        <Textarea 
+                          {...methods.register("batteryDescription", { 
+                            required: "Battery description is required.", 
+                            validate: value => 
+                              !/\n/.test(value) || "Avoid line breaks in the description."
+                          })} 
+                          placeholder="Enter the battery description" 
+                        />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage>{methods.formState.errors.batteryDescription?.message}</FormMessage>
                     </FormItem>
 
                     <FormItem>
                       <FormLabel>Vendor Name</FormLabel>
                       <FormControl>
-                        <Input {...methods.register("vendorName", { required: true })} placeholder="Enter vendor name" />
+                        <Input 
+                          {...methods.register("vendorName", { required: "Vendor name is required." })} 
+                          placeholder="Enter vendor name" 
+                        />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage>{methods.formState.errors.vendorName?.message}</FormMessage>
                     </FormItem>
 
                     <FormItem>
                       <FormLabel>Whatsapp Number</FormLabel>
                       <FormControl>
-                        <Input type="number" {...methods.register("whatsappNumber", { required: true })} placeholder="Enter your Whatsapp Number" />
+                        <Input 
+                          type="number" 
+                          {...methods.register("whatsappNumber", { required: "Whatsapp number is required." })} 
+                          placeholder="Enter your Whatsapp Number" 
+                        />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage>{methods.formState.errors.whatsappNumber?.message}</FormMessage>
                     </FormItem>
 
                     <FormItem>
                       <FormLabel>Amount</FormLabel>
                       <FormControl>
-                        <Input type="number" {...methods.register("amount", { required: true })} placeholder="Enter the amount" />
+                        <Input 
+                          type="number" 
+                          {...methods.register("amount", { required: "Amount is required." })} 
+                          placeholder="Enter the amount" 
+                        />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage>{methods.formState.errors.amount?.message}</FormMessage>
                     </FormItem>
 
                     <div className="flex justify-center mt-8">
