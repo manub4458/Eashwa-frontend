@@ -196,7 +196,7 @@ const BatteryForm = () => {
             <Card className="w-full max-w-lg md:max-w-2xl shadow-lg rounded-lg">
               <CardHeader className="text-center">
                 <CardTitle className="text-2xl sm:text-3xl font-semibold text-green-700">
-                  Battery Requirement Submission
+                  Form Submission
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -214,7 +214,7 @@ const BatteryForm = () => {
                     </FormItem>
 
                     <FormItem>
-                      <FormLabel>Battery Description</FormLabel>
+                      <FormLabel> Description</FormLabel>
                       <FormControl>
                         <Textarea 
                           {...methods.register("batteryDescription", { 

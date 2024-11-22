@@ -139,6 +139,13 @@ const Dashboard = () => {
                 </p>
                 <p className="text-sm text-gray-500">Available</p>
               </div>
+              <div className="bg-white p-4 rounded-lg shadow">
+                <h2 className="text-lg font-semibold">Shortage stock</h2>
+                <p className="text-3xl font-bold text-green-600">
+0
+                </p>
+                <p className="text-sm text-gray-500">Available</p>
+              </div>
             </section>
 
             <section className="mt-6">

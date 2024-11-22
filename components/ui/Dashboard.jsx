@@ -8,6 +8,8 @@ const Dashboard = () => {
     const [batteryDropdownOpen, setBatteryDropdownOpen] = useState(false);
     const [chargerDropdownOpen, setChargerDropdownOpen] = useState(false);
     const [vehicleDropdownOpen, setVehicleDropdownOpen] = useState(false);
+    const [remarkDropdownOpen, setRemarkDropdownOpen] = useState(false);
+
 
 
     useEffect(() => {
@@ -20,11 +22,18 @@ const Dashboard = () => {
     const toggleBatteryDropdown = () => setBatteryDropdownOpen(!batteryDropdownOpen);
     const toggleChargerDropdown = () => setChargerDropdownOpen(!chargerDropdownOpen);
     const toggleVehicleDropdown = () => setVehicleDropdownOpen(!vehicleDropdownOpen);
+    const toggleRemarkDropdown = () => setRemarkDropdownOpen(!remarkDropdownOpen);
+
 
 
     const navigation = [
         { title: "Overview", url: "/" },
         { title: "Approval", url: "/form" },
+    ];
+    const remarkOptions = [
+        { title: "Shortage-form", url: "/remark", requiresToken: true },
+        { title: "Shortage History", url: "/remark-history", requiresToken: true },
+      
     ];
 
     const batteryOptions = [
@@ -54,6 +63,26 @@ const Dashboard = () => {
                             <li className="hover:bg-green-700 p-2 rounded">{item.title}</li>
                         </Link>
                     ))}
+
+{token&& (
+                          <li className="hover:bg-green-700 p-2 rounded flex justify-between items-center">
+                          <span>Shortage</span>
+                          <FaPlus onClick={toggleRemarkDropdown} className="cursor-pointer" />
+                      </li>
+                    )}
+                  
+                    {remarkDropdownOpen && (
+                        <ul className="pl-6 space-y-2">
+                            {remarkOptions
+                                .filter(item => !item.requiresToken || token) // Filter based on token presence
+                                .map((item) => (
+                                    <Link href={item.url} key={item.url}>
+                                        <li className="hover:bg-green-700 p-2 rounded">{item.title}</li>
+                                    </Link>
+                                ))}
+                        </ul>
+                    )}
+
 
                     {/* Battery Stock with + Button */}
                     {token&& (
