@@ -1,5 +1,7 @@
-"use client";
+"use client"
+import React, { useState, useEffect } from "react";
 import { useForm, FormProvider } from "react-hook-form";
+// import { Card, CardHeader, CardTitle, CardContent, Button, Input, Textarea, FormLabel, FormItem, FormControl, FormMessage } from "../../components";
 import { Input } from "../../components/ui/input";
 import { Textarea } from "../../components/ui/textarea";
 import { Button } from "../../components/ui/button";
@@ -10,15 +12,18 @@ import {
   FormControl,
   FormMessage,
 } from "../../components/ui/form";
+// import Dashboard from "./dashboard";
 import Dashboard from "../../components/ui/Dashboard";
-import { useState, useEffect } from "react";
-import Link from "next/link";
 
 const BatteryForm = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loginError, setLoginError] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loginError, setLoginError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [descriptionError, setDescriptionError] = useState("");
+
+  const [timer, setTimer] = useState(0);
 
   const methods = useForm({
     defaultValues: {
@@ -31,38 +36,48 @@ const BatteryForm = () => {
   });
 
   useEffect(() => {
-    const savedLoginStatus = localStorage.getItem('isLoggedIn');
-    if (savedLoginStatus === 'true') {
+    const savedLoginStatus = localStorage.getItem("isLoggedIn");
+    if (savedLoginStatus === "true") {
       setIsLoggedIn(true);
     }
   }, []);
 
+  useEffect(() => {
+    let interval;
+    if (timer > 0) {
+      interval = setInterval(() => {
+        setTimer((prev) => prev - 1);
+      }, 1000);
+    } else if (timer === 0) {
+      setIsSubmitting(false);
+    }
+    return () => clearInterval(interval);
+  }, [timer]);
+
   const handleLogin = () => {
     if (email === "form@gmail.com" && password === "form@123") {
       setIsLoggedIn(true);
-      setLoginError('');
-      localStorage.setItem('isLoggedIn', 'true');
+      setLoginError("");
+      localStorage.setItem("isLoggedIn", "true");
     } else {
-      setLoginError('Invalid credentials, please try again!');
+      setLoginError("Invalid credentials, please try again!");
     }
   };
 
   const handleLogout = () => {
     setIsLoggedIn(false);
-    localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem("isLoggedIn");
   };
 
   function getFormattedDate() {
     const date = new Date();
-
     const day = date.getDate();
     const monthNames = [
       "January", "February", "March", "April", "May", "June",
-      "July", "August", "September", "October", "November", "December"
+      "July", "August", "September", "October", "November", "December",
     ];
     const month = monthNames[date.getMonth()];
     const year = date.getFullYear();
-
     const hours = date.getHours();
     const minutes = date.getMinutes();
     const ampm = hours >= 12 ? "PM" : "AM";
@@ -84,8 +99,6 @@ const BatteryForm = () => {
   }
 
   const onSubmit = async (data) => {
-    console.log("Submitted Data:", data);
-
     const responseData = {
       name: data.name,
       productDescription: data.batteryDescription,
@@ -113,6 +126,8 @@ const BatteryForm = () => {
         const result = await response.json();
         console.log("Request submitted successfully:", result);
         methods.reset();
+        setIsSubmitting(true);
+        setTimer(60);
       } else {
         console.error("Failed to submit request:", response.statusText);
       }
@@ -124,11 +139,9 @@ const BatteryForm = () => {
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
       <header className="w-full p-4 py-6 px-10 flex justify-between items-center shadow-lg">
-        <Link href='/'>
-          <div className="flex items-center space-x-3">
-            <img src="/logo.png" alt="Logo" className="h-14 w-auto" />
-          </div>
-        </Link>
+        <div className="flex items-center space-x-3">
+          <img src="/logo.png" alt="Logo" className="h-14 w-auto" />
+        </div>
 
         {isLoggedIn && (
           <Button
@@ -205,35 +218,61 @@ const BatteryForm = () => {
                     <FormItem>
                       <FormLabel>Your Name</FormLabel>
                       <FormControl>
-                        <Input 
-                          {...methods.register("name", { required: "Name is required." })} 
-                          placeholder="Enter your name" 
+                        <Input
+                          {...methods.register("name", { required: "Name is required." })}
+                          placeholder="Enter your name"
                         />
                       </FormControl>
                       <FormMessage>{methods.formState.errors.name?.message}</FormMessage>
                     </FormItem>
 
-                    <FormItem>
-                      <FormLabel> Description</FormLabel>
+                    {/* <FormItem>
+                      <FormLabel>Description</FormLabel>
                       <FormControl>
-                        <Textarea 
-                          {...methods.register("batteryDescription", { 
-                            required: "Battery description is required.", 
-                            validate: value => 
-                              !/\n/.test(value) || "Avoid line breaks in the description."
-                          })} 
-                          placeholder="Enter the battery description" 
+                        <Textarea
+                          {...methods.register("batteryDescription", {
+                            required: "Battery description is required.",
+                          })}
+                          placeholder="Enter the battery description"
                         />
                       </FormControl>
                       <FormMessage>{methods.formState.errors.batteryDescription?.message}</FormMessage>
+                    </FormItem> */}
+                    <FormItem>
+                      <FormLabel>Description</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          {...methods.register("batteryDescription", {
+                            required: "Battery description is required.",
+                            validate: (value) => {
+                              if (value.includes("\n")) {
+                                setDescriptionError("New lines are not allowed in the description.");
+                                return false;
+                              }
+                              setDescriptionError(""); // Clear the error when valid
+                              return true;
+                            },
+                          })}
+                          placeholder="Enter the battery description"
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              setDescriptionError("New lines are not allowed in the description.");
+                            }
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage>
+                        {methods.formState.errors.batteryDescription?.message || descriptionError}
+                      </FormMessage>
                     </FormItem>
 
                     <FormItem>
                       <FormLabel>Vendor Name</FormLabel>
                       <FormControl>
-                        <Input 
-                          {...methods.register("vendorName", { required: "Vendor name is required." })} 
-                          placeholder="Enter vendor name" 
+                        <Input
+                          {...methods.register("vendorName", { required: "Vendor name is required." })}
+                          placeholder="Enter vendor name"
                         />
                       </FormControl>
                       <FormMessage>{methods.formState.errors.vendorName?.message}</FormMessage>
@@ -242,10 +281,10 @@ const BatteryForm = () => {
                     <FormItem>
                       <FormLabel>Whatsapp Number</FormLabel>
                       <FormControl>
-                        <Input 
-                          type="number" 
-                          {...methods.register("whatsappNumber", { required: "Whatsapp number is required." })} 
-                          placeholder="Enter your Whatsapp Number" 
+                        <Input
+                          type="number"
+                          {...methods.register("whatsappNumber", { required: "Whatsapp number is required." })}
+                          placeholder="Enter your Whatsapp Number"
                         />
                       </FormControl>
                       <FormMessage>{methods.formState.errors.whatsappNumber?.message}</FormMessage>
@@ -254,18 +293,22 @@ const BatteryForm = () => {
                     <FormItem>
                       <FormLabel>Amount</FormLabel>
                       <FormControl>
-                        <Input 
-                          type="number" 
-                          {...methods.register("amount", { required: "Amount is required." })} 
-                          placeholder="Enter the amount" 
+                        <Input
+                          type="number"
+                          {...methods.register("amount", { required: "Amount is required." })}
+                          placeholder="Enter the amount"
                         />
                       </FormControl>
                       <FormMessage>{methods.formState.errors.amount?.message}</FormMessage>
                     </FormItem>
 
                     <div className="flex justify-center mt-8">
-                      <Button type="submit" className="w-full bg-[#d86331] hover:bg-green-700 text-white">
-                        Submit
+                      <Button
+                        type="submit"
+                        className="w-full bg-[#d86331] hover:bg-[#a84e24] text-white"
+                        disabled={isSubmitting}
+                      >
+                        {isSubmitting ? `Please wait ${timer} seconds` : "Submit"}
                       </Button>
                     </div>
                   </form>

@@ -23,6 +23,7 @@ const Page = () => {
     "Velox",
     "Velox pro",
     "Velox plus",
+    "Nebo",
   ];
 
   const productType = ["Vehicle"];
