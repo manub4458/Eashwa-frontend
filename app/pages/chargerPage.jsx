@@ -92,7 +92,7 @@ const BatteryChargerPage = () => {
                 </div>
                 <div className="flex justify-between items-center">
                   <p className="text-xl font-semibold">Sold:</p>
-                  <p className="text-4xl font-bold text-red-300">{chargerData[1].soldStock}</p>
+                  <p className="text-4xl font-bold text-[#333333]">{chargerData[1].soldStock}</p>
                 </div>
                 <div className="flex justify-between items-center">
                   <p className="text-xl font-semibold">Remaining:</p>
@@ -112,7 +112,7 @@ const BatteryChargerPage = () => {
                 </div>
                 <div className="flex justify-between items-center">
                   <p className="text-xl font-semibold">Sold:</p>
-                  <p className="text-4xl font-bold text-red-300">{chargerData[0].soldStock}</p>
+                  <p className="text-4xl font-bold text-[#333333]">{chargerData[0].soldStock}</p>
                 </div>
                 <div className="flex justify-between items-center">
                   <p className="text-xl font-semibold">Remaining:</p>

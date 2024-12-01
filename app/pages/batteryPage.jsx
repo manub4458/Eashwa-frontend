@@ -92,7 +92,7 @@ const BatteryPage = () => {
                 </div>
                 <div className="flex justify-between items-center">
                   <p className="text-xl font-semibold">Sold:</p>
-                  <p className="text-4xl font-bold text-red-300">{batteryData[0].soldStock}</p>
+                  <p className="text-4xl font-bold text-[#333333]">{batteryData[0].soldStock}</p>
                 </div>
                 <div className="flex justify-between items-center">
                   <p className="text-xl font-semibold">Remaining:</p>
@@ -112,7 +112,7 @@ const BatteryPage = () => {
                 </div>
                 <div className="flex justify-between items-center">
                   <p className="text-xl font-semibold">Sold:</p>
-                  <p className="text-4xl font-bold text-red-300">{batteryData[1].soldStock}</p>
+                  <p className="text-4xl font-bold text-[#333333]">{batteryData[1].soldStock}</p>
                 </div>
                 <div className="flex justify-between items-center">
                   <p className="text-xl font-semibold">Remaining:</p>

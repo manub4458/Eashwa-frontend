@@ -27,7 +27,7 @@ const Dashboard = () => {
 
 
     const navigation = [
-        { title: "Overview", url: "/" },
+        { title: "Overview", url: "/plant" },
         { title: "Approval", url: "/form" },
     ];
     const remarkOptions = [

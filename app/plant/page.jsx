@@ -8,7 +8,7 @@ import axios from 'axios';
 
 Chart.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-const Dashboard = () => {
+const Plant = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [chargerData, setChargerData] = useState({
     standardCharger: { stock: 0, sold: 0, remaining: 0 },
@@ -83,13 +83,9 @@ const Dashboard = () => {
     <>
       <div className="flex flex-col min-h-screen bg-gray-100">
         <header className="w-full p-4 py-6 px-10 flex justify-between items-center shadow-lg">
-       
-         <div className="flex items-center space-x-3">
-         <Link href='/'>
+          <div className="flex items-center space-x-3">
             <img src="/logo.png" alt="Logo" className="h-14 w-auto" />
-            </Link>
           </div>
-      
 
           <div className="bg-white text-black p-2 rounded shadow-sm flex items-center">
             {isLoggedIn ? (
@@ -187,4 +183,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default Plant;

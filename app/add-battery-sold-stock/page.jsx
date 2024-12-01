@@ -75,8 +75,8 @@ const Page = () => {
           quantity: data.quantity,
           updatedBy: data.addedBy,
           specification: data.specification,
-          partyName: data.partyName, // Adding partyName
-          location: data.location, // Adding location
+          partyName: data.partyName, 
+          location: data.location, 
         },
       ],
     };
