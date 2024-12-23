@@ -57,7 +57,7 @@ const Card = () => {
            </Link>
 
             {/* E-Ashwa Sales Card (with redirection to Coming Soon page) */}
-            <Link href="/coming-soon">  {/* Link to the Coming Soon page */}
+            <Link href="/employee-dash">  {/* Link to the Coming Soon page */}
               <div className="w-full h-[500px] p-10 bg-white rounded-xl shadow-lg border border-gray-300 text-gray-800 flex flex-col items-center justify-center space-y-6 cursor-pointer hover:shadow-2xl">
                 <FaUsers className="text-6xl mb-4 text-green-600" />
                 <h1 className="text-3xl font-semibold mb-4">E-Ashwa Sales</h1>
