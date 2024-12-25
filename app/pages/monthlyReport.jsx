@@ -7,6 +7,7 @@ const MonthlyReportPage = () => {
     totalVisits: 45,
     totalScootySales: 30,
     totalRickshawSales: 15,
+    totalERickshawSales: 20,
     topEmployees: [
       { name: "John Smith", sales: 15 },
       { name: "Jane Doe", sales: 12 },
@@ -14,51 +15,91 @@ const MonthlyReportPage = () => {
     ],
   };
 
+  // Rank employees based on sales
+  const rankedEmployees = reportData.topEmployees
+    .sort((a, b) => b.sales - a.sales)
+    .map((employee, index) => ({
+      ...employee,
+      rank: index + 1,
+    }));
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 py-10">
-      <header className="text-center bg-indigo-600 text-white py-6">
-        <h1 className="text-3xl font-bold">Monthly Report</h1>
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-orange-100 to-orange-50">
+      {/* Header */}
+      <header className="text-center bg-[#f29871] text-white py-8 shadow-md">
+        <h1 className="text-4xl font-bold">Monthly Achievement Report</h1>
         <p className="text-lg italic mt-2">
-          Gain insights into employee performance for this month.
+          Insights into employee performance and sales metrics for this month.
         </p>
       </header>
 
-      <main className="container mx-auto px-4 mt-8 space-y-6">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          <div className="bg-white shadow-lg rounded-lg p-6 text-center">
-            <h2 className="text-2xl font-semibold text-indigo-600">Total Visits</h2>
-            <p className="text-4xl font-bold text-gray-800 mt-2">{reportData.totalVisits}</p>
+      {/* Main Content */}
+      <main className="container mx-auto px-6 mt-10 space-y-8 flex-grow">
+        {/* Statistics Section */}
+        <section className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="bg-white shadow-md rounded-lg p-8 text-center">
+            <h2 className="text-xl font-semibold text-[#d86331]">Total Visits</h2>
+            <p className="text-5xl font-bold text-gray-800 mt-3">
+              {reportData.totalVisits}
+            </p>
           </div>
-          <div className="bg-white shadow-lg rounded-lg p-6 text-center">
-            <h2 className="text-2xl font-semibold text-indigo-600">Scooty Sales</h2>
-            <p className="text-4xl font-bold text-gray-800 mt-2">{reportData.totalScootySales}</p>
+          <div className="bg-white shadow-md rounded-lg p-8 text-center">
+            <h2 className="text-xl font-semibold text-[#d86331]">Scooty Sales</h2>
+            <p className="text-5xl font-bold text-gray-800 mt-3">
+              {reportData.totalScootySales}
+            </p>
           </div>
-          <div className="bg-white shadow-lg rounded-lg p-6 text-center">
-            <h2 className="text-2xl font-semibold text-indigo-600">Battery Sales</h2>
-            <p className="text-4xl font-bold text-gray-800 mt-2">{reportData.totalRickshawSales}</p>
+          <div className="bg-white shadow-md rounded-lg p-8 text-center">
+            <h2 className="text-xl font-semibold text-[#d86331]">Battery Sales</h2>
+            <p className="text-5xl font-bold text-gray-800 mt-3">
+              {reportData.totalRickshawSales}
+            </p>
           </div>
-        </div>
+          <div className="bg-white shadow-md rounded-lg p-8 text-center">
+            <h2 className="text-xl font-semibold text-[#d86331]">E-Rickshaw Sales</h2>
+            <p className="text-5xl font-bold text-gray-800 mt-3">
+              {reportData.totalERickshawSales}
+            </p>
+          </div>
+        </section>
 
-        <div className="bg-white shadow-lg rounded-lg p-6">
-          <h2 className="text-xl font-bold text-indigo-600 mb-4">Top Performers</h2>
-          <table className="w-full table-auto">
+        {/* Top Performers Section */}
+        <section className="bg-white shadow-md rounded-lg p-8">
+          <h2 className="text-2xl font-bold text-[#d86331] mb-6 text-center">
+            Top Performers of the Month
+          </h2>
+          <table className="w-full border-collapse border border-gray-200 text-left">
             <thead>
-              <tr className="bg-indigo-500 text-white">
-                <th className="p-3 text-left">Name</th>
-                <th className="p-3 text-left">Sales</th>
+              <tr className="bg-[#f29871] text-white">
+                <th className="p-4 border border-gray-200">Rank</th>
+                <th className="p-4 border border-gray-200">Name</th>
+                <th className="p-4 border border-gray-200">Sales</th>
               </tr>
             </thead>
             <tbody>
-              {reportData.topEmployees.map((employee, index) => (
-                <tr key={index} className="border-b hover:bg-gray-50">
-                  <td className="p-3">{employee.name}</td>
-                  <td className="p-3">{employee.sales}</td>
+              {rankedEmployees.map((employee) => (
+                <tr
+                  key={employee.rank}
+                  className="hover:bg-gray-100 even:bg-gray-50"
+                >
+                  <td className="p-4 border border-gray-200 text-center font-semibold">
+                    {employee.rank}
+                  </td>
+                  <td className="p-4 border border-gray-200">{employee.name}</td>
+                  <td className="p-4 border border-gray-200 text-center">
+                    {employee.sales}
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </div>
+        </section>
       </main>
+
+      {/* Footer */}
+      <footer className="text-center py-6 bg-[#f29871] text-white">
+        <p className="text-sm">&copy; 2024 E-ashwa. All rights reserved.</p>
+      </footer>
     </div>
   );
 };
