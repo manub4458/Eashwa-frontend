@@ -18,7 +18,7 @@ const LoginHrPage = () => {
         "https://backend-eashwa.vercel.app/api/user/login",
         { email, password }
       );
-      console.log("Response",response);
+      console.log("Response-user",response);
       if (response.data.ok) {
         Cookies.set("authToken", response.data.authToken, { expires: 1 });
         localStorage.setItem("token", response.data.authToken);
@@ -27,7 +27,7 @@ const LoginHrPage = () => {
         if (response.data.user.role === "employee") {
           router.push("/employees");
         } else if (response.data.user.role === "hr") {
-          router.push("/");
+          router.push("/hr-dash");
         } else {
           router.push("/404");
         }

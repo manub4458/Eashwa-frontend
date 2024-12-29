@@ -101,14 +101,14 @@ const Employe = () => {
             <div className="p-6 bg-indigo-50 rounded-lg shadow-md">
               <h3 className="text-xl font-bold text-indigo-700 mb-2">E-Scooty</h3>
               <p className="text-gray-700">
-                <strong>Total Target:</strong> {eScootyTargets || "N/A"}
+                <strong>Total Target:</strong> {user?.targetAchieved.battery|| "N/A"}
               </p>
-              <p className="text-gray-700">
+              {/* <p className="text-gray-700">
                 <strong>Today Work:</strong> {eScootyWork || 0}
               </p>
               <p className="text-gray-700">
                 <strong>Remaining Work:</strong> {eScootyTargets || 0}
-              </p>
+              </p> */}
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
@@ -140,14 +140,54 @@ const Employe = () => {
                 E-Rickshaws
               </h3>
               <p className="text-gray-700">
-                <strong>Total Target:</strong> {eRickshawTargets || "N/A"}
+              <strong>Total Target:</strong> {user?.targetAchieved.eRickshaw|| "N/A"}
+
               </p>
-              <p className="text-gray-700">
+              {/* <p className="text-gray-700">
                 <strong>Today Work:</strong> {eRickshawWork || 0}
               </p>
               <p className="text-gray-700">
                 <strong>Remaining Work:</strong> {eRickshawTargets || 0}
+              </p> */}
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const form = e.target;
+                  const workCompleted = form.workCompleted.value;
+                  handleERickshawWorkUpdate(workCompleted);
+                  form.reset();
+                }}
+              >
+                <input
+                  type="number"
+                  name="workCompleted"
+                  placeholder="Enter E-Rickshaw work"
+                  className="p-2 border rounded w-full mb-2"
+                  required
+                />
+                <button
+                  type="submit"
+                  className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded"
+                >
+                  Submit
+                </button>
+              </form>
+            </div>
+
+            <div className="p-6 bg-indigo-50 rounded-lg shadow-md">
+              <h3 className="text-xl font-bold text-indigo-700 mb-2">
+                Scooty
+              </h3>
+              <p className="text-gray-700">
+              <strong>Total Target:</strong> {user?.targetAchieved.scooty|| "N/A"}
+
               </p>
+              {/* <p className="text-gray-700">
+                <strong>Today Work:</strong> {eRickshawWork || 0}
+              </p>
+              <p className="text-gray-700">
+                <strong>Remaining Work:</strong> {eRickshawTargets || 0}
+              </p> */}
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
