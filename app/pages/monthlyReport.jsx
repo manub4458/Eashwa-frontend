@@ -1,23 +1,55 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 const MonthlyReportPage = () => {
-  // Sample Data
-  const reportData = {
-    totalVisits: 45,
-    totalScootySales: 30,
-    totalRickshawSales: 15,
-    totalERickshawSales: 20,
-    topEmployees: [
-      { name: "John Smith", sales: 15 },
-      { name: "Jane Doe", sales: 12 },
-      { name: "Michael Roe", sales: 10 },
-    ],
-  };
+  const [reportData, setReportData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Rank employees based on sales
+  useEffect(() => {
+    const fetchTopEmployees = async () => {
+      try {
+        const response = await fetch(
+          "https://backend-eashwa.vercel.app/api/user/top-employees"
+        );
+        if (!response.ok) {
+          throw new Error("Failed to fetch data.");
+        }
+        const data = await response.json();
+        const formattedData = {
+          message: data.message,
+          topEmployees: data.topEmployees.map((employee) => ({
+            name: employee.name,
+            email: employee.email,
+            percentage: parseFloat(employee.percentage),
+            sales: {
+              battery: employee.targetAchieved.battery.completed,
+              eRickshaw: employee.targetAchieved.eRickshaw.completed,
+              scooty: employee.targetAchieved.scooty.completed,
+            },
+          })),
+        };
+        setReportData(formattedData);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchTopEmployees();
+  }, []);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+
   const rankedEmployees = reportData.topEmployees
-    .sort((a, b) => b.sales - a.sales)
+    .sort((a, b) => b.percentage - a.percentage)
     .map((employee, index) => ({
       ...employee,
       rank: index + 1,
@@ -29,40 +61,12 @@ const MonthlyReportPage = () => {
       <header className="text-center bg-[#f29871] text-white py-8 shadow-md">
         <h1 className="text-4xl font-bold">Monthly Achievement Report</h1>
         <p className="text-lg italic mt-2">
-          Insights into employee performance and sales metrics for this month.
+          {reportData.message || "Insights into employee performance"}
         </p>
       </header>
 
       {/* Main Content */}
       <main className="container mx-auto px-6 mt-10 space-y-8 flex-grow">
-        {/* Statistics Section */}
-        <section className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="bg-white shadow-md rounded-lg p-8 text-center">
-            <h2 className="text-xl font-semibold text-[#d86331]">Total Visits</h2>
-            <p className="text-5xl font-bold text-gray-800 mt-3">
-              {reportData.totalVisits}
-            </p>
-          </div>
-          <div className="bg-white shadow-md rounded-lg p-8 text-center">
-            <h2 className="text-xl font-semibold text-[#d86331]">Scooty Sales</h2>
-            <p className="text-5xl font-bold text-gray-800 mt-3">
-              {reportData.totalScootySales}
-            </p>
-          </div>
-          <div className="bg-white shadow-md rounded-lg p-8 text-center">
-            <h2 className="text-xl font-semibold text-[#d86331]">Battery Sales</h2>
-            <p className="text-5xl font-bold text-gray-800 mt-3">
-              {reportData.totalRickshawSales}
-            </p>
-          </div>
-          <div className="bg-white shadow-md rounded-lg p-8 text-center">
-            <h2 className="text-xl font-semibold text-[#d86331]">E-Rickshaw Sales</h2>
-            <p className="text-5xl font-bold text-gray-800 mt-3">
-              {reportData.totalERickshawSales}
-            </p>
-          </div>
-        </section>
-
         {/* Top Performers Section */}
         <section className="bg-white shadow-md rounded-lg p-8">
           <h2 className="text-2xl font-bold text-[#d86331] mb-6 text-center">
@@ -73,7 +77,10 @@ const MonthlyReportPage = () => {
               <tr className="bg-[#f29871] text-white">
                 <th className="p-4 border border-gray-200">Rank</th>
                 <th className="p-4 border border-gray-200">Name</th>
-                <th className="p-4 border border-gray-200">Sales</th>
+                <th className="p-4 border border-gray-200">Achievement (%)</th>
+                <th className="p-4 border border-gray-200">Battery Sales</th>
+                <th className="p-4 border border-gray-200">E-Rickshaw Sales</th>
+                <th className="p-4 border border-gray-200">Scooty Sales</th>
               </tr>
             </thead>
             <tbody>
@@ -87,7 +94,16 @@ const MonthlyReportPage = () => {
                   </td>
                   <td className="p-4 border border-gray-200">{employee.name}</td>
                   <td className="p-4 border border-gray-200 text-center">
-                    {employee.sales}
+                    {employee.percentage}%
+                  </td>
+                  <td className="p-4 border border-gray-200 text-center">
+                    {employee.sales.battery}
+                  </td>
+                  <td className="p-4 border border-gray-200 text-center">
+                    {employee.sales.eRickshaw}
+                  </td>
+                  <td className="p-4 border border-gray-200 text-center">
+                    {employee.sales.scooty}
                   </td>
                 </tr>
               ))}

@@ -6,15 +6,46 @@ import Link from "next/link";
 const Employe = () => {
   const [eScootyWork, setEScootyWork] = useState(0);
   const [eRickshawWork, setERickshawWork] = useState(0);
+  const [scootyWork, setScootyWork] = useState(0);
   const [eScootyTargets, setEScootyTargets] = useState(100);
   const [eRickshawTargets, setERickshawTargets] = useState(100);
+  const [scootyTargets, setScootyTargets] = useState(100);
   const [user, setUser] = useState(null);
+
+  // API call function
+  const updateTarget = async (key, value) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch("https://backend-eashwa.vercel.app/api/user/update-completed-target", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+           Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ key, value }),
+      });
+  
+      if (!response.ok) {
+        console.error("Error updating target:", key);
+        return;
+      }
+  
+      const data = await response.json();
+      // Update user state with the response data
+      setUser(data.user);
+  
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+  
 
   // Update daily work and remaining targets for e-scooty
   const handleEScootyWorkUpdate = (workCompleted) => {
     const work = parseInt(workCompleted, 10) || 0;
     setEScootyWork((prev) => prev + work);
     setEScootyTargets((prev) => prev - work);
+    updateTarget("battery", work); // API call for eScooty work update
   };
 
   // Update daily work and remaining targets for e-rickshaws
@@ -22,6 +53,15 @@ const Employe = () => {
     const work = parseInt(workCompleted, 10) || 0;
     setERickshawWork((prev) => prev + work);
     setERickshawTargets((prev) => prev - work);
+    updateTarget("eRickshaw", work); // API call for eRickshaw work update
+  };
+
+  // Update daily work and remaining targets for scooty
+  const handleScootyWorkUpdate = (workCompleted) => {
+    const work = parseInt(workCompleted, 10) || 0;
+    setScootyWork((prev) => prev + work);
+    setScootyTargets((prev) => prev - work);
+    updateTarget("scooty", work); // API call for scooty work update
   };
 
   // Load user data from local storage
@@ -101,14 +141,14 @@ const Employe = () => {
             <div className="p-6 bg-indigo-50 rounded-lg shadow-md">
               <h3 className="text-xl font-bold text-indigo-700 mb-2">E-Scooty</h3>
               <p className="text-gray-700">
-                <strong>Total Target:</strong> {user?.targetAchieved.battery|| "N/A"}
-              </p>
-              {/* <p className="text-gray-700">
-                <strong>Today Work:</strong> {eScootyWork || 0}
+                <strong>Total Target:</strong> {user?.targetAchieved.battery.total|| "N/A"}
               </p>
               <p className="text-gray-700">
-                <strong>Remaining Work:</strong> {eScootyTargets || 0}
-              </p> */}
+                <strong>Completed Target:</strong> {user?.targetAchieved.battery.completed|| "N/A"}
+              </p>
+              <p className="text-gray-700">
+                <strong>Pending Target:</strong> {user?.targetAchieved.battery.pending|| "N/A"}
+              </p>
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
@@ -140,15 +180,15 @@ const Employe = () => {
                 E-Rickshaws
               </h3>
               <p className="text-gray-700">
-              <strong>Total Target:</strong> {user?.targetAchieved.eRickshaw|| "N/A"}
+              <strong>Total Target:</strong> {user?.targetAchieved.eRickshaw.total|| "N/A"}
 
               </p>
-              {/* <p className="text-gray-700">
-                <strong>Today Work:</strong> {eRickshawWork || 0}
+              <p className="text-gray-700">
+                <strong>Completed Target:</strong> {user?.targetAchieved.eRickshaw.completed|| "N/A"}
               </p>
               <p className="text-gray-700">
-                <strong>Remaining Work:</strong> {eRickshawTargets || 0}
-              </p> */}
+                <strong>Pending Target:</strong> {user?.targetAchieved.eRickshaw.pending|| "N/A"}
+              </p>
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
@@ -174,33 +214,34 @@ const Employe = () => {
               </form>
             </div>
 
+            {/* Scooty Section */}
             <div className="p-6 bg-indigo-50 rounded-lg shadow-md">
               <h3 className="text-xl font-bold text-indigo-700 mb-2">
                 Scooty
               </h3>
               <p className="text-gray-700">
-              <strong>Total Target:</strong> {user?.targetAchieved.scooty|| "N/A"}
+              <strong>Total Target:</strong> {user?.targetAchieved.scooty.total|| "N/A"}
 
               </p>
-              {/* <p className="text-gray-700">
-                <strong>Today Work:</strong> {eRickshawWork || 0}
+              <p className="text-gray-700">
+                <strong>Completed Target:</strong> {user?.targetAchieved.scooty.completed|| "N/A"}
               </p>
               <p className="text-gray-700">
-                <strong>Remaining Work:</strong> {eRickshawTargets || 0}
-              </p> */}
+                <strong>Pending Target:</strong> {user?.targetAchieved.scooty.pending|| "N/A"}
+              </p>
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
                   const form = e.target;
                   const workCompleted = form.workCompleted.value;
-                  handleERickshawWorkUpdate(workCompleted);
+                  handleScootyWorkUpdate(workCompleted);
                   form.reset();
                 }}
               >
                 <input
                   type="number"
                   name="workCompleted"
-                  placeholder="Enter E-Rickshaw work"
+                  placeholder="Enter Scooty work"
                   className="p-2 border rounded w-full mb-2"
                   required
                 />
@@ -214,22 +255,23 @@ const Employe = () => {
             </div>
           </div>
         </section>
-{/* Visiting Form */}
-<section className="bg-white rounded-xl shadow-md p-8 border border-gray-200">
+
+        {/* Visiting Form */}
+        <section className="bg-white rounded-xl shadow-md p-8 border border-gray-200">
           <h2 className="text-2xl font-semibold text-indigo-800 mb-4">
             Visiting Form
           </h2>
           <VisitingForm />
         </section>
 
-          {/* History Section */}
-          <section className="bg-gray-50 rounded-xl shadow-inner p-8 border border-gray-300">
+        {/* History Section */}
+        <section className="bg-gray-50 rounded-xl shadow-inner p-8 border border-gray-300">
           <h2 className="text-2xl font-semibold text-gray-800 mb-4">History Section</h2>
           <p className="text-gray-600">History of past visits will be displayed here...</p>
         </section>
 
-         {/* Achievements Section */}
-         <section className="bg-gradient-to-r from-blue-50 to-indigo-100 rounded-xl shadow-md p-8">
+        {/* Achievements Section */}
+        <section className="bg-gradient-to-r from-blue-50 to-indigo-100 rounded-xl shadow-md p-8">
           <h2 className="text-2xl font-semibold text-indigo-800 mb-4">Achievements</h2>
           <div className="text-gray-700">
             <p className="mb-2">🎉 Top Sales Performer: John Smith</p>
@@ -237,14 +279,6 @@ const Employe = () => {
           </div>
         </section>
       </main>
-
-      <footer className="bg-indigo-600 text-white py-6">
-        <div className="container mx-auto text-center">
-          <p className="text-sm">
-            © {new Date().getFullYear()} Your Company Name. All rights reserved.
-          </p>
-        </div>
-      </footer>
     </div>
   );
 };
