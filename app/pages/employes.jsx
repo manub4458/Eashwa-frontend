@@ -80,7 +80,7 @@ const Employe = () => {
               <img
                 src="/logo.png"
                 alt="Logo"
-                className="h-16 w-24 object-cover mr-4"
+                className="w-32 h-auto object-cover mr-4"
               />
             </div>
           </Link>
@@ -102,17 +102,17 @@ const Employe = () => {
           </div>
 
           <div className="flex-1">
-            <h3 className="text-2xl font-bold text-indigo-800 mb-2">
+            <h3 className="text-2xl font-bold text-indigo-800 uppercase mb-2">
               {user?.name || "N/A"}
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 uppercase">
               <p className="text-gray-700">
                 <strong>Email:</strong> {user?.email || "N/A"}
               </p>
               <p className="text-gray-700">
                 <strong>Phone:</strong> {user?.phone || "N/A"}
               </p>
-              <p className="text-gray-700">
+              <p className="text-gray-700 uppercase">
                 <strong>Address:</strong> {user?.address || "N/A"}
               </p>
               <p className="text-gray-700">
@@ -266,7 +266,7 @@ const Employe = () => {
 
         {/* History Section */}
         <section className="bg-gray-50 rounded-xl shadow-inner p-8 border border-gray-300">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">History Section</h2>
+          <h2 className="text-2xl font-semibold text-gray-800 mb-4">Monthly Visits</h2>
           <p className="text-gray-600">History of past visits will be displayed here...</p>
         </section>
 

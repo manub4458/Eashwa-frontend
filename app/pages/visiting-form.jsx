@@ -4,11 +4,13 @@ import React, { useState } from 'react';
 
 const VisitingForm = () => {
   const [formData, setFormData] = useState({
-    asmName: '',
+    yourName: '',
     clientName: '',
-    location: '',
-    time: '',
-    notes: ''
+    clientPhone: '',
+    clientAddress: '',
+    dateTime: '',
+    purpose: '',
+    feedback: ''
   });
 
   const handleChange = (e) => {
@@ -20,7 +22,15 @@ const VisitingForm = () => {
     e.preventDefault();
     console.log('Form Data Submitted:', formData);
     alert('Visit logged successfully!');
-    setFormData({ asmName: '', clientName: '', location: '', time: '', notes: '' });
+    setFormData({
+      yourName: '',
+      clientName: '',
+      clientPhone: '',
+      clientAddress: '',
+      dateTime: '',
+      purpose: '',
+      feedback: ''
+    });
   };
 
   return (
@@ -28,17 +38,17 @@ const VisitingForm = () => {
       <h2 className="text-2xl font-bold text-indigo-600 mb-4">Log a Customer Visit</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-gray-700 font-medium mb-1" htmlFor="asmName">
-            ASM Name
+          <label className="block text-gray-700 font-medium mb-1" htmlFor="yourName">
+            Your Name
           </label>
           <input
             type="text"
-            id="asmName"
-            name="asmName"
-            value={formData.asmName}
+            id="yourName"
+            name="yourName"
+            value={formData.yourName}
             onChange={handleChange}
             className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring focus:ring-indigo-200"
-            placeholder="Enter ASM name"
+            placeholder="Shiv"
             required
           />
         </div>
@@ -58,45 +68,75 @@ const VisitingForm = () => {
           />
         </div>
         <div>
-          <label className="block text-gray-700 font-medium mb-1" htmlFor="location">
-            Location
+          <label className="block text-gray-700 font-medium mb-1" htmlFor="clientPhone">
+            Client Phone No
+          </label>
+          <input
+            type="tel"
+            id="clientPhone"
+            name="clientPhone"
+            value={formData.clientPhone}
+            onChange={handleChange}
+            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring focus:ring-indigo-200"
+            placeholder="Enter Client phone number"
+            required
+          />
+        </div>
+        <div>
+          <label className="block text-gray-700 font-medium mb-1" htmlFor="clientAddress">
+            Client Address
           </label>
           <input
             type="text"
-            id="location"
-            name="location"
-            value={formData.location}
+            id="clientAddress"
+            name="clientAddress"
+            value={formData.clientAddress}
             onChange={handleChange}
             className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring focus:ring-indigo-200"
-            placeholder="Enter location"
+            placeholder="Enter Client address"
             required
           />
         </div>
         <div>
-          <label className="block text-gray-700 font-medium mb-1" htmlFor="time">
-            Time
+          <label className="block text-gray-700 font-medium mb-1" htmlFor="dateTime">
+            Date & Time
           </label>
           <input
-            type="time"
-            id="time"
-            name="time"
-            value={formData.time}
+            type="datetime-local"
+            id="dateTime"
+            name="dateTime"
+            value={formData.dateTime}
             onChange={handleChange}
             className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring focus:ring-indigo-200"
             required
           />
         </div>
         <div>
-          <label className="block text-gray-700 font-medium mb-1" htmlFor="notes">
-            Notes (Optional)
+          <label className="block text-gray-700 font-medium mb-1" htmlFor="purpose">
+            Purpose
           </label>
-          <textarea
-            id="notes"
-            name="notes"
-            value={formData.notes}
+          <input
+            type="text"
+            id="purpose"
+            name="purpose"
+            value={formData.purpose}
             onChange={handleChange}
             className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring focus:ring-indigo-200"
-            placeholder="Enter additional notes"
+            placeholder="Ex. Dealer, Distributor"
+            required
+          />
+        </div>
+        <div>
+          <label className="block text-gray-700 font-medium mb-1" htmlFor="feedback">
+            Feedback
+          </label>
+          <textarea
+            id="feedback"
+            name="feedback"
+            value={formData.feedback}
+            onChange={handleChange}
+            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring focus:ring-indigo-200"
+            placeholder="Ex. What client says..."
           ></textarea>
         </div>
         <button
