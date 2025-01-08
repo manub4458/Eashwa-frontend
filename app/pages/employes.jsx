@@ -217,7 +217,7 @@ const Employe = () => {
             {/* Scooty Section */}
             <div className="p-6 bg-indigo-50 rounded-lg shadow-md">
               <h3 className="text-xl font-bold text-indigo-700 mb-2">
-                Scooty
+               Battery
               </h3>
               <p className="text-gray-700">
               <strong>Total Target:</strong> {user?.targetAchieved.scooty.total|| "N/A"}
