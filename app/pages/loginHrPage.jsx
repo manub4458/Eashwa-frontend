@@ -44,7 +44,7 @@ const LoginHrPage = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-50 to-gray-200">
       <div className="bg-white shadow-lg rounded-lg p-8 max-w-md w-full">
-        <h1 className="text-2xl font-bold text-center text-indigo-600 mb-6">
+        <h1 className="text-2xl font-bold text-center text-[#d86331] mb-6">
           Login
         </h1>
         {error && (
@@ -88,7 +88,7 @@ const LoginHrPage = () => {
 
           <button
             type="submit"
-            className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md shadow hover:bg-indigo-700 transition"
+            className="w-full bg-[#d86331] text-white py-2 px-4 rounded-md shadow hover:bg-[#df7f55] transition"
           >
             Login
           </button>

@@ -34,7 +34,7 @@ const HrDashboard = () => {
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header Section */}
-      <header className="bg-gradient-to-r from-blue-600 to-blue-800 py-6 shadow-md">
+      <header className="bg-[#d86331] py-6 shadow-md">
         <div className="container mx-auto px-6 flex justify-between items-center">
           <h1 className="text-3xl font-extrabold text-white">HR Dashboard</h1>
         </div>
@@ -42,8 +42,8 @@ const HrDashboard = () => {
 
       {/* HR Info Section */}
       {hrInfo && (
-        <section className="bg-white shadow-lg rounded-lg mx-auto mt-10 p-8 max-w-5xl border-t-4 border-blue-500">
-          <h2 className="text-xl font-semibold text-blue-700 mb-6">HR Information</h2>
+        <section className="bg-white shadow-lg rounded-lg mx-auto mt-10 p-8 max-w-5xl border-t-4 border-[#d86331]">
+          <h2 className="text-xl font-semibold text-[#d86331] mb-6">HR Information</h2>
           <div className="flex items-center gap-6">
             <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-blue-500 shadow">
               <img
@@ -54,7 +54,7 @@ const HrDashboard = () => {
             </div>
             <div className="space-y-2">
               <h3 className="text-2xl font-bold text-gray-800">{hrInfo.name || "N/A"}</h3>
-              <p className="text-gray-500 text-sm">{hrInfo.designation || "HR Manager"}</p>
+              {/* <p className="text-gray-500 text-sm">{hrInfo.designation || "HR Manager"}</p> */}
               <div className="text-gray-600">
                 <p>
                   <strong>Email:</strong> {hrInfo.email || "N/A"}
@@ -76,14 +76,14 @@ const HrDashboard = () => {
 
       {/* Main Section */}
       <main className="container mx-auto px-6 py-12">
-        <h2 className="text-2xl font-bold text-blue-800 mb-8">Employee Information</h2>
+        <h2 className="text-2xl font-bold text-[#d86331] mb-8">Employee Information</h2>
 
         {/* Employee Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
           {employees.length > 0 ? (
             employees.map((employee) => (
               <Link key={employee._id} href={`/update-form/${employee._id}`}>
-                <div className="bg-white rounded-xl shadow-lg border-t-4 border-blue-400 p-6 flex flex-col items-center transition-transform transform hover:scale-105">
+                <div className="bg-white rounded-xl shadow-lg border-t-4 border-[#d86331] p-6 flex flex-col items-center transition-transform transform hover:scale-105">
                   <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-blue-400 shadow-lg mb-4">
                     <img
                       src={employee.profilePicture || "/placeholder-profile.png"}

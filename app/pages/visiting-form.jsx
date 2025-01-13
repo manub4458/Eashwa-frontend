@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 const VisitingForm = () => {
   const [formData, setFormData] = useState({
@@ -14,6 +14,64 @@ const VisitingForm = () => {
 
   const [visits, setVisits] = useState([]); // State to store all visits
 
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      fetchVisits(token);
+    }
+  }, []);
+
+  const fetchVisits = async (token) => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await fetch("https://backend-eashwa.vercel.app/api/visits", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setVisits(data.visits || []);
+      } else {
+        console.error("Failed to fetch visits");
+      }
+    } catch (error) {
+      console.error("Error fetching visits:", error);
+    }
+  };
+
+  const saveVisit = async (newVisit) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("You need to log in to save visits.");
+      return;
+    }
+
+    try {
+      const response = await fetch("https://backend-eashwa.vercel.app/api/visits", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(newVisit),
+      });
+
+      if (response.ok) {
+        const savedVisit = await response.json();
+        setVisits((prev) => [...prev, savedVisit]);
+        alert("Visit logged successfully!");
+      } else {
+        console.error("Failed to save visit");
+      }
+    } catch (error) {
+      console.error("Error saving visit:", error);
+    }
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -22,17 +80,9 @@ const VisitingForm = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // Add the new visit to the visits list and sort it by date
-    const newVisit = { ...formData, id: Date.now() }; // Add a unique ID for key usage
-    const sortedVisits = [...visits, newVisit].sort(
-      (a, b) => new Date(a.dateTime) - new Date(b.dateTime)
-    );
+    const newVisit = { ...formData, id: Date.now() };
+    saveVisit(newVisit);
 
-    setVisits(sortedVisits);
-
-    alert("Visit logged successfully!");
-
-    // Reset form
     setFormData({
       yourName: "",
       clientName: "",
@@ -46,9 +96,8 @@ const VisitingForm = () => {
 
   return (
     <div className="container mx-auto p-4">
-      {/* Visiting Form */}
-      <div className="bg-white shadow-lg rounded-lg p-6 border border-indigo-200 mb-8">
-        <h2 className="text-2xl font-bold text-indigo-600 mb-4">Log a Customer Visit</h2>
+         <div className="bg-white shadow-lg rounded-lg p-6 border border-indigo-200 mb-8">
+        <h2 className="text-2xl font-bold text-[#d86331] mb-4">Log a Customer Visit</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-gray-700 font-medium mb-1" htmlFor="yourName">
@@ -154,44 +203,48 @@ const VisitingForm = () => {
           </div>
           <button
             type="submit"
-            className="w-full bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-700 transition duration-200"
+            className="w-full bg-[#d86331] text-white py-2 px-4 rounded hover:bg-[#d8693a] transition duration-200"
           >
             Submit Visit
           </button>
         </form>
       </div>
+      {/* Visiting Form */}
+      
 
       {/* Monthly Visit Table */}
       <div className="bg-white shadow-lg rounded-lg p-6 border border-indigo-200">
-        <h2 className="text-2xl font-bold text-indigo-600 mb-4">Monthly Visit Table</h2>
-        <table className="w-full table-auto border-collapse border border-gray-200">
-          <thead>
-            <tr className="bg-indigo-100">
-              <th className="border border-gray-200 px-4 py-2">Date</th>
-              <th className="border border-gray-200 px-4 py-2">Your Name</th>
-              <th className="border border-gray-200 px-4 py-2">Client Name</th>
-              <th className="border border-gray-200 px-4 py-2">Phone</th>
-              <th className="border border-gray-200 px-4 py-2">Address</th>
-              <th className="border border-gray-200 px-4 py-2">Purpose</th>
-              <th className="border border-gray-200 px-4 py-2">Feedback</th>
-            </tr>
-          </thead>
-          <tbody>
-            {visits.map((visit) => (
-              <tr key={visit.id} className="hover:bg-gray-100">
-                <td className="border border-gray-200 px-4 py-2">
-                  {new Date(visit.dateTime).toLocaleString()}
-                </td>
-                <td className="border border-gray-200 px-4 py-2">{visit.yourName}</td>
-                <td className="border border-gray-200 px-4 py-2">{visit.clientName}</td>
-                <td className="border border-gray-200 px-4 py-2">{visit.clientPhone}</td>
-                <td className="border border-gray-200 px-4 py-2">{visit.clientAddress}</td>
-                <td className="border border-gray-200 px-4 py-2">{visit.purpose}</td>
-                <td className="border border-gray-200 px-4 py-2">{visit.feedback}</td>
+        <h2 className="text-2xl font-bold text-[#d86331] mb-4">Monthly Visit Table</h2>
+        <div className="overflow-x-auto">
+          <table className="w-full table-auto border-collapse border border-gray-200">
+            <thead>
+              <tr className="bg-indigo-100">
+                <th className="border border-gray-200 px-4 py-2">Date</th>
+                <th className="border border-gray-200 px-4 py-2">Your Name</th>
+                <th className="border border-gray-200 px-4 py-2">Client Name</th>
+                <th className="border border-gray-200 px-4 py-2">Phone</th>
+                <th className="border border-gray-200 px-4 py-2">Address</th>
+                <th className="border border-gray-200 px-4 py-2">Purpose</th>
+                <th className="border border-gray-200 px-4 py-2">Feedback</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {visits.map((visit) => (
+                <tr key={visit.id} className="hover:bg-gray-100">
+                  <td className="border border-gray-200 px-4 py-2">
+                    {new Date(visit.dateTime).toLocaleString()}
+                  </td>
+                  <td className="border border-gray-200 px-4 py-2">{visit.yourName}</td>
+                  <td className="border border-gray-200 px-4 py-2">{visit.clientName}</td>
+                  <td className="border border-gray-200 px-4 py-2">{visit.clientPhone}</td>
+                  <td className="border border-gray-200 px-4 py-2">{visit.clientAddress}</td>
+                  <td className="border border-gray-200 px-4 py-2">{visit.purpose}</td>
+                  <td className="border border-gray-200 px-4 py-2">{visit.feedback}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
