@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import * as XLSX from "xlsx";
 
 const VisitingForm = () => {
   const [formData, setFormData] = useState({
@@ -12,65 +13,16 @@ const VisitingForm = () => {
     feedback: "",
   });
 
-  const [visits, setVisits] = useState([]); // State to store all visits
+  const [visits, setVisits] = useState([]);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingId, setEditingId] = useState(null);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      fetchVisits(token);
+    const storedVisits = localStorage.getItem("visits");
+    if (storedVisits) {
+      setVisits(JSON.parse(storedVisits));
     }
   }, []);
-
-  const fetchVisits = async (token) => {
-    try {
-      const token = localStorage.getItem("token");
-
-      const response = await fetch("https://backend-eashwa.vercel.app/api/visits", {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setVisits(data.visits || []);
-      } else {
-        console.error("Failed to fetch visits");
-      }
-    } catch (error) {
-      console.error("Error fetching visits:", error);
-    }
-  };
-
-  const saveVisit = async (newVisit) => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      alert("You need to log in to save visits.");
-      return;
-    }
-
-    try {
-      const response = await fetch("https://backend-eashwa.vercel.app/api/visits", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(newVisit),
-      });
-
-      if (response.ok) {
-        const savedVisit = await response.json();
-        setVisits((prev) => [...prev, savedVisit]);
-        alert("Visit logged successfully!");
-      } else {
-        console.error("Failed to save visit");
-      }
-    } catch (error) {
-      console.error("Error saving visit:", error);
-    }
-  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -80,8 +32,20 @@ const VisitingForm = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    const newVisit = { ...formData, id: Date.now() };
-    saveVisit(newVisit);
+    if (isEditing) {
+      const updatedVisits = visits.map((visit) =>
+        visit.id === editingId ? { ...visit, ...formData } : visit
+      );
+      setVisits(updatedVisits);
+      localStorage.setItem("visits", JSON.stringify(updatedVisits));
+      setIsEditing(false);
+      setEditingId(null);
+    } else {
+      const newVisit = { ...formData, id: Date.now() };
+      const updatedVisits = [...visits, newVisit];
+      setVisits(updatedVisits);
+      localStorage.setItem("visits", JSON.stringify(updatedVisits));
+    }
 
     setFormData({
       yourName: "",
@@ -94,9 +58,29 @@ const VisitingForm = () => {
     });
   };
 
+  const handleEdit = (id) => {
+    const visitToEdit = visits.find((visit) => visit.id === id);
+    setFormData(visitToEdit);
+    setIsEditing(true);
+    setEditingId(id);
+  };
+
+  const handleDelete = (id) => {
+    const updatedVisits = visits.filter((visit) => visit.id !== id);
+    setVisits(updatedVisits);
+    localStorage.setItem("visits", JSON.stringify(updatedVisits));
+  };
+
+  const handleDownload = () => {
+    const worksheet = XLSX.utils.json_to_sheet(visits);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Visits");
+    XLSX.writeFile(workbook, "visits.xlsx");
+  };
+
   return (
     <div className="container mx-auto p-4">
-         <div className="bg-white shadow-lg rounded-lg p-6 border border-indigo-200 mb-8">
+      <div className="bg-white shadow-lg rounded-lg p-6 border border-indigo-200 mb-8">
         <h2 className="text-2xl font-bold text-[#d86331] mb-4">Log a Customer Visit</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -209,12 +193,18 @@ const VisitingForm = () => {
           </button>
         </form>
       </div>
-      {/* Visiting Form */}
-      
 
       {/* Monthly Visit Table */}
       <div className="bg-white shadow-lg rounded-lg p-6 border border-indigo-200">
-        <h2 className="text-2xl font-bold text-[#d86331] mb-4">Monthly Visit Table</h2>
+        <h2 className="text-2xl font-bold text-[#d86331] mb-4">
+          Monthly Visit Table
+        </h2>
+        <button
+          onClick={handleDownload}
+          className="bg-indigo-600 text-white px-4 py-2 rounded mb-4 hover:bg-indigo-700 transition"
+        >
+          Download Excel
+        </button>
         <div className="overflow-x-auto">
           <table className="w-full table-auto border-collapse border border-gray-200">
             <thead>
@@ -226,6 +216,7 @@ const VisitingForm = () => {
                 <th className="border border-gray-200 px-4 py-2">Address</th>
                 <th className="border border-gray-200 px-4 py-2">Purpose</th>
                 <th className="border border-gray-200 px-4 py-2">Feedback</th>
+                <th className="border border-gray-200 px-4 py-2">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -234,12 +225,38 @@ const VisitingForm = () => {
                   <td className="border border-gray-200 px-4 py-2">
                     {new Date(visit.dateTime).toLocaleString()}
                   </td>
-                  <td className="border border-gray-200 px-4 py-2">{visit.yourName}</td>
-                  <td className="border border-gray-200 px-4 py-2">{visit.clientName}</td>
-                  <td className="border border-gray-200 px-4 py-2">{visit.clientPhone}</td>
-                  <td className="border border-gray-200 px-4 py-2">{visit.clientAddress}</td>
-                  <td className="border border-gray-200 px-4 py-2">{visit.purpose}</td>
-                  <td className="border border-gray-200 px-4 py-2">{visit.feedback}</td>
+                  <td className="border border-gray-200 px-4 py-2">
+                    {visit.yourName}
+                  </td>
+                  <td className="border border-gray-200 px-4 py-2">
+                    {visit.clientName}
+                  </td>
+                  <td className="border border-gray-200 px-4 py-2">
+                    {visit.clientPhone}
+                  </td>
+                  <td className="border border-gray-200 px-4 py-2">
+                    {visit.clientAddress}
+                  </td>
+                  <td className="border border-gray-200 px-4 py-2">
+                    {visit.purpose}
+                  </td>
+                  <td className="border border-gray-200 px-4 py-2">
+                    {visit.feedback}
+                  </td>
+                  <td className="border border-gray-200 px-4 py-2">
+                    <button
+                      onClick={() => handleEdit(visit.id)}
+                      className="text-indigo-600 hover:underline mr-2"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(visit.id)}
+                      className="text-red-600 hover:underline"
+                    >
+                      Delete
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>

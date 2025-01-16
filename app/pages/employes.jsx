@@ -284,7 +284,7 @@ const Employe = () => {
         <section className="bg-gradient-to-r from-blue-50 to-indigo-100 rounded-xl shadow-md p-8">
           <h2 className="text-2xl font-semibold text-indigo-800 mb-4">Achievements</h2>
           <div className="text-gray-700">
-            <p className="mb-2">🎉 Top Sales Performer: John Smith</p>
+            <p className="mb-2">🎉 Top Sales Performer</p>
             <p>Keep striving for excellence!</p>
           </div>
         </section>
