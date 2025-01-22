@@ -2,11 +2,12 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const HrDashboard = () => {
   const [employees, setEmployees] = useState([]);
   const [hrInfo, setHrInfo] = useState(null);
-
+  const router = useRouter();
   // Fetch HR and employees' data
   useEffect(() => {
     const fetchData = async () => {
@@ -22,7 +23,7 @@ const HrDashboard = () => {
         );
         console.log("response", response);
         setEmployees(response.data.employees); // Assuming the response contains an array of employees
-        setHrInfo(response.data.hr); // Assuming the response contains HR info
+        setHrInfo(response.data.requestingUser); // Assuming the response contains HR info
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -31,19 +32,34 @@ const HrDashboard = () => {
     fetchData();
   }, []);
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    router.push("/loginHr");
+  };
+
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header Section */}
       <header className="bg-[#d86331] py-6 shadow-md">
         <div className="container mx-auto px-6 flex justify-between items-center">
-          <h1 className="text-3xl font-extrabold text-white">HR Dashboard</h1>
+          <h1 className="text-3xl font-extrabold text-white capitalize">
+            {hrInfo?.role} Dashboard
+          </h1>
+          <p
+            className=" cursor-pointer font-bold text-white text-xl"
+            onClick={handleLogout}
+          >
+            Logout
+          </p>
         </div>
       </header>
 
       {/* HR Info Section */}
       {hrInfo && (
         <section className="bg-white shadow-lg rounded-lg mx-auto mt-10 p-8 max-w-5xl border-t-4 border-[#d86331]">
-          <h2 className="text-xl font-semibold text-[#d86331] mb-6">HR Information</h2>
+          <h2 className="text-xl font-semibold text-[#d86331] mb-6">
+            HR Information
+          </h2>
           <div className="flex items-center gap-6">
             <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-blue-500 shadow">
               <img
@@ -53,7 +69,9 @@ const HrDashboard = () => {
               />
             </div>
             <div className="space-y-2">
-              <h3 className="text-2xl font-bold text-gray-800">{hrInfo.name || "N/A"}</h3>
+              <h3 className="text-2xl font-bold text-gray-800">
+                {hrInfo.name || "N/A"}
+              </h3>
               {/* <p className="text-gray-500 text-sm">{hrInfo.designation || "HR Manager"}</p> */}
               <div className="text-gray-600">
                 <p>
@@ -76,7 +94,9 @@ const HrDashboard = () => {
 
       {/* Main Section */}
       <main className="container mx-auto px-6 py-12">
-        <h2 className="text-2xl font-bold text-[#d86331] mb-8">Employee Information</h2>
+        <h2 className="text-2xl font-bold text-[#d86331] mb-8">
+          Employee Information
+        </h2>
 
         {/* Employee Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
@@ -86,7 +106,9 @@ const HrDashboard = () => {
                 <div className="bg-white rounded-xl shadow-lg border-t-4 border-[#d86331] p-6 flex flex-col items-center transition-transform transform hover:scale-105">
                   <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-blue-400 shadow-lg mb-4">
                     <img
-                      src={employee.profilePicture || "/placeholder-profile.png"}
+                      src={
+                        employee.profilePicture || "/placeholder-profile.png"
+                      }
                       alt={`${employee.name}'s profile`}
                       className="w-full h-full object-cover"
                     />
@@ -94,7 +116,9 @@ const HrDashboard = () => {
                   <h3 className="text-lg font-semibold text-gray-800">
                     {employee.name || "N/A"}
                   </h3>
-                  <p className="text-gray-500 text-sm">{employee.post || "N/A"}</p>
+                  <p className="text-gray-500 text-sm">
+                    {employee.post || "N/A"}
+                  </p>
                   <div className="mt-4 text-sm text-gray-600 space-y-1">
                     <p>
                       <strong>Email:</strong> {employee.email || "N/A"}
@@ -103,10 +127,12 @@ const HrDashboard = () => {
                       <strong>Phone:</strong> {employee.phone || "N/A"}
                     </p>
                     <p>
-                      <strong>Employee ID:</strong> {employee.employeeId || "N/A"}
+                      <strong>Employee ID:</strong>{" "}
+                      {employee.employeeId || "N/A"}
                     </p>
                     <p>
-                      <strong>Joining Date:</strong> {employee.joiningDate || "N/A"}
+                      <strong>Joining Date:</strong>{" "}
+                      {employee.joiningDate || "N/A"}
                     </p>
                   </div>
                 </div>

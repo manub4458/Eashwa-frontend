@@ -5,20 +5,19 @@ import axios from "axios";
 import Cookies from "js-cookie";
 
 const LoginHrPage = () => {
-  const [email, setEmail] = useState("");
+  const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState(""); // State for error message
+  const [error, setError] = useState("");
   const router = useRouter();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(""); // Clear previous error message
+    setError("");
     try {
       const response = await axios.post(
         "https://backend-eashwa.vercel.app/api/user/login",
-        { email, password }
+        { userName, password }
       );
-      console.log("Response-user",response);
       if (response.data.ok) {
         Cookies.set("authToken", response.data.authToken, { expires: 1 });
         localStorage.setItem("token", response.data.authToken);
@@ -26,7 +25,10 @@ const LoginHrPage = () => {
 
         if (response.data.user.role === "employee") {
           router.push("/employees");
-        } else if (response.data.user.role === "hr") {
+        } else if (
+          response.data.user.role === "hr" ||
+          response.data.user.role === "admin"
+        ) {
           router.push("/hr-dash");
         } else {
           router.push("/404");
@@ -53,18 +55,18 @@ const LoginHrPage = () => {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label
-              htmlFor="email"
+              htmlFor="username"
               className="block text-sm font-medium text-gray-700"
             >
-              Email
+              Username
             </label>
             <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              id="userName"
+              type="userName"
+              value={userName}
+              onChange={(e) => setUserName(e.target.value)}
               className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500"
-              placeholder="Enter your email"
+              placeholder="Enter your userName"
               required
             />
           </div>
