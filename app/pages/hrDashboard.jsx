@@ -102,7 +102,10 @@ const HrDashboard = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
           {employees.length > 0 ? (
             employees.map((employee) => (
-              <Link key={employee._id} href={`/update-form/${employee._id}`}>
+              <Link
+                key={employee._id}
+                href={`/employee-detail/${employee._id}`}
+              >
                 <div className="bg-white rounded-xl shadow-lg border-t-4 border-[#d86331] p-6 flex flex-col items-center transition-transform transform hover:scale-105">
                   <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-blue-400 shadow-lg mb-4">
                     <img
