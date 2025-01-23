@@ -57,8 +57,14 @@ const HrDashboard = () => {
       {/* HR Info Section */}
       {hrInfo && (
         <section className="bg-white shadow-lg rounded-lg mx-auto mt-10 p-8 max-w-5xl border-t-4 border-[#d86331]">
-          <h2 className="text-xl font-semibold text-[#d86331] mb-6">
-            HR Information
+          <h2 className="text-xl font-semibold text-[#d86331] mb-6 capitalize">
+          {
+            hrInfo.post
+          }
+
+         <span className="pl-2">
+         Information
+         </span>
           </h2>
           <div className="flex items-center gap-6">
             <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-blue-500 shadow">

@@ -36,7 +36,7 @@ const EmployeeDash = () => {
       </div>
 
       {/* Main Content */}
-      <main className="flex-grow flex items-center justify-center">
+      <main className="flex-grow mt-4 flex items-center justify-center">
         <section className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl">
           {/* Monthly Report Page Card */}
           <div
