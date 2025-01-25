@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import * as XLSX from "xlsx";
+import axios from "axios";
 
 const VisitingForm = () => {
   const [formData, setFormData] = useState({
@@ -16,8 +17,14 @@ const VisitingForm = () => {
   const [visits, setVisits] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [authToken, setAuthToken] = useState("");
 
   useEffect(() => {
+    const storedToken = localStorage.getItem("authToken");
+    if (storedToken) {
+      setAuthToken(storedToken);
+    }
+
     const storedVisits = localStorage.getItem("visits");
     if (storedVisits) {
       setVisits(JSON.parse(storedVisits));
@@ -29,33 +36,70 @@ const VisitingForm = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (isEditing) {
-      const updatedVisits = visits.map((visit) =>
-        visit.id === editingId ? { ...visit, ...formData } : visit
-      );
-      setVisits(updatedVisits);
-      localStorage.setItem("visits", JSON.stringify(updatedVisits));
-      setIsEditing(false);
-      setEditingId(null);
-    } else {
-      const newVisit = { ...formData, id: Date.now() };
-      const updatedVisits = [...visits, newVisit];
-      setVisits(updatedVisits);
-      localStorage.setItem("visits", JSON.stringify(updatedVisits));
+    if (!authToken) {
+      alert("Please log in to submit the form.");
+      return;
     }
 
-    setFormData({
-      yourName: "",
-      clientName: "",
-      clientPhone: "",
-      clientAddress: "",
-      dateTime: "",
-      purpose: "",
-      feedback: "",
-    });
+    try {
+      const newVisit = {
+        clientName: formData.clientName,
+        clientPhoneNumber: formData.clientPhone,
+        clientAddress: formData.clientAddress,
+        visitDateTime: formData.dateTime,
+        purpose: formData.purpose,
+        feedback: formData.feedback,
+        visitedBy: "UserIdPlaceholder", // Replace with actual user ID if required
+      };
+
+      if (isEditing) {
+        // Update logic for local state
+        const updatedVisits = visits.map((visit) =>
+          visit.id === editingId ? { ...visit, ...formData } : visit
+        );
+        setVisits(updatedVisits);
+        localStorage.setItem("visits", JSON.stringify(updatedVisits));
+        setIsEditing(false);
+        setEditingId(null);
+      } else {
+        // API call to add a visitor
+        const response = await axios.post(
+          "https://backend-eashwa.vercel.app/api/user/add-visitor",
+          {
+            headers: {
+              Authorization: `Bearer ${authToken}`,
+            },
+          }
+        );
+
+        if (response.status === 201 || response.status === 200) {
+          alert("Visit logged successfully!");
+
+          const updatedVisits = [...visits, { ...formData, id: Date.now() }];
+          setVisits(updatedVisits);
+          localStorage.setItem("visits", JSON.stringify(updatedVisits));
+        } else {
+          throw new Error("Failed to log visit.");
+        }
+      }
+
+      // Reset form
+      setFormData({
+        yourName: "",
+        clientName: "",
+        clientPhone: "",
+        clientAddress: "",
+        dateTime: "",
+        purpose: "",
+        feedback: "",
+      });
+    } catch (error) {
+      console.error("Error logging visit:", error);
+      alert("An error occurred while logging the visit.");
+    }
   };
 
   const handleEdit = (id) => {
@@ -196,9 +240,7 @@ const VisitingForm = () => {
 
       {/* Monthly Visit Table */}
       <div className="bg-white shadow-lg rounded-lg p-6 border border-indigo-200">
-        <h2 className="text-2xl font-bold text-[#d86331] mb-4">
-          Monthly Visit Table
-        </h2>
+        <h2 className="text-2xl font-bold text-[#d86331] mb-4">Monthly Visit Table</h2>
         <button
           onClick={handleDownload}
           className="bg-indigo-600 text-white px-4 py-2 rounded mb-4 hover:bg-indigo-700 transition"
@@ -221,38 +263,24 @@ const VisitingForm = () => {
             </thead>
             <tbody>
               {visits.map((visit) => (
-                <tr key={visit.id} className="hover:bg-gray-100">
-                  <td className="border border-gray-200 px-4 py-2">
-                    {new Date(visit.dateTime).toLocaleString()}
-                  </td>
-                  <td className="border border-gray-200 px-4 py-2">
-                    {visit.yourName}
-                  </td>
-                  <td className="border border-gray-200 px-4 py-2">
-                    {visit.clientName}
-                  </td>
-                  <td className="border border-gray-200 px-4 py-2">
-                    {visit.clientPhone}
-                  </td>
-                  <td className="border border-gray-200 px-4 py-2">
-                    {visit.clientAddress}
-                  </td>
-                  <td className="border border-gray-200 px-4 py-2">
-                    {visit.purpose}
-                  </td>
-                  <td className="border border-gray-200 px-4 py-2">
-                    {visit.feedback}
-                  </td>
-                  <td className="border border-gray-200 px-4 py-2">
+                <tr key={visit.id} className="text-center">
+                  <td className="border border-gray-200 px-4 py-2">{visit.dateTime}</td>
+                  <td className="border border-gray-200 px-4 py-2">{visit.yourName}</td>
+                  <td className="border border-gray-200 px-4 py-2">{visit.clientName}</td>
+                  <td className="border border-gray-200 px-4 py-2">{visit.clientPhone}</td>
+                  <td className="border border-gray-200 px-4 py-2">{visit.clientAddress}</td>
+                  <td className="border border-gray-200 px-4 py-2">{visit.purpose}</td>
+                  <td className="border border-gray-200 px-4 py-2">{visit.feedback}</td>
+                  <td className="border border-gray-200 px-4 py-2 space-x-2">
                     <button
                       onClick={() => handleEdit(visit.id)}
-                      className="text-indigo-600 hover:underline mr-2"
+                      className="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600"
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => handleDelete(visit.id)}
-                      className="text-red-600 hover:underline"
+                      className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
                     >
                       Delete
                     </button>
