@@ -18,6 +18,7 @@ const LoginHrPage = () => {
         "https://backend-eashwa.vercel.app/api/user/login",
         { userName, password }
       );
+      console.log("Response login",response);
       if (response.data.ok) {
         Cookies.set("authToken", response.data.authToken, { expires: 1 });
         localStorage.setItem("token", response.data.authToken);
