@@ -40,9 +40,10 @@ const VisitingForm = () => {
         }
       );
 
-      console.log("Get-visitor",response);
+      console.log("Get-visitor", response);
       if (response.status === 200) {
-        setVisits(response.data);
+        console.log("hey");
+        setVisits(response.data.visitorDetails);
         localStorage.setItem("visits", JSON.stringify(response.data));
       }
     } catch (error) {
@@ -71,7 +72,7 @@ const VisitingForm = () => {
         clientAddress: formData.clientAddress,
         visitDateTime: formData.dateTime,
         purpose: formData.purpose,
-        feedback: formData.feedback
+        feedback: formData.feedback,
       };
 
       if (isEditing) {
@@ -108,7 +109,7 @@ const VisitingForm = () => {
         purpose: "",
         feedback: "",
       });
-      
+
       setIsEditing(false);
       setEditingId(null);
     } catch (error) {
@@ -117,7 +118,6 @@ const VisitingForm = () => {
     }
   };
 
-  console.log("visit",visits);
   const handleEdit = (id) => {
     const visitToEdit = visits.find((visit) => visit.id === id);
     if (visitToEdit) {
@@ -127,7 +127,7 @@ const VisitingForm = () => {
         clientAddress: visitToEdit.clientAddress,
         dateTime: visitToEdit.visitDateTime,
         purpose: visitToEdit.purpose,
-        feedback: visitToEdit.feedback
+        feedback: visitToEdit.feedback,
       });
       setIsEditing(true);
       setEditingId(id);
@@ -163,6 +163,23 @@ const VisitingForm = () => {
     XLSX.writeFile(workbook, "visits.xlsx");
   };
 
+  function formatDateTime(isoString) {
+    const date = new Date(isoString);
+
+    const formattedDate = date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+
+    const formattedTime = date.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+    return `${formattedDate} ${formattedTime}`;
+  }
+
   return (
     <div className="container mx-auto p-4">
       <div className="bg-white shadow-lg rounded-lg p-6 border border-indigo-200 mb-8">
@@ -171,7 +188,10 @@ const VisitingForm = () => {
         </h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-gray-700 font-medium mb-1" htmlFor="clientName">
+            <label
+              className="block text-gray-700 font-medium mb-1"
+              htmlFor="clientName"
+            >
               Client Name
             </label>
             <input
@@ -186,7 +206,10 @@ const VisitingForm = () => {
             />
           </div>
           <div>
-            <label className="block text-gray-700 font-medium mb-1" htmlFor="clientPhone">
+            <label
+              className="block text-gray-700 font-medium mb-1"
+              htmlFor="clientPhone"
+            >
               Client Phone No
             </label>
             <input
@@ -201,7 +224,10 @@ const VisitingForm = () => {
             />
           </div>
           <div>
-            <label className="block text-gray-700 font-medium mb-1" htmlFor="clientAddress">
+            <label
+              className="block text-gray-700 font-medium mb-1"
+              htmlFor="clientAddress"
+            >
               Client Address
             </label>
             <input
@@ -216,7 +242,10 @@ const VisitingForm = () => {
             />
           </div>
           <div>
-            <label className="block text-gray-700 font-medium mb-1" htmlFor="dateTime">
+            <label
+              className="block text-gray-700 font-medium mb-1"
+              htmlFor="dateTime"
+            >
               Date & Time
             </label>
             <input
@@ -230,7 +259,10 @@ const VisitingForm = () => {
             />
           </div>
           <div>
-            <label className="block text-gray-700 font-medium mb-1" htmlFor="purpose">
+            <label
+              className="block text-gray-700 font-medium mb-1"
+              htmlFor="purpose"
+            >
               Purpose
             </label>
             <input
@@ -245,7 +277,10 @@ const VisitingForm = () => {
             />
           </div>
           <div>
-            <label className="block text-gray-700 font-medium mb-1" htmlFor="feedback">
+            <label
+              className="block text-gray-700 font-medium mb-1"
+              htmlFor="feedback"
+            >
               Feedback
             </label>
             <textarea
@@ -268,7 +303,9 @@ const VisitingForm = () => {
 
       {/* Monthly Visit Table */}
       <div className="bg-white shadow-lg rounded-lg p-6 border border-indigo-200">
-        <h2 className="text-2xl font-bold text-[#d86331] mb-4">Monthly Visit Table</h2>
+        <h2 className="text-2xl font-bold text-[#d86331] mb-4">
+          Monthly Visit Table
+        </h2>
         <button
           onClick={handleDownload}
           className="bg-indigo-600 text-white px-4 py-2 rounded mb-4 hover:bg-indigo-700 transition"
@@ -280,24 +317,39 @@ const VisitingForm = () => {
             <thead>
               <tr className="bg-indigo-100">
                 <th className="border border-gray-200 px-4 py-2">Date</th>
-                <th className="border border-gray-200 px-4 py-2">Client Name</th>
+                <th className="border border-gray-200 px-4 py-2">
+                  Client Name
+                </th>
                 <th className="border border-gray-200 px-4 py-2">Phone</th>
                 <th className="border border-gray-200 px-4 py-2">Address</th>
                 <th className="border border-gray-200 px-4 py-2">Purpose</th>
                 <th className="border border-gray-200 px-4 py-2">Feedback</th>
-                <th className="border border-gray-200 px-4 py-2">Actions</th>
+                {/* <th className="border border-gray-200 px-4 py-2">Actions</th> */}
               </tr>
             </thead>
             <tbody>
-              {visits.map??((visit) => (
+              {visits?.map((visit) => (
                 <tr key={visit.id} className="text-center">
-                  <td className="border border-gray-200 px-4 py-2">{visitorDeatils?.visitDateTime}</td>
-                  <td className="border border-gray-200 px-4 py-2">{visit.clientName}</td>
-                  <td className="border border-gray-200 px-4 py-2">{visit.clientPhoneNumber}</td>
-                  <td className="border border-gray-200 px-4 py-2">{visit.clientAddress}</td>
-                  <td className="border border-gray-200 px-4 py-2">{visit.purpose}</td>
-                  <td className="border border-gray-200 px-4 py-2">{visit.feedback}</td>
-                  <td className="border border-gray-200 px-4 py-2 space-x-2">
+                  <td className="border border-gray-200 px-4 py-2">
+                    {formatDateTime(visit.visitDateTime)}
+                    {/* {visit.visitDateTime} */}
+                  </td>
+                  <td className="border border-gray-200 px-4 py-2">
+                    {visit.clientName}
+                  </td>
+                  <td className="border border-gray-200 px-4 py-2">
+                    {visit.clientPhoneNumber}
+                  </td>
+                  <td className="border border-gray-200 px-4 py-2">
+                    {visit.clientAddress}
+                  </td>
+                  <td className="border border-gray-200 px-4 py-2">
+                    {visit.purpose}
+                  </td>
+                  <td className="border border-gray-200 px-4 py-2">
+                    {visit.feedback}
+                  </td>
+                  {/* <td className="border border-gray-200 px-4 py-2 space-x-2">
                     <button
                       onClick={() => handleEdit(visit.id)}
                       className="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600"
@@ -310,7 +362,7 @@ const VisitingForm = () => {
                     >
                       Delete
                     </button>
-                  </td>
+                  </td> */}
                 </tr>
               ))}
             </tbody>
