@@ -7,6 +7,7 @@ const EmployeeDetail = () => {
   const [user, setUser] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [visits, setVisits] = useState([]);
   const { id } = useParams();
 
   const fetchUser = async () => {
@@ -19,6 +20,7 @@ const EmployeeDetail = () => {
         }
       );
       setUser(response.data.user);
+      setVisits(response.data.visitors);
     } catch (error) {
       console.error("Error fetching user:", error);
     }
@@ -27,6 +29,30 @@ const EmployeeDetail = () => {
   useEffect(() => {
     fetchUser();
   }, [id]);
+
+  const handleDownload = () => {
+    const worksheet = XLSX.utils.json_to_sheet(visits);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Visits");
+    XLSX.writeFile(workbook, "visits.xlsx");
+  };
+
+  function formatDateTime(isoString) {
+    const date = new Date(isoString);
+
+    const formattedDate = date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+
+    const formattedTime = date.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+    return `${formattedDate} ${formattedTime}`;
+  }
 
   const handleTargetUpdate = async () => {
     try {
@@ -89,7 +115,9 @@ const EmployeeDetail = () => {
         {isEditing ? (
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700">Total</label>
+              <label className="block text-sm font-medium text-gray-700">
+                Total
+              </label>
               <input
                 type="number"
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#d86331] focus:ring-[#d86331]"
@@ -100,7 +128,9 @@ const EmployeeDetail = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">Completed</label>
+              <label className="block text-sm font-medium text-gray-700">
+                Completed
+              </label>
               <input
                 type="number"
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#d86331] focus:ring-[#d86331]"
@@ -112,7 +142,9 @@ const EmployeeDetail = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">Pending</label>
+              <label className="block text-sm font-medium text-gray-700">
+                Pending
+              </label>
               <input
                 type="number"
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#d86331] focus:ring-[#d86331]"
@@ -144,7 +176,9 @@ const EmployeeDetail = () => {
     <div className="min-h-screen flex flex-col bg-gray-100">
       <header className="bg-[#d86331] py-6 shadow-md">
         <div className="container mx-auto px-6">
-          <h1 className="text-3xl font-extrabold text-white">Employee Dashboard</h1>
+          <h1 className="text-3xl font-extrabold text-white">
+            Employee Dashboard
+          </h1>
         </div>
       </header>
 
@@ -173,16 +207,19 @@ const EmployeeDetail = () => {
                 <span className="font-medium">Phone:</span> {user.phone}
               </p>
               <p>
-                <span className="font-medium">Employee ID:</span> {user.employeeId}
+                <span className="font-medium">Employee ID:</span>{" "}
+                {user.employeeId}
               </p>
               <p>
-                <span className="font-medium">Joining Date:</span> {user.joiningDate}
+                <span className="font-medium">Joining Date:</span>{" "}
+                {user.joiningDate}
               </p>
               <p>
                 <span className="font-medium">Address:</span> {user.address}
               </p>
               <p>
-                <span className="font-medium">Aadhaar:</span> {user.aadhaarNumber}
+                <span className="font-medium">Aadhaar:</span>{" "}
+                {user.aadhaarNumber}
               </p>
             </div>
           </div>
@@ -227,6 +264,73 @@ const EmployeeDetail = () => {
                 onInputChange={handleInputChange}
               />
             </div>
+          </div>
+        </div>
+        <div className="bg-white my-10 shadow-lg rounded-lg p-6 border border-indigo-200">
+          <h2 className="text-2xl font-bold text-[#d86331] mb-4">
+            Monthly Visit Table
+          </h2>
+          <button
+            onClick={handleDownload}
+            className="bg-indigo-600 text-white px-4 py-2 rounded mb-4 hover:bg-indigo-700 transition"
+          >
+            Download Excel
+          </button>
+          <div className="overflow-x-auto">
+            <table className="w-full table-auto border-collapse border border-gray-200">
+              <thead>
+                <tr className="bg-indigo-100">
+                  <th className="border border-gray-200 px-4 py-2">
+                    Client Name
+                  </th>
+                  <th className="border border-gray-200 px-4 py-2">Phone</th>
+                  <th className="border border-gray-200 px-4 py-2">Address</th>
+                  <th className="border border-gray-200 px-4 py-2">Purpose</th>
+                  <th className="border border-gray-200 px-4 py-2">Feedback</th>
+                  <th className="border border-gray-200 px-4 py-2">Date</th>
+                  {/* <th className="border border-gray-200 px-4 py-2">Actions</th> */}
+                </tr>
+              </thead>
+              <tbody>
+                {visits?.map((visit) => (
+                  <tr key={visit.id} className="text-center">
+                    <td className="border border-gray-200 px-4 py-2">
+                      {visit.clientName}
+                    </td>
+                    <td className="border border-gray-200 px-4 py-2">
+                      {visit.clientPhoneNumber}
+                    </td>
+                    <td className="border border-gray-200 px-4 py-2">
+                      {visit.clientAddress}
+                    </td>
+                    <td className="border border-gray-200 px-4 py-2">
+                      {visit.purpose}
+                    </td>
+                    <td className="border border-gray-200 px-4 py-2">
+                      {visit.feedback}
+                    </td>
+                    <td className="border border-gray-200 px-4 py-2">
+                      {formatDateTime(visit.visitDateTime)}
+                      {/* {visit.visitDateTime} */}
+                    </td>
+                    {/* <td className="border border-gray-200 px-4 py-2 space-x-2">
+                    <button
+                      onClick={() => handleEdit(visit.id)}
+                      className="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(visit.id)}
+                      className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
+                    >
+                      Delete
+                    </button>
+                  </td> */}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </main>

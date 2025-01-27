@@ -316,7 +316,6 @@ const VisitingForm = () => {
           <table className="w-full table-auto border-collapse border border-gray-200">
             <thead>
               <tr className="bg-indigo-100">
-                <th className="border border-gray-200 px-4 py-2">Date</th>
                 <th className="border border-gray-200 px-4 py-2">
                   Client Name
                 </th>
@@ -324,16 +323,13 @@ const VisitingForm = () => {
                 <th className="border border-gray-200 px-4 py-2">Address</th>
                 <th className="border border-gray-200 px-4 py-2">Purpose</th>
                 <th className="border border-gray-200 px-4 py-2">Feedback</th>
+                <th className="border border-gray-200 px-4 py-2">Date</th>
                 {/* <th className="border border-gray-200 px-4 py-2">Actions</th> */}
               </tr>
             </thead>
             <tbody>
               {visits?.map((visit) => (
                 <tr key={visit.id} className="text-center">
-                  <td className="border border-gray-200 px-4 py-2">
-                    {formatDateTime(visit.visitDateTime)}
-                    {/* {visit.visitDateTime} */}
-                  </td>
                   <td className="border border-gray-200 px-4 py-2">
                     {visit.clientName}
                   </td>
@@ -348,6 +344,10 @@ const VisitingForm = () => {
                   </td>
                   <td className="border border-gray-200 px-4 py-2">
                     {visit.feedback}
+                  </td>
+                  <td className="border border-gray-200 px-4 py-2">
+                    {formatDateTime(visit.visitDateTime)}
+                    {/* {visit.visitDateTime} */}
                   </td>
                   {/* <td className="border border-gray-200 px-4 py-2 space-x-2">
                     <button

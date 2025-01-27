@@ -41,11 +41,19 @@ const MonthlyReportPage = () => {
   }, []);
 
   if (isLoading) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        Loading...
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="flex items-center justify-center min-h-screen text-red-500">Error: {error}</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen text-red-500">
+        Error: {error}
+      </div>
+    );
   }
 
   const rankedEmployees = reportData.topEmployees
@@ -59,7 +67,9 @@ const MonthlyReportPage = () => {
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-orange-100 to-orange-50">
       {/* Header */}
       <header className="text-center bg-[#f29871] text-white py-8 shadow-md">
-        <h1 className="text-2xl sm:text-4xl font-bold">Monthly Achievement Report</h1>
+        <h1 className="text-2xl sm:text-4xl font-bold">
+          Monthly Achievement Report
+        </h1>
         <p className="text-sm sm:text-lg italic mt-2">
           {reportData.message || "Insights into employee performance"}
         </p>
@@ -76,12 +86,22 @@ const MonthlyReportPage = () => {
             <table className="w-full border-collapse border border-gray-200 text-left">
               <thead>
                 <tr className="bg-[#f29871] text-white">
-                  <th className="p-2 sm:p-4 border border-gray-200">Rank</th>
-                  <th className="p-2 sm:p-4 border border-gray-200">Name</th>
-                  <th className="p-2 sm:p-4 border border-gray-200">Achievement (%)</th>
-                  <th className="p-2 sm:p-4 border border-gray-200">Battery Sales</th>
-                  <th className="p-2 sm:p-4 border border-gray-200">E-Rickshaw Sales</th>
-                  <th className="p-2 sm:p-4 border border-gray-200">Scooty Sales</th>
+                  <th className="p-2 sm:p-4 border border-gray-200 text-center">
+                    Rank
+                  </th>
+                  <th className="p-2 sm:p-4 border border-gray-200 text-center">
+                    Name
+                  </th>
+                  {/* <th className="p-2 sm:p-4 border border-gray-200">Achievement (%)</th> */}
+                  <th className="p-2 sm:p-4 border border-gray-200 text-center">
+                    Battery Sales
+                  </th>
+                  <th className="p-2 sm:p-4 border border-gray-200 text-center">
+                    E-Rickshaw Sales
+                  </th>
+                  <th className="p-2 sm:p-4 border border-gray-200 text-center">
+                    Scooty Sales
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -93,10 +113,12 @@ const MonthlyReportPage = () => {
                     <td className="p-2 sm:p-4 border border-gray-200 text-center font-semibold">
                       {employee.rank}
                     </td>
-                    <td className="p-2 sm:p-4 border border-gray-200">{employee.name}</td>
                     <td className="p-2 sm:p-4 border border-gray-200 text-center">
-                      {employee.percentage}%
+                      {employee.name}
                     </td>
+                    {/* <td className="p-2 sm:p-4 border border-gray-200 text-center">
+                      {employee.percentage}%
+                    </td> */}
                     <td className="p-2 sm:p-4 border border-gray-200 text-center">
                       {employee.sales.battery}
                     </td>
@@ -116,7 +138,9 @@ const MonthlyReportPage = () => {
 
       {/* Footer */}
       <footer className="text-center py-6 bg-[#f29871] text-white">
-        <p className="text-xs sm:text-sm">&copy; 2024 E-ashwa. All rights reserved.</p>
+        <p className="text-xs sm:text-sm">
+          &copy; 2024 E-ashwa. All rights reserved.
+        </p>
       </footer>
     </div>
   );
