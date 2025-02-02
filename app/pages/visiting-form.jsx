@@ -14,6 +14,7 @@ const VisitingForm = () => {
   });
 
   const [visits, setVisits] = useState([]);
+  const [leads, setLeads] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [authToken, setAuthToken] = useState("");
@@ -24,6 +25,7 @@ const VisitingForm = () => {
     if (storedToken) {
       setAuthToken(storedToken);
       fetchVisitors(storedToken);
+      fetchLeads(storedToken);
     }
   }, []);
 
@@ -40,11 +42,29 @@ const VisitingForm = () => {
         }
       );
 
-      console.log("Get-visitor", response);
       if (response.status === 200) {
-        console.log("hey");
         setVisits(response.data.visitorDetails);
-        localStorage.setItem("visits", JSON.stringify(response.data));
+      }
+    } catch (error) {
+      console.error("Error fetching visitors:", error);
+      alert("Failed to fetch visitors.");
+    }
+  };
+
+  const fetchLeads = async (token) => {
+    try {
+      const response = await axios.get(
+        "https://backend-eashwa.vercel.app/api/user/leads",
+
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        setLeads(response.data.leads);
       }
     } catch (error) {
       console.error("Error fetching visitors:", error);
@@ -55,6 +75,54 @@ const VisitingForm = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleLeadDownload = () => {
+    try {
+      const excelData = leads?.map((lead, index) => ({
+        "Sr. No.": index + 1,
+        "Lead Date": new Date(lead.leadDate).toLocaleDateString(),
+        "Calling Date": new Date(lead.callingDate).toLocaleDateString(),
+        "Agent Name": lead.agentName,
+        "Customer Name": lead.customerName,
+        "Mobile No": lead.mobileNumber,
+        Occupation: lead.occupation,
+        Location: lead.location,
+        Town: lead.town,
+        State: lead.state,
+        Status: lead.status,
+        Remark: lead.remark,
+        "Interest Status": lead.interestedAndNotInterested,
+        "Office Visit": lead.officeVisitRequired ? "Yes" : "No",
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(excelData);
+
+      const columnWidths = [
+        { wch: 8 },
+        { wch: 12 },
+        { wch: 12 },
+        { wch: 15 },
+        { wch: 20 },
+        { wch: 15 },
+        { wch: 15 },
+        { wch: 20 },
+        { wch: 15 },
+        { wch: 15 },
+        { wch: 10 },
+        { wch: 25 },
+        { wch: 15 },
+        { wch: 12 },
+      ];
+      worksheet["!cols"] = columnWidths;
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Leads");
+
+      XLSX.writeFile(workbook, `Leads_${new Date().toLocaleDateString()}.xlsx`);
+    } catch (error) {
+      console.error("Error downloading leads:", error);
+      alert("Error downloading leads. Please try again.");
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -367,6 +435,128 @@ const VisitingForm = () => {
               ))}
             </tbody>
           </table>
+        </div>
+      </div>
+      <div className="bg-white my-10 shadow-lg rounded-lg p-6 border border-indigo-200">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-bold text-[#d86331]">Lead Table</h2>
+          <div className="flex gap-2">
+            <button
+              onClick={handleLeadDownload}
+              className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition"
+            >
+              Download Leads
+            </button>
+          </div>
+        </div>
+
+        <div className="overflow-x-scroll">
+          {leads.length === 0 ? (
+            <div className="text-center py-4">No leads found</div>
+          ) : (
+            <table className="w-full table-auto border-collapse border border-gray-200">
+              <thead>
+                <tr className="bg-indigo-100">
+                  <th className="border border-gray-200 px-4 py-2">Sr. No.</th>
+                  <th className="border border-gray-200 px-4 py-2">
+                    Lead Date
+                  </th>
+                  <th className="border border-gray-200 px-4 py-2">
+                    Calling Date
+                  </th>
+                  <th className="border border-gray-200 px-4 py-2">
+                    Agent Name
+                  </th>
+                  <th className="border border-gray-200 px-4 py-2">
+                    Customer Name
+                  </th>
+                  <th className="border border-gray-200 px-4 py-2">
+                    Mobile Number
+                  </th>
+                  <th className="border border-gray-200 px-4 py-2">
+                    Occupation
+                  </th>
+                  <th className="border border-gray-200 px-4 py-2">Location</th>
+                  <th className="border border-gray-200 px-4 py-2">Town</th>
+                  <th className="border border-gray-200 px-4 py-2">State</th>
+                  <th className="border border-gray-200 px-4 py-2">Status</th>
+                  <th className="border border-gray-200 px-4 py-2">Remark</th>
+                  <th className="border border-gray-200 px-4 py-2">
+                    Interest Status
+                  </th>
+                  <th className="border border-gray-200 px-4 py-2">
+                    Office Visit
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {leads.map((lead, index) => (
+                  <tr key={lead._id} className="text-center hover:bg-gray-50">
+                    <td className="border border-gray-200 px-4 py-2">
+                      {index + 1}
+                    </td>
+                    <td className="border border-gray-200 px-4 py-2">
+                      {new Date(lead.leadDate).toLocaleDateString()}
+                    </td>
+                    <td className="border border-gray-200 px-4 py-2">
+                      {new Date(lead.callingDate).toLocaleDateString()}
+                    </td>
+                    <td className="border border-gray-200 px-4 py-2">
+                      {lead.agentName}
+                    </td>
+                    <td className="border border-gray-200 px-4 py-2">
+                      {lead.customerName}
+                    </td>
+                    <td className="border border-gray-200 px-4 py-2">
+                      {lead.mobileNumber}
+                    </td>
+                    <td className="border border-gray-200 px-4 py-2">
+                      {lead.occupation}
+                    </td>
+                    <td className="border border-gray-200 px-4 py-2">
+                      {lead.location}
+                    </td>
+                    <td className="border border-gray-200 px-4 py-2">
+                      {lead.town}
+                    </td>
+                    <td className="border border-gray-200 px-4 py-2">
+                      {lead.state}
+                    </td>
+                    <td className="border border-gray-200 px-4 py-2">
+                      <span
+                        className={`px-2 py-1 rounded-full text-sm ${
+                          lead.status.toLowerCase() === "active"
+                            ? "bg-green-100 text-green-800"
+                            : lead.status.toLowerCase() === "pending"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
+                      >
+                        {lead.status}
+                      </span>
+                    </td>
+                    <td className="border border-gray-200 px-4 py-2">
+                      {lead.remark}
+                    </td>
+                    <td className="border border-gray-200 px-4 py-2">
+                      {lead.interestedAndNotInterested}
+                    </td>
+                    <td className="border border-gray-200 px-4 py-2">
+                      <span
+                        className={`px-2 py-1 rounded-full text-sm ${
+                          lead.officeVisitRequired
+                            ? "bg-green-100 text-green-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
+                      >
+                        {lead.officeVisitRequired ? "Yes" : "No"}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
     </div>
