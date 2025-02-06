@@ -77,24 +77,7 @@ const EmployeeDash = () => {
               </p>
             </div>
           </div>
-          <div
-            onClick={() => navigateTo("/leads")}
-            className="cursor-pointer transform hover:scale-105 transition-transform bg-white shadow-md rounded-lg overflow-hidden"
-          >
-            <img
-              src="/leads.jpeg"
-              alt="Employee Login"
-              className="w-full h-52 object-cover"
-            />
-            <div className="p-6">
-              <h2 className="text-3xl font-bold text-indigo-600">
-              Leads Managament System(Testing)
-              </h2>
-              <p className="text-gray-600 mt-4">
-              Here we generate the leads for the Employees
-              </p>
-            </div>
-          </div>
+       
         </section>
       </main>
 

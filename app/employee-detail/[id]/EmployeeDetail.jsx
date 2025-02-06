@@ -26,7 +26,7 @@ const EmployeeDetail = () => {
       formData.append("file", file);
 
       const uploadResponse = await axios.post(
-        "https://https://backend-eashwa.vercel.app/api/images/upload-excel",
+        "https://backend-eashwa.vercel.app/api/images/upload-excel",
         formData,
         {
           headers: {
@@ -39,7 +39,7 @@ const EmployeeDetail = () => {
       const fileUrl = uploadResponse.data.fileUrl;
 
       await axios.post(
-        "https://https://backend-eashwa.vercel.app/user/process-leads",
+        "https://backend-eashwa.vercel.app/api/user/process-leads",
         {
           fileUrl: fileUrl,
           employeeId: id,
@@ -180,7 +180,7 @@ const EmployeeDetail = () => {
           pending:
             field === "total"
               ? (parseInt(value) || 0) -
-                prev.targetAchieved[productType].completed
+              prev.targetAchieved[productType].completed
               : prev.targetAchieved[productType].total - (parseInt(value) || 0),
         },
       },
@@ -368,8 +368,8 @@ const EmployeeDetail = () => {
                 {isLoading
                   ? "Updating..."
                   : isEditing
-                  ? "Save Changes"
-                  : "Edit Targets"}
+                    ? "Save Changes"
+                    : "Edit Targets"}
               </button>
               <button
                 className="bg-[#d86331] text-white px-6 py-2 rounded-lg hover:bg-[#c55a2d] transition-colors disabled:opacity-50"
@@ -577,13 +577,12 @@ const EmployeeDetail = () => {
                       </td>
                       <td className="border border-gray-200 px-4 py-2">
                         <span
-                          className={`px-2 py-1 rounded-full text-sm ${
-                            lead.status.toLowerCase() === "active"
+                          className={`px-2 py-1 rounded-full text-sm ${lead.status.toLowerCase() === "active"
                               ? "bg-green-100 text-green-800"
                               : lead.status.toLowerCase() === "pending"
-                              ? "bg-yellow-100 text-yellow-800"
-                              : "bg-red-100 text-red-800"
-                          }`}
+                                ? "bg-yellow-100 text-yellow-800"
+                                : "bg-red-100 text-red-800"
+                            }`}
                         >
                           {lead.status}
                         </span>
@@ -596,11 +595,10 @@ const EmployeeDetail = () => {
                       </td>
                       <td className="border border-gray-200 px-4 py-2">
                         <span
-                          className={`px-2 py-1 rounded-full text-sm ${
-                            lead.officeVisitRequired
+                          className={`px-2 py-1 rounded-full text-sm ${lead.officeVisitRequired
                               ? "bg-green-100 text-green-800"
                               : "bg-red-100 text-red-800"
-                          }`}
+                            }`}
                         >
                           {lead.officeVisitRequired ? "Yes" : "No"}
                         </span>
