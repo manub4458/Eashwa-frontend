@@ -26,7 +26,7 @@ const EmployeeDetail = () => {
       formData.append("file", file);
 
       const uploadResponse = await axios.post(
-        "https://https://backend-eashwa.vercel.app/api/images/upload-excel",
+        "https://backend-eashwa.vercel.app/api/images/upload-excel",
         formData,
         {
           headers: {
@@ -39,7 +39,7 @@ const EmployeeDetail = () => {
       const fileUrl = uploadResponse.data.fileUrl;
 
       await axios.post(
-        "https://https://backend-eashwa.vercel.app/user/process-leads",
+        "https://backend-eashwa.vercel.app/api/user/process-leads",
         {
           fileUrl: fileUrl,
           employeeId: id,
