@@ -9,6 +9,8 @@ const Employe = () => {
   const [eRickshawWork, setERickshawWork] = useState(0);
   const [scootyWork, setScootyWork] = useState(0);
   const [user, setUser] = useState(null);
+  const [uploadedLeads, setUploadedLeads] = useState([]);
+  const [selectedFile, setSelectedFile] = useState(null);
   const router = useRouter();
 
   // API call function
@@ -79,6 +81,46 @@ const Employe = () => {
       console.error("Error fetching user data:", error);
     }
   };
+  const fetchLeadsHistory = async (token) => {
+    try {
+      const response = await fetch("https://backend-eashwa.vercel.app/api/leads/history", {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) return;
+      const data = await response.json();
+      setUploadedLeads(data.leads);
+    } catch (error) {
+      console.error("Error fetching leads history:", error);
+    }
+  };
+
+  const handleFileChange = (event) => {
+    setSelectedFile(event.target.files[0]);
+  };
+
+  const handleUpload = async () => {
+    if (!selectedFile) return alert("Please select a file first");
+    const formData = new FormData();
+    formData.append("leadFile", selectedFile);
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        "https://backend-eashwa.vercel.app/api/images/upload-excel",
+        {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+      if (!response.ok) throw new Error("Upload failed");
+      alert("File uploaded successfully");
+      setSelectedFile(null);
+      fetchLeadsHistory(token);
+    } catch (error) {
+      console.error("Error uploading file:", error);
+    }
+  };
+
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-indigo-50 to-indigo-100">
@@ -159,29 +201,7 @@ const Employe = () => {
               <p className="text-gray-700">
                 <strong>Pending Target:</strong> {user?.targetAchieved.battery.pending|| "N/A"}
               </p>
-              {/* <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  const form = e.target;
-                  const workCompleted = form.workCompleted.value;
-                  handleEScootyWorkUpdate(workCompleted);
-                  form.reset();
-                }}
-              >
-                <input
-                  type="number"
-                  name="workCompleted"
-                  placeholder="Enter E-Scooty work"
-                  className="p-2 border rounded w-full mb-2"
-                  required
-                />
-                <button
-                  type="submit"
-                  className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded"
-                >
-                  Submit
-                </button>
-              </form> */}
+             
             </div>
 
             {/* E-Rickshaws Section */}
@@ -199,29 +219,7 @@ const Employe = () => {
               <p className="text-gray-700">
                 <strong>Pending Target:</strong> {user?.targetAchieved.eRickshaw.pending|| "N/A"}
               </p>
-              {/* <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  const form = e.target;
-                  const workCompleted = form.workCompleted.value;
-                  handleERickshawWorkUpdate(workCompleted);
-                  form.reset();
-                }}
-              >
-                <input
-                  type="number"
-                  name="workCompleted"
-                  placeholder="Enter E-Rickshaw work"
-                  className="p-2 border rounded w-full mb-2"
-                  required
-                />
-                <button
-                  type="submit"
-                  className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded"
-                >
-                  Submit
-                </button>
-              </form> */}
+             
             </div>
 
             {/* Scooty Section */}
@@ -239,29 +237,7 @@ const Employe = () => {
               <p className="text-gray-700">
                 <strong>Pending Target:</strong> {user?.targetAchieved.scooty.pending|| "N/A"}
               </p>
-              {/* <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  const form = e.target;
-                  const workCompleted = form.workCompleted.value;
-                  handleScootyWorkUpdate(workCompleted);
-                  form.reset();
-                }}
-              >
-                <input
-                  type="number"
-                  name="workCompleted"
-                  placeholder="Enter Scooty work"
-                  className="p-2 border rounded w-full mb-2"
-                  required
-                />
-                <button
-                  type="submit"
-                  className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded"
-                >
-                  Submit
-                </button>
-              </form> */}
+             
             </div>
           </div>
         </section>
@@ -273,23 +249,67 @@ const Employe = () => {
           </h2>
           <VisitingForm />
         </section>
-
-        {/* History Section */}
-        <section className="bg-gray-50 rounded-xl shadow-inner p-8 border border-gray-300">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">Monthly </h2>
-          <p className="text-gray-600">History of past visits will be displayed here...</p>
+        <main className="container mx-auto px-6 py-12 space-y-12">
+        <section className="bg-white rounded-xl shadow-md p-8">
+          <h2 className="text-2xl font-semibold text-[#d86331] mb-4">Upload Leads</h2>
+          <div className="flex items-center space-x-4">
+            <input type="file" onChange={handleFileChange} className="border p-2 rounded" />
+            <button
+              onClick={handleUpload}
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            >
+              Upload
+            </button>
+          </div>
         </section>
 
+        <section className="bg-white rounded-xl shadow-md p-8">
+          <h2 className="text-2xl font-semibold text-[#d86331] mb-4">Leads History</h2>
+          <table className="min-w-full bg-white border border-gray-200">
+            <thead>
+              <tr>
+                <th className="border p-2">Date</th>
+                <th className="border p-2">File Name</th>
+                <th className="border p-2">Download</th>
+              </tr>
+            </thead>
+            <tbody>
+              {uploadedLeads.length > 0 ? (
+                uploadedLeads.map((lead, index) => (
+                  <tr key={index}>
+                    <td className="border p-2">{lead.date}</td>
+                    <td className="border p-2">{lead.fileName}</td>
+                    <td className="border p-2">
+                      <a href={lead.fileUrl} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
+                        Download
+                      </a>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="3" className="border p-2 text-center">No leads uploaded yet.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </section>
+      </main>   
+        {/* History Section */}
+        {/* <section className="bg-gray-50 rounded-xl shadow-inner p-8 border border-gray-300">
+          <h2 className="text-2xl font-semibold text-gray-800 mb-4">Monthly </h2>
+          <p className="text-gray-600">History of past visits will be displayed here...</p>
+        </section> */}
+
         {/* Achievements Section */}
-        <section className="bg-gradient-to-r from-blue-50 to-indigo-100 rounded-xl shadow-md p-8">
+        {/* <section className="bg-gradient-to-r from-blue-50 to-indigo-100 rounded-xl shadow-md p-8">
           <h2 className="text-2xl font-semibold text-indigo-800 mb-4">Achievements</h2>
           <div className="text-gray-700">
             <p className="mb-2">🎉 Top Sales Performer</p>
             <p>Keep striving for excellence!</p>
           </div>
-        </section>
-        {/* Rest of the sections: Targets, Visiting Form, History, Achievements */}
-        {/* ... Keep the remaining sections the same as in the provided code ... */}
+        </section> */}
+         
       </main>
     </div>
   );
