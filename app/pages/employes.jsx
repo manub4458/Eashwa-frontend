@@ -13,18 +13,21 @@ const Employe = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const router = useRouter();
 
-  // API call function
+  // API call function to update targets
   const updateTarget = async (key, value) => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("https://backend-eashwa.vercel.app/api/user/update-completed-target", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ key, value }),
-      });
+      const response = await fetch(
+        "https://backend-eashwa.vercel.app/api/user/update-completed-target",
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ key, value }),
+        }
+      );
 
       if (!response.ok) {
         console.error("Error updating target:", key);
@@ -38,13 +41,14 @@ const Employe = () => {
     }
   };
 
+  // Handle logout
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     router.push("/employee-dash");
   };
 
-  // Load user data from local storage
+  // Load user data from local storage or fetch from backend
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -60,14 +64,18 @@ const Employe = () => {
     }
   }, [router]);
 
+  // Fetch user data from backend
   const fetchUserData = async (token) => {
     try {
-      const response = await fetch("https://backend-eashwa.vercel.app/api/user/profile", {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        "https://backend-eashwa.vercel.app/api/user/profile",
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (!response.ok) {
         console.error("Failed to fetch user data");
@@ -81,12 +89,17 @@ const Employe = () => {
       console.error("Error fetching user data:", error);
     }
   };
+
+  // Fetch leads history from backend
   const fetchLeadsHistory = async (token) => {
     try {
-      const response = await fetch("https://backend-eashwa.vercel.app/api/leads/history", {
-        method: "GET",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await fetch(
+        "https://backend-eashwa.vercel.app/api/leads/history",
+        {
+          method: "GET",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       if (!response.ok) return;
       const data = await response.json();
       setUploadedLeads(data.leads);
@@ -95,32 +108,40 @@ const Employe = () => {
     }
   };
 
+  // Handle file selection
   const handleFileChange = (event) => {
     setSelectedFile(event.target.files[0]);
   };
 
+  // Handle file upload
   const handleUpload = async () => {
     if (!selectedFile) return alert("Please select a file first");
+  
     const formData = new FormData();
-    formData.append("leadFile", selectedFile);
+    formData.append("file", selectedFile); // Use "file" as the field name
+  
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
         "https://backend-eashwa.vercel.app/api/images/upload-excel",
         {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData,
-      });
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+          body: formData,
+        }
+      );
+  
       if (!response.ok) throw new Error("Upload failed");
+  
+      const data = await response.json();
       alert("File uploaded successfully");
       setSelectedFile(null);
-      fetchLeadsHistory(token);
+      fetchLeadsHistory(token); // Refresh the leads history
     } catch (error) {
       console.error("Error uploading file:", error);
+      alert("Failed to upload file. Please try again.");
     }
   };
-
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-indigo-50 to-indigo-100">
@@ -129,7 +150,11 @@ const Employe = () => {
         <div className="container mx-auto px-6 flex justify-between items-center">
           <Link href="/employee-dash">
             <div className="flex items-center">
-              <img src="/logo.png" alt="Logo" className="w-32 h-auto object-cover mr-4" />
+              <img
+                src="/logo.png"
+                alt="Logo"
+                className="w-32 h-auto object-cover mr-4"
+              />
             </div>
           </Link>
           <div>
@@ -160,31 +185,39 @@ const Employe = () => {
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <p className="text-gray-700">
-                <strong className="capitalize">Email:</strong> {user?.email || "N/A"}
+                <strong className="capitalize">Email:</strong>{" "}
+                {user?.email || "N/A"}
               </p>
               <p className="text-gray-700">
-                <strong className="capitalize">Phone:</strong> {user?.phone || "N/A"}
+                <strong className="capitalize">Phone:</strong>{" "}
+                {user?.phone || "N/A"}
               </p>
               <p className="text-gray-700">
-                <strong className="capitalize">Address:</strong> {user?.address || "N/A"}
+                <strong className="capitalize">Address:</strong>{" "}
+                {user?.address || "N/A"}
               </p>
               <p className="text-gray-700">
-                <strong className="capitalize">Aadhaar Number:</strong> {user?.aadhaarNumber || "N/A"}
+                <strong className="capitalize">Aadhaar Number:</strong>{" "}
+                {user?.aadhaarNumber || "N/A"}
               </p>
               <p className="text-gray-700">
-                <strong className="capitalize">Employee ID:</strong> {user?.employeeId || "N/A"}
+                <strong className="capitalize">Employee ID:</strong>{" "}
+                {user?.employeeId || "N/A"}
               </p>
               <p className="text-gray-700">
-                <strong className="capitalize">Joining Date:</strong> {user?.joiningDate || "N/A"}
+                <strong className="capitalize">Joining Date:</strong>{" "}
+                {user?.joiningDate || "N/A"}
               </p>
               <p className="text-gray-700">
-                <strong className="capitalize">Designation:</strong> {user?.post || "N/A"}
+                <strong className="capitalize">Designation:</strong>{" "}
+                {user?.post || "N/A"}
               </p>
             </div>
           </div>
         </section>
-{/* Targets Section */}
-<section className="bg-white rounded-xl shadow-lg p-8 border-2 border-indigo-400">
+
+        {/* Targets Section */}
+        <section className="bg-white rounded-xl shadow-lg p-8 border-2 border-indigo-400">
           <h2 className="text-3xl font-semibold text-[#d86331] mb-6 text-center">
             Your Monthly Targets
           </h2>
@@ -193,15 +226,17 @@ const Employe = () => {
             <div className="p-6 bg-indigo-50 rounded-lg shadow-md">
               <h3 className="text-xl font-bold text-[#d86331] mb-2">E-Scooty</h3>
               <p className="text-gray-700">
-                <strong>Total Target:</strong> {user?.targetAchieved.battery.total|| "N/A"}
+                <strong>Total Target:</strong>{" "}
+                {user?.targetAchieved.battery.total || "N/A"}
               </p>
               <p className="text-gray-700">
-                <strong>Completed Target:</strong> {user?.targetAchieved.battery.completed|| "N/A"}
+                <strong>Completed Target:</strong>{" "}
+                {user?.targetAchieved.battery.completed || "N/A"}
               </p>
               <p className="text-gray-700">
-                <strong>Pending Target:</strong> {user?.targetAchieved.battery.pending|| "N/A"}
+                <strong>Pending Target:</strong>{" "}
+                {user?.targetAchieved.battery.pending || "N/A"}
               </p>
-             
             </div>
 
             {/* E-Rickshaws Section */}
@@ -210,34 +245,34 @@ const Employe = () => {
                 E-Rickshaws
               </h3>
               <p className="text-gray-700">
-              <strong>Total Target:</strong> {user?.targetAchieved.eRickshaw.total|| "N/A"}
-
+                <strong>Total Target:</strong>{" "}
+                {user?.targetAchieved.eRickshaw.total || "N/A"}
               </p>
               <p className="text-gray-700">
-                <strong>Completed Target:</strong> {user?.targetAchieved.eRickshaw.completed|| "N/A"}
+                <strong>Completed Target:</strong>{" "}
+                {user?.targetAchieved.eRickshaw.completed || "N/A"}
               </p>
               <p className="text-gray-700">
-                <strong>Pending Target:</strong> {user?.targetAchieved.eRickshaw.pending|| "N/A"}
+                <strong>Pending Target:</strong>{" "}
+                {user?.targetAchieved.eRickshaw.pending || "N/A"}
               </p>
-             
             </div>
 
             {/* Scooty Section */}
             <div className="p-6 bg-indigo-50 rounded-lg shadow-md">
-              <h3 className="text-xl font-bold text-[#d86331] mb-2">
-               Battery
-              </h3>
+              <h3 className="text-xl font-bold text-[#d86331] mb-2">Battery</h3>
               <p className="text-gray-700">
-              <strong>Total Target:</strong> {user?.targetAchieved.scooty.total|| "N/A"}
-
+                <strong>Total Target:</strong>{" "}
+                {user?.targetAchieved.scooty.total || "N/A"}
               </p>
               <p className="text-gray-700">
-                <strong>Completed Target:</strong> {user?.targetAchieved.scooty.completed|| "N/A"}
+                <strong>Completed Target:</strong>{" "}
+                {user?.targetAchieved.scooty.completed || "N/A"}
               </p>
               <p className="text-gray-700">
-                <strong>Pending Target:</strong> {user?.targetAchieved.scooty.pending|| "N/A"}
+                <strong>Pending Target:</strong>{" "}
+                {user?.targetAchieved.scooty.pending || "N/A"}
               </p>
-             
             </div>
           </div>
         </section>
@@ -249,11 +284,18 @@ const Employe = () => {
           </h2>
           <VisitingForm />
         </section>
-        <main className="container mx-auto px-6 py-12 space-y-12">
+
+        {/* Upload Leads Section */}
         <section className="bg-white rounded-xl shadow-md p-8">
-          <h2 className="text-2xl font-semibold text-[#d86331] mb-4">Upload Leads</h2>
+          <h2 className="text-2xl font-semibold text-[#d86331] mb-4">
+            Upload Leads
+          </h2>
           <div className="flex items-center space-x-4">
-            <input type="file" onChange={handleFileChange} className="border p-2 rounded" />
+            <input
+              type="file"
+              onChange={handleFileChange}
+              className="border p-2 rounded"
+            />
             <button
               onClick={handleUpload}
               className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
@@ -263,8 +305,11 @@ const Employe = () => {
           </div>
         </section>
 
+        {/* Leads History Section */}
         <section className="bg-white rounded-xl shadow-md p-8">
-          <h2 className="text-2xl font-semibold text-[#d86331] mb-4">Leads History</h2>
+          <h2 className="text-2xl font-semibold text-[#d86331] mb-4">
+            Leads History
+          </h2>
           <table className="min-w-full bg-white border border-gray-200">
             <thead>
               <tr>
@@ -280,7 +325,12 @@ const Employe = () => {
                     <td className="border p-2">{lead.date}</td>
                     <td className="border p-2">{lead.fileName}</td>
                     <td className="border p-2">
-                      <a href={lead.fileUrl} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
+                      <a
+                        href={lead.fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-500 underline"
+                      >
                         Download
                       </a>
                     </td>
@@ -288,28 +338,14 @@ const Employe = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="3" className="border p-2 text-center">No leads uploaded yet.</td>
+                  <td colSpan="3" className="border p-2 text-center">
+                    No leads uploaded yet.
+                  </td>
                 </tr>
               )}
             </tbody>
           </table>
         </section>
-      </main>   
-        {/* History Section */}
-        {/* <section className="bg-gray-50 rounded-xl shadow-inner p-8 border border-gray-300">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">Monthly </h2>
-          <p className="text-gray-600">History of past visits will be displayed here...</p>
-        </section> */}
-
-        {/* Achievements Section */}
-        {/* <section className="bg-gradient-to-r from-blue-50 to-indigo-100 rounded-xl shadow-md p-8">
-          <h2 className="text-2xl font-semibold text-indigo-800 mb-4">Achievements</h2>
-          <div className="text-gray-700">
-            <p className="mb-2">🎉 Top Sales Performer</p>
-            <p>Keep striving for excellence!</p>
-          </div>
-        </section> */}
-         
       </main>
     </div>
   );
