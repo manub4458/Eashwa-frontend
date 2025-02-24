@@ -224,7 +224,7 @@ const Employe = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-center">
             {/* E-Scooty Section */}
             <div className="p-6 bg-indigo-50 rounded-lg shadow-md">
-              <h3 className="text-xl font-bold text-[#d86331] mb-2">E-Scooty</h3>
+              <h3 className="text-xl font-bold text-[#d86331] mb-2">Battery</h3>
               <p className="text-gray-700">
                 <strong>Total Target:</strong>{" "}
                 {user?.targetAchieved.battery.total || "N/A"}
@@ -260,7 +260,7 @@ const Employe = () => {
 
             {/* Scooty Section */}
             <div className="p-6 bg-indigo-50 rounded-lg shadow-md">
-              <h3 className="text-xl font-bold text-[#d86331] mb-2">Battery</h3>
+              <h3 className="text-xl font-bold text-[#d86331] mb-2">E-Scooty</h3>
               <p className="text-gray-700">
                 <strong>Total Target:</strong>{" "}
                 {user?.targetAchieved.scooty.total || "N/A"}
