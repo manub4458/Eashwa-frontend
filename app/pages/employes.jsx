@@ -222,22 +222,24 @@ const Employe = () => {
             Your Monthly Targets
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-center">
-            {/* E-Scooty Section */}
-            <div className="p-6 bg-indigo-50 rounded-lg shadow-md">
-              <h3 className="text-xl font-bold text-[#d86331] mb-2">Battery</h3>
+              {/* Scooty Section */}
+              <div className="p-6 bg-indigo-50 rounded-lg shadow-md">
+              <h3 className="text-xl font-bold text-[#d86331] mb-2">E-Scooty</h3>
               <p className="text-gray-700">
                 <strong>Total Target:</strong>{" "}
-                {user?.targetAchieved.battery.total || "N/A"}
+                {user?.targetAchieved.scooty.total || "N/A"}
               </p>
               <p className="text-gray-700">
                 <strong>Completed Target:</strong>{" "}
-                {user?.targetAchieved.battery.completed || "N/A"}
+                {user?.targetAchieved.scooty.completed || "N/A"}
               </p>
               <p className="text-gray-700">
                 <strong>Pending Target:</strong>{" "}
-                {user?.targetAchieved.battery.pending || "N/A"}
+                {user?.targetAchieved.scooty.pending || "N/A"}
               </p>
             </div>
+
+          
 
             {/* E-Rickshaws Section */}
             <div className="p-6 bg-indigo-50 rounded-lg shadow-md">
@@ -258,20 +260,20 @@ const Employe = () => {
               </p>
             </div>
 
-            {/* Scooty Section */}
-            <div className="p-6 bg-indigo-50 rounded-lg shadow-md">
-              <h3 className="text-xl font-bold text-[#d86331] mb-2">E-Scooty</h3>
+          {/* Battery Section */}
+          <div className="p-6 bg-indigo-50 rounded-lg shadow-md">
+              <h3 className="text-xl font-bold text-[#d86331] mb-2">Battery</h3>
               <p className="text-gray-700">
                 <strong>Total Target:</strong>{" "}
-                {user?.targetAchieved.scooty.total || "N/A"}
+                {user?.targetAchieved.battery.total || "N/A"}
               </p>
               <p className="text-gray-700">
                 <strong>Completed Target:</strong>{" "}
-                {user?.targetAchieved.scooty.completed || "N/A"}
+                {user?.targetAchieved.battery.completed || "N/A"}
               </p>
               <p className="text-gray-700">
                 <strong>Pending Target:</strong>{" "}
-                {user?.targetAchieved.scooty.pending || "N/A"}
+                {user?.targetAchieved.battery.pending || "N/A"}
               </p>
             </div>
           </div>
