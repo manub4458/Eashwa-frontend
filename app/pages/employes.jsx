@@ -1,46 +1,34 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import VisitingForm from "./visiting-form";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import axios from "axios";
 
 const Employe = () => {
-  const [eScootyWork, setEScootyWork] = useState(0);
-  const [eRickshawWork, setERickshawWork] = useState(0);
-  const [scootyWork, setScootyWork] = useState(0);
   const [user, setUser] = useState(null);
   const [uploadedLeads, setUploadedLeads] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef(null);
   const router = useRouter();
 
-  // API call function to update targets
-  const updateTarget = async (key, value) => {
-    try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(
-        "https://backend-eashwa.vercel.app/api/user/update-completed-target",
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ key, value }),
-        }
-      );
+  function formatDateTime(isoString) {
+    const date = new Date(isoString);
 
-      if (!response.ok) {
-        console.error("Error updating target:", key);
-        return;
-      }
+    const formattedDate = date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
 
-      const data = await response.json();
-      setUser(data.user);
-    } catch (error) {
-      console.error("Error:", error);
-    }
-  };
+    const formattedTime = date.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
 
+    return `${formattedDate} ${formattedTime}`;
+  }
   // Handle logout
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -62,6 +50,8 @@ const Employe = () => {
     } else {
       fetchUserData(token);
     }
+
+    fetchLeadsHistory(token);
   }, [router]);
 
   // Fetch user data from backend
@@ -94,15 +84,16 @@ const Employe = () => {
   const fetchLeadsHistory = async (token) => {
     try {
       const response = await fetch(
-        "https://backend-eashwa.vercel.app/api/leads/history",
+        "https://backend-eashwa.vercel.app/api/user/get-file-lead",
         {
           method: "GET",
           headers: { Authorization: `Bearer ${token}` },
         }
       );
+
       if (!response.ok) return;
       const data = await response.json();
-      setUploadedLeads(data.leads);
+      setUploadedLeads(data.files);
     } catch (error) {
       console.error("Error fetching leads history:", error);
     }
@@ -114,32 +105,55 @@ const Employe = () => {
   };
 
   // Handle file upload
-  const handleUpload = async () => {
-    if (!selectedFile) return alert("Please select a file first");
-  
-    const formData = new FormData();
-    formData.append("file", selectedFile); // Use "file" as the field name
-  
+  const handleFileUpload = async () => {
+    if (!selectedFile) return;
+
     try {
+      setIsUploading(true);
       const token = localStorage.getItem("token");
-      const response = await fetch(
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+
+      // Upload the file
+      const uploadResponse = await axios.post(
         "https://backend-eashwa.vercel.app/api/images/upload-excel",
+        formData,
         {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-          body: formData,
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
         }
       );
-  
-      if (!response.ok) throw new Error("Upload failed");
-  
-      const data = await response.json();
-      alert("File uploaded successfully");
-      setSelectedFile(null);
-      fetchLeadsHistory(token); // Refresh the leads history
+
+      const fileUrl = uploadResponse.data.fileUrl;
+
+      // Save the file URL and employee ID
+      await axios.post(
+        "https://backend-eashwa.vercel.app/api/user/upload-file-leads",
+        {
+          fileUrl: fileUrl,
+          employeeId: user?.employeeId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      alert("Lead file uploaded successfully!");
+      fetchLeadsHistory(token); // Refresh leads history
     } catch (error) {
       console.error("Error uploading file:", error);
       alert("Failed to upload file. Please try again.");
+    } finally {
+      setIsUploading(false);
+      setSelectedFile(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     }
   };
 
@@ -222,8 +236,8 @@ const Employe = () => {
             Your Monthly Targets
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-center">
-              {/* Scooty Section */}
-              <div className="p-6 bg-indigo-50 rounded-lg shadow-md">
+            {/* Scooty Section */}
+            <div className="p-6 bg-indigo-50 rounded-lg shadow-md">
               <h3 className="text-xl font-bold text-[#d86331] mb-2">E-Scooty</h3>
               <p className="text-gray-700">
                 <strong>Total Target:</strong>{" "}
@@ -238,8 +252,6 @@ const Employe = () => {
                 {user?.targetAchieved.scooty.pending || "N/A"}
               </p>
             </div>
-
-          
 
             {/* E-Rickshaws Section */}
             <div className="p-6 bg-indigo-50 rounded-lg shadow-md">
@@ -260,8 +272,8 @@ const Employe = () => {
               </p>
             </div>
 
-          {/* Battery Section */}
-          <div className="p-6 bg-indigo-50 rounded-lg shadow-md">
+            {/* Battery Section */}
+            <div className="p-6 bg-indigo-50 rounded-lg shadow-md">
               <h3 className="text-xl font-bold text-[#d86331] mb-2">Battery</h3>
               <p className="text-gray-700">
                 <strong>Total Target:</strong>{" "}
@@ -297,12 +309,14 @@ const Employe = () => {
               type="file"
               onChange={handleFileChange}
               className="border p-2 rounded"
+              ref={fileInputRef}
             />
             <button
-              onClick={handleUpload}
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+              onClick={handleFileUpload}
+              disabled={isUploading}
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:bg-blue-300"
             >
-              Upload
+              {isUploading ? "Uploading..." : "Upload"}
             </button>
           </div>
         </section>
@@ -316,16 +330,16 @@ const Employe = () => {
             <thead>
               <tr>
                 <th className="border p-2">Date</th>
-                <th className="border p-2">File Name</th>
+                {/* <th className="border p-2">File Name</th> */}
                 <th className="border p-2">Download</th>
               </tr>
             </thead>
             <tbody>
-              {uploadedLeads.length > 0 ? (
+              {uploadedLeads?.length > 0 ? (
                 uploadedLeads.map((lead, index) => (
                   <tr key={index}>
-                    <td className="border p-2">{lead.date}</td>
-                    <td className="border p-2">{lead.fileName}</td>
+                    <td className="border p-2">{formatDateTime(lead.uploadDate)}</td>
+                    {/* <td className="border p-2">{lead.fileName}</td> */}
                     <td className="border p-2">
                       <a
                         href={lead.fileUrl}
