@@ -10,6 +10,8 @@ const Employe = () => {
   const [uploadedLeads, setUploadedLeads] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [filterMonth, setFilterMonth] = useState("");
+  const [filterDate, setFilterDate] = useState("");
   const fileInputRef = useRef(null);
   const router = useRouter();
 
@@ -29,6 +31,7 @@ const Employe = () => {
 
     return `${formattedDate} ${formattedTime}`;
   }
+
   // Handle logout
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -156,6 +159,23 @@ const Employe = () => {
       }
     }
   };
+
+  // Filter leads based on month and date
+  const filteredLeads = uploadedLeads.filter((lead) => {
+    const leadDate = new Date(lead.uploadDate);
+    const leadMonth = leadDate.toLocaleString("default", { month: "long" });
+    const leadDay = leadDate.getDate();
+
+    if (filterMonth && filterDate) {
+      return leadMonth === filterMonth && leadDay === parseInt(filterDate);
+    } else if (filterMonth) {
+      return leadMonth === filterMonth;
+    } else if (filterDate) {
+      return leadDay === parseInt(filterDate);
+    } else {
+      return true; // No filter applied
+    }
+  });
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-indigo-50 to-indigo-100">
@@ -321,25 +341,54 @@ const Employe = () => {
           </div>
         </section>
 
-        {/* Leads History Section */}
+        {/* Leads Table with Filters */}
         <section className="bg-white rounded-xl shadow-md p-8">
           <h2 className="text-2xl font-semibold text-[#d86331] mb-4">
             Leads History
           </h2>
+          {/* Filter Controls */}
+          <div className="flex gap-4 mb-4">
+            <select
+              value={filterMonth}
+              onChange={(e) => setFilterMonth(e.target.value)}
+              className="border p-2 rounded"
+            >
+              <option value="">Select Month</option>
+              <option value="January">January</option>
+              <option value="February">February</option>
+              <option value="March">March</option>
+              <option value="April">April</option>
+              <option value="May">May</option>
+              <option value="June">June</option>
+              <option value="July">July</option>
+              <option value="August">August</option>
+              <option value="September">September</option>
+              <option value="October">October</option>
+              <option value="November">November</option>
+              <option value="December">December</option>
+            </select>
+            <input
+              type="number"
+              placeholder="Enter Date"
+              value={filterDate}
+              onChange={(e) => setFilterDate(e.target.value)}
+              className="border p-2 rounded"
+              min="1"
+              max="31"
+            />
+          </div>
           <table className="min-w-full bg-white border border-gray-200">
             <thead>
               <tr>
                 <th className="border p-2">Date</th>
-                {/* <th className="border p-2">File Name</th> */}
                 <th className="border p-2">Download</th>
               </tr>
             </thead>
             <tbody>
-              {uploadedLeads?.length > 0 ? (
-                uploadedLeads.map((lead, index) => (
+              {filteredLeads.length > 0 ? (
+                filteredLeads.map((lead, index) => (
                   <tr key={index}>
                     <td className="border p-2">{formatDateTime(lead.uploadDate)}</td>
-                    {/* <td className="border p-2">{lead.fileName}</td> */}
                     <td className="border p-2">
                       <a
                         href={lead.fileUrl}
@@ -354,8 +403,8 @@ const Employe = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="3" className="border p-2 text-center">
-                    No leads uploaded yet.
+                  <td colSpan="2" className="border p-2 text-center">
+                    No leads found.
                   </td>
                 </tr>
               )}

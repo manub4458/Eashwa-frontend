@@ -18,6 +18,8 @@ const VisitingForm = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [authToken, setAuthToken] = useState("");
+  const [filterMonth, setFilterMonth] = useState(""); // State for month filter
+  const [filterDate, setFilterDate] = useState(""); // State for date filter
 
   // Fetch visitors when component mounts
   useEffect(() => {
@@ -34,7 +36,6 @@ const VisitingForm = () => {
     try {
       const response = await axios.get(
         "https://backend-eashwa.vercel.app/api/user/get-visitor",
-
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -55,7 +56,6 @@ const VisitingForm = () => {
     try {
       const response = await axios.get(
         "https://backend-eashwa.vercel.app/api/user/leads",
-
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -248,6 +248,23 @@ const VisitingForm = () => {
     return `${formattedDate} ${formattedTime}`;
   }
 
+  // Filter leads based on month and date
+  const filteredLeads = leads.filter((lead) => {
+    const leadDate = new Date(lead.leadDate);
+    const leadMonth = leadDate.toLocaleString("default", { month: "long" });
+    const leadDay = leadDate.getDate();
+
+    if (filterMonth && filterDate) {
+      return leadMonth === filterMonth && leadDay === parseInt(filterDate);
+    } else if (filterMonth) {
+      return leadMonth === filterMonth;
+    } else if (filterDate) {
+      return leadDay === parseInt(filterDate);
+    } else {
+      return true; // No filter applied
+    }
+  });
+
   return (
     <div className="container mx-auto p-4">
       <div className="bg-white shadow-lg rounded-lg p-6 border border-indigo-200 mb-8">
@@ -392,7 +409,6 @@ const VisitingForm = () => {
                 <th className="border border-gray-200 px-4 py-2">Purpose</th>
                 <th className="border border-gray-200 px-4 py-2">Feedback</th>
                 <th className="border border-gray-200 px-4 py-2">Date</th>
-                {/* <th className="border border-gray-200 px-4 py-2">Actions</th> */}
               </tr>
             </thead>
             <tbody>
@@ -415,32 +431,51 @@ const VisitingForm = () => {
                   </td>
                   <td className="border border-gray-200 px-4 py-2">
                     {formatDateTime(visit.visitDateTime)}
-                    {/* {visit.visitDateTime} */}
                   </td>
-                  {/* <td className="border border-gray-200 px-4 py-2 space-x-2">
-                    <button
-                      onClick={() => handleEdit(visit.id)}
-                      className="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(visit.id)}
-                      className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
-                    >
-                      Delete
-                    </button>
-                  </td> */}
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       </div>
+
+      {/* Lead Table with Filters */}
       <div className="bg-white my-10 shadow-lg rounded-lg p-6 border border-indigo-200">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-bold text-[#d86331]">Lead Table</h2>
           <div className="flex gap-2">
+            {/* Month Filter */}
+            <select
+              value={filterMonth}
+              onChange={(e) => setFilterMonth(e.target.value)}
+              className="border p-2 rounded"
+            >
+              <option value="">Select Month</option>
+              <option value="January">January</option>
+              <option value="February">February</option>
+              <option value="March">March</option>
+              <option value="April">April</option>
+              <option value="May">May</option>
+              <option value="June">June</option>
+              <option value="July">July</option>
+              <option value="August">August</option>
+              <option value="September">September</option>
+              <option value="October">October</option>
+              <option value="November">November</option>
+              <option value="December">December</option>
+            </select>
+
+            {/* Date Filter */}
+            <input
+              type="number"
+              placeholder="Enter Date"
+              value={filterDate}
+              onChange={(e) => setFilterDate(e.target.value)}
+              className="border p-2 rounded"
+              min="1"
+              max="31"
+            />
+
             <button
               onClick={handleLeadDownload}
               className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition"
@@ -451,7 +486,7 @@ const VisitingForm = () => {
         </div>
 
         <div className="overflow-x-scroll">
-          {leads.length === 0 ? (
+          {filteredLeads.length === 0 ? (
             <div className="text-center py-4">No leads found</div>
           ) : (
             <table className="w-full table-auto border-collapse border border-gray-200">
@@ -490,7 +525,7 @@ const VisitingForm = () => {
                 </tr>
               </thead>
               <tbody>
-                {leads.map((lead, index) => (
+                {filteredLeads.map((lead, index) => (
                   <tr key={lead._id} className="text-center hover:bg-gray-50">
                     <td className="border border-gray-200 px-4 py-2">
                       {index + 1}
