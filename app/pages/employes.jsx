@@ -15,6 +15,7 @@ const Employe = () => {
   const fileInputRef = useRef(null);
   const router = useRouter();
 
+  // Format date and time
   function formatDateTime(isoString) {
     const date = new Date(isoString);
 
@@ -36,10 +37,11 @@ const Employe = () => {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    localStorage.removeItem("uploadedLeads"); // Clear uploaded leads from localStorage
     router.push("/employee-dash");
   };
 
-  // Load user data from local storage or fetch from backend
+  // Load user data and uploaded leads from localStorage or fetch from backend
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -54,7 +56,13 @@ const Employe = () => {
       fetchUserData(token);
     }
 
-    fetchLeadsHistory(token);
+    // Load uploaded leads from localStorage
+    const savedLeads = localStorage.getItem("uploadedLeads");
+    if (savedLeads) {
+      setUploadedLeads(JSON.parse(savedLeads));
+    } else {
+      fetchLeadsHistory(token);
+    }
   }, [router]);
 
   // Fetch user data from backend
@@ -97,6 +105,7 @@ const Employe = () => {
       if (!response.ok) return;
       const data = await response.json();
       setUploadedLeads(data.files);
+      localStorage.setItem("uploadedLeads", JSON.stringify(data.files)); // Save to localStorage
     } catch (error) {
       console.error("Error fetching leads history:", error);
     }
@@ -158,6 +167,20 @@ const Employe = () => {
         fileInputRef.current.value = "";
       }
     }
+  };
+
+  // Handle file deletion (frontend-only)
+  const handleDeleteFile = (fileId) => {
+    // Filter out the file with the given fileId
+    const updatedLeads = uploadedLeads.filter((lead) => lead._id !== fileId);
+
+    // Update the state to reflect the changes
+    setUploadedLeads(updatedLeads);
+
+    // Save the updated leads to localStorage
+    localStorage.setItem("uploadedLeads", JSON.stringify(updatedLeads));
+
+    alert("File deleted successfully!");
   };
 
   // Filter leads based on month and date
@@ -382,6 +405,7 @@ const Employe = () => {
               <tr>
                 <th className="border p-2">Date</th>
                 <th className="border p-2">Download</th>
+                <th className="border p-2">Delete</th>
               </tr>
             </thead>
             <tbody>
@@ -399,11 +423,19 @@ const Employe = () => {
                         Download
                       </a>
                     </td>
+                    <td className="border p-2">
+                      <button
+                        onClick={() => handleDeleteFile(lead._id)}
+                        className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                      >
+                        Delete
+                      </button>
+                    </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="2" className="border p-2 text-center">
+                  <td colSpan="3" className="border p-2 text-center">
                     No leads found.
                   </td>
                 </tr>

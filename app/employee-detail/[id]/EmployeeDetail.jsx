@@ -11,6 +11,10 @@ const EmployeeDetail = () => {
   const [visits, setVisits] = useState([]);
   const [leads, setLeads] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadedLeads, setUploadedLeads] = useState([]);
+  const [filterMonth, setFilterMonth] = useState("");
+  const [filterDate, setFilterDate] = useState("");
+
   const { id } = useParams();
 
   const fileInputRef = React.useRef(null);
@@ -54,6 +58,7 @@ const EmployeeDetail = () => {
 
       alert("Lead file uploaded successfully!");
       await fetchUser();
+      await fetchLeadsHistory(token); // Fetch leads history after uploading
     } catch (error) {
       console.error("Error uploading file:", error);
       alert("Failed to upload file. Please try again.");
@@ -64,6 +69,42 @@ const EmployeeDetail = () => {
       }
     }
   };
+
+  const fetchLeadsHistory = async (token) => {
+    try {
+      const response = await fetch(
+        "https://backend-eashwa.vercel.app/api/user/get-file-lead",
+        {
+          method: "GET",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (!response.ok) return;
+      const data = await response.json();
+      setUploadedLeads(data.files);
+      await fetchUser();
+    } catch (error) {
+      console.error("Error fetching leads history:", error);
+    }
+  };
+ 
+  const filteredLeads = uploadedLeads.filter((lead) => {
+    const leadDate = new Date(lead.uploadDate);
+    const leadMonth = leadDate.toLocaleString("default", { month: "long" });
+    const leadDay = leadDate.getDate();
+    console.log("leads",filteredLeads);
+
+    if (filterMonth && filterDate) {
+      return leadMonth === filterMonth && leadDay === parseInt(filterDate);
+    } else if (filterMonth) {
+      return leadMonth === filterMonth;
+    } else if (filterDate) {
+      return leadDay === parseInt(filterDate);
+    } else {
+      return true; // No filter applied
+    }
+  });
 
   async function downloadTemplateFile() {
     try {
@@ -108,7 +149,9 @@ const EmployeeDetail = () => {
   };
 
   useEffect(() => {
+    const token = localStorage.getItem("token");
     fetchUser();
+    fetchLeadsHistory(token);
   }, [id]);
 
   const handleDownload = () => {
@@ -440,7 +483,6 @@ const EmployeeDetail = () => {
                   <th className="border border-gray-200 px-4 py-2">Purpose</th>
                   <th className="border border-gray-200 px-4 py-2">Feedback</th>
                   <th className="border border-gray-200 px-4 py-2">Date</th>
-                  {/* <th className="border border-gray-200 px-4 py-2">Actions</th> */}
                 </tr>
               </thead>
               <tbody>
@@ -463,22 +505,7 @@ const EmployeeDetail = () => {
                     </td>
                     <td className="border border-gray-200 px-4 py-2">
                       {formatDateTime(visit.visitDateTime)}
-                      {/* {visit.visitDateTime} */}
                     </td>
-                    {/* <td className="border border-gray-200 px-4 py-2 space-x-2">
-                    <button
-                      onClick={() => handleEdit(visit.id)}
-                      className="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(visit.id)}
-                      className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
-                    >
-                      Delete
-                    </button>
-                  </td> */}
                   </tr>
                 ))}
               </tbody>
@@ -612,6 +639,75 @@ const EmployeeDetail = () => {
             )}
           </div>
         </div>
+        <section className="bg-white rounded-xl shadow-md p-8">
+          <h2 className="text-2xl font-semibold text-[#d86331] mb-4">
+            Leads History
+          </h2>
+          {/* Filter Controls */}
+          <div className="flex gap-4 mb-4">
+            <select
+              value={filterMonth}
+              onChange={(e) => setFilterMonth(e.target.value)}
+              className="border p-2 rounded"
+            >
+              <option value="">Select Month</option>
+              <option value="January">January</option>
+              <option value="February">February</option>
+              <option value="March">March</option>
+              <option value="April">April</option>
+              <option value="May">May</option>
+              <option value="June">June</option>
+              <option value="July">July</option>
+              <option value="August">August</option>
+              <option value="September">September</option>
+              <option value="October">October</option>
+              <option value="November">November</option>
+              <option value="December">December</option>
+            </select>
+            <input
+              type="number"
+              placeholder="Enter Date"
+              value={filterDate}
+              onChange={(e) => setFilterDate(e.target.value)}
+              className="border p-2 rounded"
+              min="1"
+              max="31"
+            />
+          </div>
+          <table className="min-w-full bg-white border border-gray-200">
+            <thead>
+              <tr>
+                <th className="border p-2">Date</th>
+                <th className="border p-2">Download</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredLeads.length > 0 ? (
+                filteredLeads.map((lead, index) => (
+                  <tr key={lead._id} className="text-center hover:bg-gray-50">
+                    <td className="border p-2">{formatDateTime(lead.uploadDate)}</td>
+                    <td className="border p-2">
+                      <a
+                        href={lead.fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-500 underline"
+                      >
+                        Download
+                      </a>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="2" className="border p-2 text-center">
+                    No leads found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </section>
       </main>
 
       <footer className="bg-gray-800 text-white py-4 mt-auto">
