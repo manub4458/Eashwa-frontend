@@ -440,11 +440,11 @@ const VisitingForm = () => {
       </div>
 
       {/* Lead Table with Filters */}
-      <div className="bg-white my-10 shadow-lg rounded-lg p-6 border border-indigo-200">
+      {/* <div className="bg-white my-10 shadow-lg rounded-lg p-6 border border-indigo-200">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-bold text-[#d86331]">Lead Table</h2>
           <div className="flex gap-2">
-            {/* Month Filter */}
+          
             <select
               value={filterMonth}
               onChange={(e) => setFilterMonth(e.target.value)}
@@ -465,7 +465,7 @@ const VisitingForm = () => {
               <option value="December">December</option>
             </select>
 
-            {/* Date Filter */}
+     
             <input
               type="number"
               placeholder="Enter Date"
@@ -593,7 +593,7 @@ const VisitingForm = () => {
             </table>
           )}
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };

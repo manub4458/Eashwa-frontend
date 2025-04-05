@@ -12,36 +12,26 @@ const Employe = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [filterMonth, setFilterMonth] = useState("");
   const [filterDate, setFilterDate] = useState("");
+  const [selectedHistoryMonth, setSelectedHistoryMonth] = useState("");
   const fileInputRef = useRef(null);
   const router = useRouter();
 
-  // Format date and time
   function formatDateTime(isoString) {
     const date = new Date(isoString);
-
-    const formattedDate = date.toLocaleDateString("en-US", {
+    return date.toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
       day: "numeric",
     });
-
-    const formattedTime = date.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-
-    return `${formattedDate} ${formattedTime}`;
   }
 
-  // Handle logout
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-    localStorage.removeItem("uploadedLeads"); // Clear uploaded leads from localStorage
+    localStorage.removeItem("uploadedLeads");
     router.push("/employee-dash");
   };
 
-  // Load user data and uploaded leads from localStorage or fetch from backend
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -51,12 +41,21 @@ const Employe = () => {
 
     const userData = localStorage.getItem("user");
     if (userData) {
-      setUser(JSON.parse(userData));
+      const parsedUser = JSON.parse(userData);
+      setUser(parsedUser);
+      const allMonths = [
+        ...(parsedUser?.targetAchieved?.battery?.history || []).map(entry => entry.month),
+        ...(parsedUser?.targetAchieved?.eRickshaw?.history || []).map(entry => entry.month),
+        ...(parsedUser?.targetAchieved?.scooty?.history || []).map(entry => entry.month)
+      ];
+      const uniqueMonths = [...new Set(allMonths)].sort();
+      if (uniqueMonths.length > 0) {
+        setSelectedHistoryMonth(uniqueMonths[uniqueMonths.length - 1]);
+      }
     } else {
       fetchUserData(token);
     }
 
-    // Load uploaded leads from localStorage
     const savedLeads = localStorage.getItem("uploadedLeads");
     if (savedLeads) {
       setUploadedLeads(JSON.parse(savedLeads));
@@ -65,7 +64,6 @@ const Employe = () => {
     }
   }, [router]);
 
-  // Fetch user data from backend
   const fetchUserData = async (token) => {
     try {
       const response = await fetch(
@@ -86,12 +84,20 @@ const Employe = () => {
       const data = await response.json();
       localStorage.setItem("user", JSON.stringify(data.user));
       setUser(data.user);
+      const allMonths = [
+        ...(data.user?.targetAchieved?.battery?.history || []).map(entry => entry.month),
+        ...(data.user?.targetAchieved?.eRickshaw?.history || []).map(entry => entry.month),
+        ...(data.user?.targetAchieved?.scooty?.history || []).map(entry => entry.month)
+      ];
+      const uniqueMonths = [...new Set(allMonths)].sort();
+      if (uniqueMonths.length > 0) {
+        setSelectedHistoryMonth(uniqueMonths[uniqueMonths.length - 1]);
+      }
     } catch (error) {
       console.error("Error fetching user data:", error);
     }
   };
 
-  // Fetch leads history from backend
   const fetchLeadsHistory = async (token) => {
     try {
       const response = await fetch(
@@ -105,18 +111,16 @@ const Employe = () => {
       if (!response.ok) return;
       const data = await response.json();
       setUploadedLeads(data.files);
-      localStorage.setItem("uploadedLeads", JSON.stringify(data.files)); // Save to localStorage
+      localStorage.setItem("uploadedLeads", JSON.stringify(data.files));
     } catch (error) {
       console.error("Error fetching leads history:", error);
     }
   };
 
-  // Handle file selection
   const handleFileChange = (event) => {
     setSelectedFile(event.target.files[0]);
   };
 
-  // Handle file upload
   const handleFileUpload = async () => {
     if (!selectedFile) return;
 
@@ -126,7 +130,6 @@ const Employe = () => {
       const formData = new FormData();
       formData.append("file", selectedFile);
 
-      // Upload the file
       const uploadResponse = await axios.post(
         "https://backend-eashwa.vercel.app/api/images/upload-excel",
         formData,
@@ -140,7 +143,6 @@ const Employe = () => {
 
       const fileUrl = uploadResponse.data.fileUrl;
 
-      // Save the file URL and employee ID
       await axios.post(
         "https://backend-eashwa.vercel.app/api/user/upload-file-leads",
         {
@@ -156,7 +158,7 @@ const Employe = () => {
       );
 
       alert("Lead file uploaded successfully!");
-      fetchLeadsHistory(token); // Refresh leads history
+      fetchLeadsHistory(token);
     } catch (error) {
       console.error("Error uploading file:", error);
       alert("Failed to upload file. Please try again.");
@@ -169,21 +171,13 @@ const Employe = () => {
     }
   };
 
-  // Handle file deletion (frontend-only)
   const handleDeleteFile = (fileId) => {
-    // Filter out the file with the given fileId
     const updatedLeads = uploadedLeads.filter((lead) => lead._id !== fileId);
-
-    // Update the state to reflect the changes
     setUploadedLeads(updatedLeads);
-
-    // Save the updated leads to localStorage
     localStorage.setItem("uploadedLeads", JSON.stringify(updatedLeads));
-
     alert("File deleted successfully!");
   };
 
-  // Filter leads based on month and date
   const filteredLeads = uploadedLeads.filter((lead) => {
     const leadDate = new Date(lead.uploadDate);
     const leadMonth = leadDate.toLocaleString("default", { month: "long" });
@@ -195,14 +189,21 @@ const Employe = () => {
       return leadMonth === filterMonth;
     } else if (filterDate) {
       return leadDay === parseInt(filterDate);
-    } else {
-      return true; // No filter applied
     }
+    return true;
   });
+
+  const getUniqueMonths = () => {
+    const allMonths = [
+      ...(user?.targetAchieved?.battery?.history || []).map(entry => entry.month),
+      ...(user?.targetAchieved?.eRickshaw?.history || []).map(entry => entry.month),
+      ...(user?.targetAchieved?.scooty?.history || []).map(entry => entry.month)
+    ];
+    return [...new Set(allMonths)].sort();
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-indigo-50 to-indigo-100">
-      {/* Header Section */}
       <header className="bg-gradient-to-r py-4 shadow-md">
         <div className="container mx-auto px-6 flex justify-between items-center">
           <Link href="/employee-dash">
@@ -226,7 +227,6 @@ const Employe = () => {
       </header>
 
       <main className="container mx-auto px-6 py-12 space-y-12">
-        {/* Employee Card */}
         <section className="bg-white rounded-xl shadow-md p-8 flex flex-col md:flex-row items-center gap-8">
           <div className="w-36 h-36 rounded-full overflow-hidden border-4 shadow-lg">
             <img
@@ -235,106 +235,128 @@ const Employe = () => {
               className="w-full h-full object-cover"
             />
           </div>
-
           <div className="flex-1">
             <h3 className="text-2xl font-semibold text-[#d86331] uppercase mb-2">
               <strong className="capitalize">{user?.name || "N/A"}</strong>
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <p className="text-gray-700">
-                <strong className="capitalize">Email:</strong>{" "}
-                {user?.email || "N/A"}
-              </p>
-              <p className="text-gray-700">
-                <strong className="capitalize">Phone:</strong>{" "}
-                {user?.phone || "N/A"}
-              </p>
-              <p className="text-gray-700">
-                <strong className="capitalize">Address:</strong>{" "}
-                {user?.address || "N/A"}
-              </p>
-              <p className="text-gray-700">
-                <strong className="capitalize">Aadhaar Number:</strong>{" "}
-                {user?.aadhaarNumber || "N/A"}
-              </p>
-              <p className="text-gray-700">
-                <strong className="capitalize">Employee ID:</strong>{" "}
-                {user?.employeeId || "N/A"}
-              </p>
-              <p className="text-gray-700">
-                <strong className="capitalize">Joining Date:</strong>{" "}
-                {user?.joiningDate || "N/A"}
-              </p>
-              <p className="text-gray-700">
-                <strong className="capitalize">Designation:</strong>{" "}
-                {user?.post || "N/A"}
-              </p>
+              <p className="text-gray-700"><strong>Email:</strong> {user?.email || "N/A"}</p>
+              <p className="text-gray-700"><strong>Phone:</strong> {user?.phone || "N/A"}</p>
+              <p className="text-gray-700"><strong>Address:</strong> {user?.address || "N/A"}</p>
+              <p className="text-gray-700"><strong>Aadhaar Number:</strong> {user?.aadhaarNumber || "N/A"}</p>
+              <p className="text-gray-700"><strong>Employee ID:</strong> {user?.employeeId || "N/A"}</p>
+              <p className="text-gray-700"><strong>Joining Date:</strong> {user?.joiningDate || "N/A"}</p>
+              <p className="text-gray-700"><strong>Designation:</strong> {user?.post || "N/A"}</p>
             </div>
           </div>
         </section>
 
-        {/* Targets Section */}
         <section className="bg-white rounded-xl shadow-lg p-8 border-2 border-indigo-400">
           <h2 className="text-3xl font-semibold text-[#d86331] mb-6 text-center">
-            Your Monthly Targets
+            Current Monthly Targets
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-center">
-            {/* Scooty Section */}
-            <div className="p-6 bg-indigo-50 rounded-lg shadow-md">
-              <h3 className="text-xl font-bold text-[#d86331] mb-2">E-Scooty</h3>
-              <p className="text-gray-700">
-                <strong>Total Target:</strong>{" "}
-                {user?.targetAchieved.scooty.total || "N/A"}
-              </p>
-              <p className="text-gray-700">
-                <strong>Completed Target:</strong>{" "}
-                {user?.targetAchieved.scooty.completed || "N/A"}
-              </p>
-              <p className="text-gray-700">
-                <strong>Pending Target:</strong>{" "}
-                {user?.targetAchieved.scooty.pending || "N/A"}
-              </p>
-            </div>
-
-            {/* E-Rickshaws Section */}
-            <div className="p-6 bg-indigo-50 rounded-lg shadow-md">
-              <h3 className="text-xl font-bold text-[#d86331] mb-2">
-                E-Rickshaws
-              </h3>
-              <p className="text-gray-700">
-                <strong>Total Target:</strong>{" "}
-                {user?.targetAchieved.eRickshaw.total || "N/A"}
-              </p>
-              <p className="text-gray-700">
-                <strong>Completed Target:</strong>{" "}
-                {user?.targetAchieved.eRickshaw.completed || "N/A"}
-              </p>
-              <p className="text-gray-700">
-                <strong>Pending Target:</strong>{" "}
-                {user?.targetAchieved.eRickshaw.pending || "N/A"}
-              </p>
-            </div>
-
-            {/* Battery Section */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
             <div className="p-6 bg-indigo-50 rounded-lg shadow-md">
               <h3 className="text-xl font-bold text-[#d86331] mb-2">Battery</h3>
-              <p className="text-gray-700">
-                <strong>Total Target:</strong>{" "}
-                {user?.targetAchieved.battery.total || "N/A"}
-              </p>
-              <p className="text-gray-700">
-                <strong>Completed Target:</strong>{" "}
-                {user?.targetAchieved.battery.completed || "N/A"}
-              </p>
-              <p className="text-gray-700">
-                <strong>Pending Target:</strong>{" "}
-                {user?.targetAchieved.battery.pending || "N/A"}
-              </p>
+              <p><strong>Total:</strong> {user?.targetAchieved?.battery?.current?.total || 0}</p>
+              <p><strong>Completed:</strong> {user?.targetAchieved?.battery?.current?.completed || 0}</p>
+              <p><strong>Pending:</strong> {user?.targetAchieved?.battery?.current?.pending || 0}</p>
+            </div>
+            <div className="p-6 bg-indigo-50 rounded-lg shadow-md">
+              <h3 className="text-xl font-bold text-[#d86331] mb-2">E-Rickshaw</h3>
+              <p><strong>Total:</strong> {user?.targetAchieved?.eRickshaw?.current?.total || 0}</p>
+              <p><strong>Completed:</strong> {user?.targetAchieved?.eRickshaw?.current?.completed || 0}</p>
+              <p><strong>Pending:</strong> {user?.targetAchieved?.eRickshaw?.current?.pending || 0}</p>
+            </div>
+            <div className="p-6 bg-indigo-50 rounded-lg shadow-md">
+              <h3 className="text-xl font-bold text-[#d86331] mb-2">Scooty</h3>
+              <p><strong>Total:</strong> {user?.targetAchieved?.scooty?.current?.total || 0}</p>
+              <p><strong>Completed:</strong> {user?.targetAchieved?.scooty?.current?.completed || 0}</p>
+              <p><strong>Pending:</strong> {user?.targetAchieved?.scooty?.current?.pending || 0}</p>
             </div>
           </div>
         </section>
 
-        {/* Visiting Form */}
+        <section className="bg-white rounded-xl shadow-md p-8">
+          <h2 className="text-2xl font-semibold text-[#d86331] mb-4">
+            Target History
+          </h2>
+          <div className="mb-4">
+            <select
+              value={selectedHistoryMonth}
+              onChange={(e) => setSelectedHistoryMonth(e.target.value)}
+              className="border p-2 rounded w-full max-w-xs"
+            >
+              <option value="">Select Month</option>
+              {getUniqueMonths().map((month) => (
+                <option key={month} value={month}>
+                  {month}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full bg-white border border-gray-200">
+              <thead>
+                <tr>
+                  <th className="border p-2">Category</th>
+                  <th className="border p-2">Total</th>
+                  <th className="border p-2">Completed</th>
+                  <th className="border p-2">Pending</th>
+                </tr>
+              </thead>
+              <tbody>
+                {selectedHistoryMonth ? (
+                  <>
+                    <tr>
+                      <td className="border p-2">Battery</td>
+                      <td className="border p-2">
+                        {user?.targetAchieved?.battery?.history?.find(entry => entry.month === selectedHistoryMonth)?.total || 0}
+                      </td>
+                      <td className="border p-2">
+                        {user?.targetAchieved?.battery?.history?.find(entry => entry.month === selectedHistoryMonth)?.completed || 0}
+                      </td>
+                      <td className="border p-2">
+                        {user?.targetAchieved?.battery?.history?.find(entry => entry.month === selectedHistoryMonth)?.pending || 0}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border p-2">E-Rickshaw</td>
+                      <td className="border p-2">
+                        {user?.targetAchieved?.eRickshaw?.history?.find(entry => entry.month === selectedHistoryMonth)?.total || 0}
+                      </td>
+                      <td className="border p-2">
+                        {user?.targetAchieved?.eRickshaw?.history?.find(entry => entry.month === selectedHistoryMonth)?.completed || 0}
+                      </td>
+                      <td className="border p-2">
+                        {user?.targetAchieved?.eRickshaw?.history?.find(entry => entry.month === selectedHistoryMonth)?.pending || 0}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border p-2">Scooty</td>
+                      <td className="border p-2">
+                        {user?.targetAchieved?.scooty?.history?.find(entry => entry.month === selectedHistoryMonth)?.total || 0}
+                      </td>
+                      <td className="border p-2">
+                        {user?.targetAchieved?.scooty?.history?.find(entry => entry.month === selectedHistoryMonth)?.completed || 0}
+                      </td>
+                      <td className="border p-2">
+                        {user?.targetAchieved?.scooty?.history?.find(entry => entry.month === selectedHistoryMonth)?.pending || 0}
+                      </td>
+                    </tr>
+                  </>
+                ) : (
+                  <tr>
+                    <td colSpan="4" className="border p-2 text-center">
+                      No history available
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
         <section className="bg-white rounded-xl shadow-md p-8 border border-gray-200">
           <h2 className="text-2xl font-semibold text-[#d86331] mb-4">
             Visiting Form
@@ -342,7 +364,6 @@ const Employe = () => {
           <VisitingForm />
         </section>
 
-        {/* Upload Leads Section */}
         <section className="bg-white rounded-xl shadow-md p-8">
           <h2 className="text-2xl font-semibold text-[#d86331] mb-4">
             Upload Leads
@@ -364,12 +385,10 @@ const Employe = () => {
           </div>
         </section>
 
-        {/* Leads Table with Filters */}
         <section className="bg-white rounded-xl shadow-md p-8">
           <h2 className="text-2xl font-semibold text-[#d86331] mb-4">
             Leads History
           </h2>
-          {/* Filter Controls */}
           <div className="flex gap-4 mb-4">
             <select
               value={filterMonth}

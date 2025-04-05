@@ -14,10 +14,19 @@ const EmployeeDetail = () => {
   const [uploadedLeads, setUploadedLeads] = useState([]);
   const [filterMonth, setFilterMonth] = useState("");
   const [filterDate, setFilterDate] = useState("");
-
+  const [selectedHistoryMonth, setSelectedHistoryMonth] = useState("");
   const { id } = useParams();
-
   const fileInputRef = React.useRef(null);
+
+  // Format date and time consistently
+  function formatDateTime(isoString) {
+    const date = new Date(isoString);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  }
 
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
@@ -58,7 +67,7 @@ const EmployeeDetail = () => {
 
       alert("Lead file uploaded successfully!");
       await fetchUser();
-      await fetchLeadsHistory(token); // Fetch leads history after uploading
+      await fetchLeadsHistory(token);
     } catch (error) {
       console.error("Error uploading file:", error);
       alert("Failed to upload file. Please try again.");
@@ -72,28 +81,33 @@ const EmployeeDetail = () => {
 
   const fetchLeadsHistory = async (token) => {
     try {
-      const response = await fetch(
+      const response = await axios.get(
         "https://backend-eashwa.vercel.app/api/user/get-file-lead",
         {
-          method: "GET",
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-
-      if (!response.ok) return;
-      const data = await response.json();
-      setUploadedLeads(data.files);
-      await fetchUser();
+      const data = response.data;
+      // Filter leads by employeeId if the endpoint doesn't already do it
+      const employeeLeads = data.files.filter(lead => lead.employeeId === id);
+      setUploadedLeads(employeeLeads);
+      localStorage.setItem("uploadedLeads", JSON.stringify(employeeLeads)); // Optional: sync with Employe
     } catch (error) {
       console.error("Error fetching leads history:", error);
     }
   };
- 
+
+  const handleDeleteFile = (fileId) => {
+    const updatedLeads = uploadedLeads.filter((lead) => lead._id !== fileId);
+    setUploadedLeads(updatedLeads);
+    localStorage.setItem("uploadedLeads", JSON.stringify(updatedLeads)); // Optional: sync with Employe
+    alert("File deleted successfully!");
+  };
+
   const filteredLeads = uploadedLeads.filter((lead) => {
     const leadDate = new Date(lead.uploadDate);
     const leadMonth = leadDate.toLocaleString("default", { month: "long" });
     const leadDay = leadDate.getDate();
-    console.log("leads",filteredLeads);
 
     if (filterMonth && filterDate) {
       return leadMonth === filterMonth && leadDay === parseInt(filterDate);
@@ -101,9 +115,8 @@ const EmployeeDetail = () => {
       return leadMonth === filterMonth;
     } else if (filterDate) {
       return leadDay === parseInt(filterDate);
-    } else {
-      return true; // No filter applied
     }
+    return true;
   });
 
   async function downloadTemplateFile() {
@@ -111,19 +124,14 @@ const EmployeeDetail = () => {
       const fileUrl =
         "https://res.cloudinary.com/dfklkapwz/raw/upload/v1738514884/excel_files/pl8udultk2eauefz2cde.xlsx";
       const fileName = "template.xlsx";
-
       const response = await fetch(fileUrl);
       const blob = await response.blob();
-
       const blobUrl = window.URL.createObjectURL(blob);
-
       const link = document.createElement("a");
       link.href = blobUrl;
       link.download = fileName;
-
       document.body.appendChild(link);
       link.click();
-
       document.body.removeChild(link);
       window.URL.revokeObjectURL(blobUrl);
     } catch (error) {
@@ -140,9 +148,20 @@ const EmployeeDetail = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      setUser(response.data.user);
+      const userData = response.data.user;
+      setUser(userData);
       setVisits(response.data.visitors);
       setLeads(response.data.leads);
+
+      const allMonths = [
+        ...(userData?.targetAchieved?.battery?.history || []).map(entry => entry.month),
+        ...(userData?.targetAchieved?.eRickshaw?.history || []).map(entry => entry.month),
+        ...(userData?.targetAchieved?.scooty?.history || []).map(entry => entry.month)
+      ];
+      const uniqueMonths = [...new Set(allMonths)].sort();
+      if (uniqueMonths.length > 0) {
+        setSelectedHistoryMonth(uniqueMonths[uniqueMonths.length - 1]);
+      }
     } catch (error) {
       console.error("Error fetching user:", error);
     }
@@ -161,42 +180,22 @@ const EmployeeDetail = () => {
     XLSX.writeFile(workbook, "visits.xlsx");
   };
 
-  function formatDateTime(isoString) {
-    const date = new Date(isoString);
-
-    const formattedDate = date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-
-    const formattedTime = date.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-
-    return `${formattedDate} ${formattedTime}`;
-  }
-
   const handleTargetUpdate = async () => {
     try {
       setIsLoading(true);
       const token = localStorage.getItem("token");
+      const currentDate = new Date();
+      const currentMonth = `${currentDate.getFullYear()}-${String(
+        currentDate.getMonth() + 1
+      ).padStart(2, "0")}`;
+
       await axios.put(
         `https://backend-eashwa.vercel.app/api/user/update-target/${id}`,
         {
-          battery: {
-            total: user.targetAchieved.battery.total,
-            completed: user.targetAchieved.battery.completed,
-          },
-          eRickshaw: {
-            total: user.targetAchieved.eRickshaw.total,
-            completed: user.targetAchieved.eRickshaw.completed,
-          },
-          scooty: {
-            total: user.targetAchieved.scooty.total,
-            completed: user.targetAchieved.scooty.completed,
-          },
+          month: currentMonth,
+          battery: user.targetAchieved.battery.current,
+          eRickshaw: user.targetAchieved.eRickshaw.current,
+          scooty: user.targetAchieved.scooty.current,
         },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -219,12 +218,14 @@ const EmployeeDetail = () => {
         ...prev.targetAchieved,
         [productType]: {
           ...prev.targetAchieved[productType],
-          [field]: parseInt(value) || 0,
-          pending:
-            field === "total"
-              ? (parseInt(value) || 0) -
-                prev.targetAchieved[productType].completed
-              : prev.targetAchieved[productType].total - (parseInt(value) || 0),
+          current: {
+            ...prev.targetAchieved[productType].current,
+            [field]: parseInt(value) || 0,
+            pending:
+              field === "total"
+                ? (parseInt(value) || 0) - prev.targetAchieved[productType].current.completed
+                : prev.targetAchieved[productType].current.total - (parseInt(value) || 0),
+          },
         },
       },
     }));
@@ -250,32 +251,28 @@ const EmployeeDetail = () => {
       }));
 
       const worksheet = XLSX.utils.json_to_sheet(excelData);
-
       const columnWidths = [
-        { wch: 8 },
-        { wch: 12 },
-        { wch: 12 },
-        { wch: 15 },
-        { wch: 20 },
-        { wch: 15 },
-        { wch: 15 },
-        { wch: 20 },
-        { wch: 15 },
-        { wch: 15 },
-        { wch: 10 },
-        { wch: 25 },
-        { wch: 15 },
-        { wch: 12 },
+        { wch: 8 }, { wch: 12 }, { wch: 12 }, { wch: 15 }, { wch: 20 },
+        { wch: 15 }, { wch: 15 }, { wch: 20 }, { wch: 15 }, { wch: 15 },
+        { wch: 10 }, { wch: 25 }, { wch: 15 }, { wch: 12 },
       ];
       worksheet["!cols"] = columnWidths;
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Leads");
-
       XLSX.writeFile(workbook, `Leads_${new Date().toLocaleDateString()}.xlsx`);
     } catch (error) {
       console.error("Error downloading leads:", error);
       alert("Error downloading leads. Please try again.");
     }
+  };
+
+  const getUniqueMonths = () => {
+    const allMonths = [
+      ...(user?.targetAchieved?.battery?.history || []).map(entry => entry.month),
+      ...(user?.targetAchieved?.eRickshaw?.history || []).map(entry => entry.month),
+      ...(user?.targetAchieved?.scooty?.history || []).map(entry => entry.month)
+    ];
+    return [...new Set(allMonths)].sort();
   };
 
   if (!user) return <div>Loading...</div>;
@@ -287,55 +284,39 @@ const EmployeeDetail = () => {
         {isEditing ? (
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Total
-              </label>
+              <label className="block text-sm font-medium text-gray-700">Total</label>
               <input
                 type="number"
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#d86331] focus:ring-[#d86331]"
-                defaultValue={data.total}
-                onChange={(e) =>
-                  onInputChange(productType, "total", e.target.value)
-                }
+                value={data.current.total}
+                onChange={(e) => onInputChange(productType, "total", e.target.value)}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Completed
-              </label>
+              <label className="block text-sm font-medium text-gray-700">Completed</label>
               <input
                 type="number"
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#d86331] focus:ring-[#d86331]"
-                defaultValue={data.completed}
-                onChange={(e) =>
-                  onInputChange(productType, "completed", e.target.value)
-                }
-                max={data.total}
+                value={data.current.completed}
+                onChange={(e) => onInputChange(productType, "completed", e.target.value)}
+                max={data.current.total}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Pending
-              </label>
+              <label className="block text-sm font-medium text-gray-700">Pending</label>
               <input
                 type="number"
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#d86331] focus:ring-[#d86331]"
-                value={data.pending}
+                value={data.current.pending}
                 disabled
               />
             </div>
           </div>
         ) : (
           <div className="space-y-2">
-            <p>
-              <span className="font-medium">Total:</span> {data.total}
-            </p>
-            <p>
-              <span className="font-medium">Completed:</span> {data.completed}
-            </p>
-            <p>
-              <span className="font-medium">Pending:</span> {data.pending}
-            </p>
+            <p><span className="font-medium">Total:</span> {data.current.total}</p>
+            <p><span className="font-medium">Completed:</span> {data.current.completed}</p>
+            <p><span className="font-medium">Pending:</span> {data.current.pending}</p>
           </div>
         )}
       </div>
@@ -348,9 +329,7 @@ const EmployeeDetail = () => {
     <div className="min-h-screen flex flex-col bg-gray-100">
       <header className="bg-[#d86331] py-6 shadow-md">
         <div className="container mx-auto px-6">
-          <h1 className="text-3xl font-extrabold text-white">
-            Employee Dashboard
-          </h1>
+          <h1 className="text-3xl font-extrabold text-white">Employee Dashboard</h1>
         </div>
       </header>
 
@@ -365,81 +344,57 @@ const EmployeeDetail = () => {
                   className="w-full h-full object-cover"
                 />
               </div>
-              <h2 className="mt-4 text-2xl font-bold text-gray-800">
-                {user.name}
-              </h2>
+              <h2 className="mt-4 text-2xl font-bold text-gray-800">{user.name}</h2>
               <p className="text-gray-600">{user.post}</p>
             </div>
-
             <div className="mt-6 space-y-4">
-              <p>
-                <span className="font-medium">Email:</span> {user.email}
-              </p>
-              <p>
-                <span className="font-medium">Phone:</span> {user.phone}
-              </p>
-              <p>
-                <span className="font-medium">Employee ID:</span>{" "}
-                {user.employeeId}
-              </p>
-              <p>
-                <span className="font-medium">Joining Date:</span>{" "}
-                {user.joiningDate}
-              </p>
-              <p>
-                <span className="font-medium">Address:</span> {user.address}
-              </p>
-              <p>
-                <span className="font-medium">Aadhaar:</span>{" "}
-                {user.aadhaarNumber}
-              </p>
+              <p><span className="font-medium">Email:</span> {user.email}</p>
+              <p><span className="font-medium">Phone:</span> {user.phone}</p>
+              <p><span className="font-medium">Employee ID:</span> {user.employeeId}</p>
+              <p><span className="font-medium">Joining Date:</span> {user.joiningDate}</p>
+              <p><span className="font-medium">Address:</span> {user.address}</p>
+              <p><span className="font-medium">Aadhaar:</span> {user.aadhaarNumber}</p>
             </div>
           </div>
 
           <div className="lg:col-span-2">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-[#d86331]">
-                Target Information
-              </h2>
-              <button
-                onClick={() =>
-                  isEditing ? handleTargetUpdate() : setIsEditing(true)
-                }
-                disabled={isLoading}
-                className="bg-[#d86331] text-white px-6 py-2 rounded-lg hover:bg-[#c55a2d] transition-colors disabled:opacity-50"
-              >
-                {isLoading
-                  ? "Updating..."
-                  : isEditing
-                  ? "Save Changes"
-                  : "Edit Targets"}
-              </button>
-              <button
-                className="bg-[#d86331] text-white px-6 py-2 rounded-lg hover:bg-[#c55a2d] transition-colors disabled:opacity-50"
-                onClick={downloadTemplateFile}
-              >
-                Download Lead Template
-              </button>
-              <div className="relative">
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleFileUpload}
-                  accept=".xlsx,.xls"
-                  className="hidden"
-                  disabled={isUploading}
-                />
+              <h2 className="text-2xl font-bold text-[#d86331]">Current Target Information</h2>
+              <div className="flex gap-2">
                 <button
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isUploading}
+                  onClick={() => isEditing ? handleTargetUpdate() : setIsEditing(true)}
+                  disabled={isLoading}
                   className="bg-[#d86331] text-white px-6 py-2 rounded-lg hover:bg-[#c55a2d] transition-colors disabled:opacity-50"
                 >
-                  {isUploading ? "Uploading..." : "Upload Lead"}
+                  {isLoading ? "Updating..." : isEditing ? "Save Changes" : "Edit Targets"}
                 </button>
+                <button
+                  className="bg-[#d86331] text-white px-6 py-2 rounded-lg hover:bg-[#c55a2d] transition-colors"
+                  onClick={downloadTemplateFile}
+                >
+                  Download Lead Template
+                </button>
+                <div className="relative">
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileUpload}
+                    accept=".xlsx,.xls"
+                    className="hidden"
+                    disabled={isUploading}
+                  />
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading}
+                    className="bg-[#d86331] text-white px-6 py-2 rounded-lg hover:bg-[#c55a2d] transition-colors disabled:opacity-50"
+                  >
+                    {isUploading ? "Uploading..." : "Upload Lead"}
+                  </button>
+                </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <TargetCard
                 title="Battery"
                 data={user.targetAchieved.battery}
@@ -459,12 +414,89 @@ const EmployeeDetail = () => {
                 onInputChange={handleInputChange}
               />
             </div>
+
+            <div className="mt-8 bg-white rounded-lg shadow-md p-6">
+              <h2 className="text-2xl font-bold text-[#d86331] mb-4">Target History</h2>
+              <div className="mb-4">
+                <select
+                  value={selectedHistoryMonth}
+                  onChange={(e) => setSelectedHistoryMonth(e.target.value)}
+                  className="border p-2 rounded w-full max-w-xs"
+                >
+                  <option value="">Select Month</option>
+                  {getUniqueMonths().map((month) => (
+                    <option key={month} value={month}>
+                      {month}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full table-auto border-collapse border border-gray-200">
+                  <thead>
+                    <tr className="bg-indigo-100">
+                      <th className="border border-gray-200 px-4 py-2">Category</th>
+                      <th className="border border-gray-200 px-4 py-2">Total</th>
+                      <th className="border border-gray-200 px-4 py-2">Completed</th>
+                      <th className="border border-gray-200 px-4 py-2">Pending</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {selectedHistoryMonth ? (
+                      <>
+                        <tr>
+                          <td className="border border-gray-200 px-4 py-2">Battery</td>
+                          <td className="border border-gray-200 px-4 py-2">
+                            {user.targetAchieved.battery.history.find(entry => entry.month === selectedHistoryMonth)?.total || 0}
+                          </td>
+                          <td className="border border-gray-200 px-4 py-2">
+                            {user.targetAchieved.battery.history.find(entry => entry.month === selectedHistoryMonth)?.completed || 0}
+                          </td>
+                          <td className="border border-gray-200 px-4 py-2">
+                            {user.targetAchieved.battery.history.find(entry => entry.month === selectedHistoryMonth)?.pending || 0}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="border border-gray-200 px-4 py-2">E-Rickshaw</td>
+                          <td className="border border-gray-200 px-4 py-2">
+                            {user.targetAchieved.eRickshaw.history.find(entry => entry.month === selectedHistoryMonth)?.total || 0}
+                          </td>
+                          <td className="border border-gray-200 px-4 py-2">
+                            {user.targetAchieved.eRickshaw.history.find(entry => entry.month === selectedHistoryMonth)?.completed || 0}
+                          </td>
+                          <td className="border border-gray-200 px-4 py-2">
+                            {user.targetAchieved.eRickshaw.history.find(entry => entry.month === selectedHistoryMonth)?.pending || 0}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="border border-gray-200 px-4 py-2">Scooty</td>
+                          <td className="border border-gray-200 px-4 py-2">
+                            {user.targetAchieved.scooty.history.find(entry => entry.month === selectedHistoryMonth)?.total || 0}
+                          </td>
+                          <td className="border border-gray-200 px-4 py-2">
+                            {user.targetAchieved.scooty.history.find(entry => entry.month === selectedHistoryMonth)?.completed || 0}
+                          </td>
+                          <td className="border border-gray-200 px-4 py-2">
+                            {user.targetAchieved.scooty.history.find(entry => entry.month === selectedHistoryMonth)?.pending || 0}
+                          </td>
+                        </tr>
+                      </>
+                    ) : (
+                      <tr>
+                        <td colSpan="4" className="border border-gray-200 px-4 py-2 text-center">
+                          No history available
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         </div>
+
         <div className="bg-white my-10 shadow-lg rounded-lg p-6 border border-indigo-200">
-          <h2 className="text-2xl font-bold text-[#d86331] mb-4">
-            Monthly Visit Table
-          </h2>
+          <h2 className="text-2xl font-bold text-[#d86331] mb-4">Monthly Visit Table</h2>
           <button
             onClick={handleDownload}
             className="bg-indigo-600 text-white px-4 py-2 rounded mb-4 hover:bg-indigo-700 transition"
@@ -475,9 +507,7 @@ const EmployeeDetail = () => {
             <table className="w-full table-auto border-collapse border border-gray-200">
               <thead>
                 <tr className="bg-indigo-100">
-                  <th className="border border-gray-200 px-4 py-2">
-                    Client Name
-                  </th>
+                  <th className="border border-gray-200 px-4 py-2">Client Name</th>
                   <th className="border border-gray-200 px-4 py-2">Phone</th>
                   <th className="border border-gray-200 px-4 py-2">Address</th>
                   <th className="border border-gray-200 px-4 py-2">Purpose</th>
@@ -488,24 +518,12 @@ const EmployeeDetail = () => {
               <tbody>
                 {visits?.map((visit) => (
                   <tr key={visit.id} className="text-center">
-                    <td className="border border-gray-200 px-4 py-2">
-                      {visit.clientName}
-                    </td>
-                    <td className="border border-gray-200 px-4 py-2">
-                      {visit.clientPhoneNumber}
-                    </td>
-                    <td className="border border-gray-200 px-4 py-2">
-                      {visit.clientAddress}
-                    </td>
-                    <td className="border border-gray-200 px-4 py-2">
-                      {visit.purpose}
-                    </td>
-                    <td className="border border-gray-200 px-4 py-2">
-                      {visit.feedback}
-                    </td>
-                    <td className="border border-gray-200 px-4 py-2">
-                      {formatDateTime(visit.visitDateTime)}
-                    </td>
+                    <td className="border border-gray-200 px-4 py-2">{visit.clientName}</td>
+                    <td className="border border-gray-200 px-4 py-2">{visit.clientPhoneNumber}</td>
+                    <td className="border border-gray-200 px-4 py-2">{visit.clientAddress}</td>
+                    <td className="border border-gray-200 px-4 py-2">{visit.purpose}</td>
+                    <td className="border border-gray-200 px-4 py-2">{visit.feedback}</td>
+                    <td className="border border-gray-200 px-4 py-2">{formatDateTime(visit.visitDateTime)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -513,137 +531,8 @@ const EmployeeDetail = () => {
           </div>
         </div>
 
-        <div className="bg-white my-10 shadow-lg rounded-lg p-6 border border-indigo-200">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-bold text-[#d86331]">Lead Table</h2>
-            <div className="flex gap-2">
-              <button
-                onClick={handleLeadDownload}
-                className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition"
-              >
-                Download Leads
-              </button>
-            </div>
-          </div>
-
-          <div className="overflow-x-scroll">
-            {leads.length === 0 ? (
-              <div className="text-center py-4">No leads found</div>
-            ) : (
-              <table className="w-full table-auto border-collapse border border-gray-200">
-                <thead>
-                  <tr className="bg-indigo-100">
-                    <th className="border border-gray-200 px-4 py-2">
-                      Sr. No.
-                    </th>
-                    <th className="border border-gray-200 px-4 py-2">
-                      Lead Date
-                    </th>
-                    <th className="border border-gray-200 px-4 py-2">
-                      Calling Date
-                    </th>
-                    <th className="border border-gray-200 px-4 py-2">
-                      Agent Name
-                    </th>
-                    <th className="border border-gray-200 px-4 py-2">
-                      Customer Name
-                    </th>
-                    <th className="border border-gray-200 px-4 py-2">
-                      Mobile Number
-                    </th>
-                    <th className="border border-gray-200 px-4 py-2">
-                      Occupation
-                    </th>
-                    <th className="border border-gray-200 px-4 py-2">
-                      Location
-                    </th>
-                    <th className="border border-gray-200 px-4 py-2">Town</th>
-                    <th className="border border-gray-200 px-4 py-2">State</th>
-                    <th className="border border-gray-200 px-4 py-2">Status</th>
-                    <th className="border border-gray-200 px-4 py-2">Remark</th>
-                    <th className="border border-gray-200 px-4 py-2">
-                      Interest Status
-                    </th>
-                    <th className="border border-gray-200 px-4 py-2">
-                      Office Visit
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {leads.map((lead, index) => (
-                    <tr key={lead._id} className="text-center hover:bg-gray-50">
-                      <td className="border border-gray-200 px-4 py-2">
-                        {index + 1}
-                      </td>
-                      <td className="border border-gray-200 px-4 py-2">
-                        {new Date(lead.leadDate).toLocaleDateString()}
-                      </td>
-                      <td className="border border-gray-200 px-4 py-2">
-                        {new Date(lead.callingDate).toLocaleDateString()}
-                      </td>
-                      <td className="border border-gray-200 px-4 py-2">
-                        {lead.agentName}
-                      </td>
-                      <td className="border border-gray-200 px-4 py-2">
-                        {lead.customerName}
-                      </td>
-                      <td className="border border-gray-200 px-4 py-2">
-                        {lead.mobileNumber}
-                      </td>
-                      <td className="border border-gray-200 px-4 py-2">
-                        {lead.occupation}
-                      </td>
-                      <td className="border border-gray-200 px-4 py-2">
-                        {lead.location}
-                      </td>
-                      <td className="border border-gray-200 px-4 py-2">
-                        {lead.town}
-                      </td>
-                      <td className="border border-gray-200 px-4 py-2">
-                        {lead.state}
-                      </td>
-                      <td className="border border-gray-200 px-4 py-2">
-                        <span
-                          className={`px-2 py-1 rounded-full text-sm ${
-                            lead.status.toLowerCase() === "active"
-                              ? "bg-green-100 text-green-800"
-                              : lead.status.toLowerCase() === "pending"
-                              ? "bg-yellow-100 text-yellow-800"
-                              : "bg-red-100 text-red-800"
-                          }`}
-                        >
-                          {lead.status}
-                        </span>
-                      </td>
-                      <td className="border border-gray-200 px-4 py-2">
-                        {lead.remark}
-                      </td>
-                      <td className="border border-gray-200 px-4 py-2">
-                        {lead.interestedAndNotInterested}
-                      </td>
-                      <td className="border border-gray-200 px-4 py-2">
-                        <span
-                          className={`px-2 py-1 rounded-full text-sm ${
-                            lead.officeVisitRequired
-                              ? "bg-green-100 text-green-800"
-                              : "bg-red-100 text-red-800"
-                          }`}
-                        >
-                          {lead.officeVisitRequired ? "Yes" : "No"}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-        </div>
         <section className="bg-white rounded-xl shadow-md p-8">
-          <h2 className="text-2xl font-semibold text-[#d86331] mb-4">
-            Leads History
-          </h2>
-          {/* Filter Controls */}
+          <h2 className="text-2xl font-semibold text-[#d86331] mb-4">Leads History</h2>
           <div className="flex gap-4 mb-4">
             <select
               value={filterMonth}
@@ -679,11 +568,12 @@ const EmployeeDetail = () => {
               <tr>
                 <th className="border p-2">Date</th>
                 <th className="border p-2">Download</th>
+                <th className="border p-2">Delete</th>
               </tr>
             </thead>
             <tbody>
               {filteredLeads.length > 0 ? (
-                filteredLeads.map((lead, index) => (
+                filteredLeads.map((lead) => (
                   <tr key={lead._id} className="text-center hover:bg-gray-50">
                     <td className="border p-2">{formatDateTime(lead.uploadDate)}</td>
                     <td className="border p-2">
@@ -696,13 +586,19 @@ const EmployeeDetail = () => {
                         Download
                       </a>
                     </td>
+                    <td className="border p-2">
+                      <button
+                        onClick={() => handleDeleteFile(lead._id)}
+                        className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                      >
+                        Delete
+                      </button>
+                    </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="2" className="border p-2 text-center">
-                    No leads found.
-                  </td>
+                  <td colSpan="3" className="border p-2 text-center">No leads found.</td>
                 </tr>
               )}
             </tbody>
