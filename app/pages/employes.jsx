@@ -56,12 +56,8 @@ const Employe = () => {
       fetchUserData(token);
     }
 
-    const savedLeads = localStorage.getItem("uploadedLeads");
-    if (savedLeads) {
-      setUploadedLeads(JSON.parse(savedLeads));
-    } else {
-      fetchLeadsHistory(token);
-    }
+  fetchLeadsHistory(token)
+   
   }, [router]);
 
   const fetchUserData = async (token) => {
