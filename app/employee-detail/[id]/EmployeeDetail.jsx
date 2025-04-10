@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams } from "next/navigation";
 import * as XLSX from "xlsx";
+import HistoryTable from "../../../components/ui/HistoryTable";
 
 const EmployeeDetail = () => {
   const [user, setUser] = useState(null);
@@ -690,165 +691,24 @@ const EmployeeDetail = () => {
           </div>
         </div>
 
-        <section className="bg-white rounded-xl shadow-md p-8">
-          <h2 className="text-2xl font-semibold text-[#d86331] mb-4">
-            Leads History
-          </h2>
-          <div className="flex gap-4 mb-4">
-            <select
-              value={filterMonthTarget}
-              onChange={(e) => setFilterMonthTarget(e.target.value)}
-              className="border p-2 rounded"
-            >
-              <option value="">Select Month</option>
-              <option value="January">January</option>
-              <option value="February">February</option>
-              <option value="March">March</option>
-              <option value="April">April</option>
-              <option value="May">May</option>
-              <option value="June">June</option>
-              <option value="July">July</option>
-              <option value="August">August</option>
-              <option value="September">September</option>
-              <option value="October">October</option>
-              <option value="November">November</option>
-              <option value="December">December</option>
-            </select>
-            <input
-              type="number"
-              placeholder="Enter Date"
-              value={filterDate}
-              onChange={(e) => setFilterDate(e.target.value)}
-              className="border p-2 rounded"
-              min="1"
-              max="31"
-            />
-          </div>
-          <table className="min-w-full bg-white border border-gray-200">
-            <thead>
-              <tr>
-                <th className="border p-2">Date</th>
-                <th className="border p-2">Download</th>
-                <th className="border p-2">Delete</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredLeadsTarget.length > 0 ? (
-                filteredLeadsTarget.map((lead) => (
-                  <tr key={lead._id} className="text-center hover:bg-gray-50">
-                    <td className="border p-2">
-                      {formatDateTime(lead.uploadDate)}
-                    </td>
-                    <td className="border p-2">
-                      <a
-                        href={lead.fileUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-500 underline"
-                      >
-                        Download
-                      </a>
-                    </td>
-                    <td className="border p-2">
-                      <button
-                        onClick={() => handleDeleteFile(lead._id)}
-                        className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="3" className="border p-2 text-center">
-                    No leads found.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </section>
+        <HistoryTable
+          title="Leads History"
+          data={filteredLeadsTarget}
+          filterMonth={filterMonthTarget}
+          setFilterMonth={setFilterMonthTarget}
+          formatDateTime={formatDateTime}
+          showDelete={true}
+        />
 
-        <section className="bg-white rounded-xl shadow-md p-8">
-          <h2 className="text-2xl font-semibold text-[#d86331] mb-4">
-            Feedbacks History
-          </h2>
-          <div className="flex gap-4 mb-4">
-            <select
-              value={filterMonth}
-              onChange={(e) => setFilterMonth(e.target.value)}
-              className="border p-2 rounded"
-            >
-              <option value="">Select Month</option>
-              <option value="January">January</option>
-              <option value="February">February</option>
-              <option value="March">March</option>
-              <option value="April">April</option>
-              <option value="May">May</option>
-              <option value="June">June</option>
-              <option value="July">July</option>
-              <option value="August">August</option>
-              <option value="September">September</option>
-              <option value="October">October</option>
-              <option value="November">November</option>
-              <option value="December">December</option>
-            </select>
-            <input
-              type="number"
-              placeholder="Enter Date"
-              value={filterDate}
-              onChange={(e) => setFilterDate(e.target.value)}
-              className="border p-2 rounded"
-              min="1"
-              max="31"
-            />
-          </div>
-          <table className="min-w-full bg-white border border-gray-200">
-            <thead>
-              <tr>
-                <th className="border p-2">Date</th>
-                <th className="border p-2">Download</th>
-                <th className="border p-2">Delete</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredLeads.length > 0 ? (
-                filteredLeads.map((lead) => (
-                  <tr key={lead._id} className="text-center hover:bg-gray-50">
-                    <td className="border p-2">
-                      {formatDateTime(lead.uploadDate)}
-                    </td>
-                    <td className="border p-2">
-                      <a
-                        href={lead.fileUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-500 underline"
-                      >
-                        Download
-                      </a>
-                    </td>
-                    <td className="border p-2">
-                      <button
-                        onClick={() => handleDeleteFile(lead._id)}
-                        className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="3" className="border p-2 text-center">
-                    No leads found.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </section>
+        <HistoryTable
+          title="Feedback History"
+          data={filteredLeads}
+          filterMonth={filterMonth}
+          setFilterMonth={setFilterMonth}
+          formatDateTime={formatDateTime}
+          showDelete={true}
+          handleDeleteFile={handleDeleteFile}
+        />
       </main>
 
       <footer className="bg-gray-800 text-white py-4 mt-auto">

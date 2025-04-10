@@ -4,13 +4,17 @@ import VisitingForm from "./visiting-form";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import HistoryTable from "../../components/ui/HistoryTable";
 
 const Employe = () => {
   const [user, setUser] = useState(null);
   const [uploadedLeads, setUploadedLeads] = useState([]);
+  const [uploadedTargetLeads, setUploadedTargetLeads] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [filterMonth, setFilterMonth] = useState("");
+  const [filterMonthTarget, setFilterMonthTarget] = useState("");
+  const [filterDateTarget, setFilterDateTarget] = useState("");
   const [filterDate, setFilterDate] = useState("");
   const [selectedHistoryMonth, setSelectedHistoryMonth] = useState("");
   const fileInputRef = useRef(null);
@@ -36,7 +40,8 @@ const Employe = () => {
     const token = localStorage.getItem("token");
     if (!token) {
       router.push("/login");
-      return;F
+      return;
+      F;
     }
 
     const userData = localStorage.getItem("user");
@@ -44,9 +49,15 @@ const Employe = () => {
       const parsedUser = JSON.parse(userData);
       setUser(parsedUser);
       const allMonths = [
-        ...(parsedUser?.targetAchieved?.battery?.history || []).map(entry => entry.month),
-        ...(parsedUser?.targetAchieved?.eRickshaw?.history || []).map(entry => entry.month),
-        ...(parsedUser?.targetAchieved?.scooty?.history || []).map(entry => entry.month)
+        ...(parsedUser?.targetAchieved?.battery?.history || []).map(
+          (entry) => entry.month
+        ),
+        ...(parsedUser?.targetAchieved?.eRickshaw?.history || []).map(
+          (entry) => entry.month
+        ),
+        ...(parsedUser?.targetAchieved?.scooty?.history || []).map(
+          (entry) => entry.month
+        ),
       ];
       const uniqueMonths = [...new Set(allMonths)].sort();
       if (uniqueMonths.length > 0) {
@@ -56,8 +67,8 @@ const Employe = () => {
       fetchUserData(token);
     }
 
-  fetchLeadsHistory(token)
-   
+    fetchLeadsHistory(token);
+    fetchTargetLeadsHistory(token);
   }, [router]);
 
   const fetchUserData = async (token) => {
@@ -81,9 +92,15 @@ const Employe = () => {
       localStorage.setItem("user", JSON.stringify(data.user));
       setUser(data.user);
       const allMonths = [
-        ...(data.user?.targetAchieved?.battery?.history || []).map(entry => entry.month),
-        ...(data.user?.targetAchieved?.eRickshaw?.history || []).map(entry => entry.month),
-        ...(data.user?.targetAchieved?.scooty?.history || []).map(entry => entry.month)
+        ...(data.user?.targetAchieved?.battery?.history || []).map(
+          (entry) => entry.month
+        ),
+        ...(data.user?.targetAchieved?.eRickshaw?.history || []).map(
+          (entry) => entry.month
+        ),
+        ...(data.user?.targetAchieved?.scooty?.history || []).map(
+          (entry) => entry.month
+        ),
       ];
       const uniqueMonths = [...new Set(allMonths)].sort();
       if (uniqueMonths.length > 0) {
@@ -108,6 +125,21 @@ const Employe = () => {
       const data = await response.json();
       setUploadedLeads(data.files);
       localStorage.setItem("uploadedLeads", JSON.stringify(data.files));
+    } catch (error) {
+      console.error("Error fetching leads history:", error);
+    }
+  };
+
+  const fetchTargetLeadsHistory = async (token) => {
+    try {
+      const response = await axios.get(
+        `https://backend-eashwa.vercel.app/api/user/get-target-lead`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      const data = response.data;
+      setUploadedTargetLeads(data.files);
     } catch (error) {
       console.error("Error fetching leads history:", error);
     }
@@ -155,6 +187,7 @@ const Employe = () => {
 
       alert("Lead file uploaded successfully!");
       fetchLeadsHistory(token);
+      fetchTargetLeadsHistory(token);
     } catch (error) {
       console.error("Error uploading file:", error);
       alert("Failed to upload file. Please try again.");
@@ -189,11 +222,35 @@ const Employe = () => {
     return true;
   });
 
+  const filteredLeadsTarget = uploadedTargetLeads.filter((lead) => {
+    const leadDate = new Date(lead.uploadDate);
+    const leadMonth = leadDate.toLocaleString("default", { month: "long" });
+    const leadDay = leadDate.getDate();
+
+    if (filterMonthTarget && filterDateTarget) {
+      return (
+        leadMonth === filterMonthTarget &&
+        leadDay === parseInt(filterDateTarget)
+      );
+    } else if (filterMonthTarget) {
+      return leadMonth === filterMonthTarget;
+    } else if (filterDateTarget) {
+      return leadDay === parseInt(filterDateTarget);
+    }
+    return true;
+  });
+
   const getUniqueMonths = () => {
     const allMonths = [
-      ...(user?.targetAchieved?.battery?.history || []).map(entry => entry.month),
-      ...(user?.targetAchieved?.eRickshaw?.history || []).map(entry => entry.month),
-      ...(user?.targetAchieved?.scooty?.history || []).map(entry => entry.month)
+      ...(user?.targetAchieved?.battery?.history || []).map(
+        (entry) => entry.month
+      ),
+      ...(user?.targetAchieved?.eRickshaw?.history || []).map(
+        (entry) => entry.month
+      ),
+      ...(user?.targetAchieved?.scooty?.history || []).map(
+        (entry) => entry.month
+      ),
     ];
     return [...new Set(allMonths)].sort();
   };
@@ -236,13 +293,27 @@ const Employe = () => {
               <strong className="capitalize">{user?.name || "N/A"}</strong>
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <p className="text-gray-700"><strong>Email:</strong> {user?.email || "N/A"}</p>
-              <p className="text-gray-700"><strong>Phone:</strong> {user?.phone || "N/A"}</p>
-              <p className="text-gray-700"><strong>Address:</strong> {user?.address || "N/A"}</p>
-              <p className="text-gray-700"><strong>Aadhaar Number:</strong> {user?.aadhaarNumber || "N/A"}</p>
-              <p className="text-gray-700"><strong>Employee ID:</strong> {user?.employeeId || "N/A"}</p>
-              <p className="text-gray-700"><strong>Joining Date:</strong> {user?.joiningDate || "N/A"}</p>
-              <p className="text-gray-700"><strong>Designation:</strong> {user?.post || "N/A"}</p>
+              <p className="text-gray-700">
+                <strong>Email:</strong> {user?.email || "N/A"}
+              </p>
+              <p className="text-gray-700">
+                <strong>Phone:</strong> {user?.phone || "N/A"}
+              </p>
+              <p className="text-gray-700">
+                <strong>Address:</strong> {user?.address || "N/A"}
+              </p>
+              <p className="text-gray-700">
+                <strong>Aadhaar Number:</strong> {user?.aadhaarNumber || "N/A"}
+              </p>
+              <p className="text-gray-700">
+                <strong>Employee ID:</strong> {user?.employeeId || "N/A"}
+              </p>
+              <p className="text-gray-700">
+                <strong>Joining Date:</strong> {user?.joiningDate || "N/A"}
+              </p>
+              <p className="text-gray-700">
+                <strong>Designation:</strong> {user?.post || "N/A"}
+              </p>
             </div>
           </div>
         </section>
@@ -254,21 +325,50 @@ const Employe = () => {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
             <div className="p-6 bg-indigo-50 rounded-lg shadow-md">
               <h3 className="text-xl font-bold text-[#d86331] mb-2">Battery</h3>
-              <p><strong>Total:</strong> {user?.targetAchieved?.battery?.current?.total || 0}</p>
-              <p><strong>Completed:</strong> {user?.targetAchieved?.battery?.current?.completed || 0}</p>
-              <p><strong>Pending:</strong> {user?.targetAchieved?.battery?.current?.pending || 0}</p>
+              <p>
+                <strong>Total:</strong>{" "}
+                {user?.targetAchieved?.battery?.current?.total || 0}
+              </p>
+              <p>
+                <strong>Completed:</strong>{" "}
+                {user?.targetAchieved?.battery?.current?.completed || 0}
+              </p>
+              <p>
+                <strong>Pending:</strong>{" "}
+                {user?.targetAchieved?.battery?.current?.pending || 0}
+              </p>
             </div>
             <div className="p-6 bg-indigo-50 rounded-lg shadow-md">
-              <h3 className="text-xl font-bold text-[#d86331] mb-2">E-Rickshaw</h3>
-              <p><strong>Total:</strong> {user?.targetAchieved?.eRickshaw?.current?.total || 0}</p>
-              <p><strong>Completed:</strong> {user?.targetAchieved?.eRickshaw?.current?.completed || 0}</p>
-              <p><strong>Pending:</strong> {user?.targetAchieved?.eRickshaw?.current?.pending || 0}</p>
+              <h3 className="text-xl font-bold text-[#d86331] mb-2">
+                E-Rickshaw
+              </h3>
+              <p>
+                <strong>Total:</strong>{" "}
+                {user?.targetAchieved?.eRickshaw?.current?.total || 0}
+              </p>
+              <p>
+                <strong>Completed:</strong>{" "}
+                {user?.targetAchieved?.eRickshaw?.current?.completed || 0}
+              </p>
+              <p>
+                <strong>Pending:</strong>{" "}
+                {user?.targetAchieved?.eRickshaw?.current?.pending || 0}
+              </p>
             </div>
             <div className="p-6 bg-indigo-50 rounded-lg shadow-md">
               <h3 className="text-xl font-bold text-[#d86331] mb-2">Scooty</h3>
-              <p><strong>Total:</strong> {user?.targetAchieved?.scooty?.current?.total || 0}</p>
-              <p><strong>Completed:</strong> {user?.targetAchieved?.scooty?.current?.completed || 0}</p>
-              <p><strong>Pending:</strong> {user?.targetAchieved?.scooty?.current?.pending || 0}</p>
+              <p>
+                <strong>Total:</strong>{" "}
+                {user?.targetAchieved?.scooty?.current?.total || 0}
+              </p>
+              <p>
+                <strong>Completed:</strong>{" "}
+                {user?.targetAchieved?.scooty?.current?.completed || 0}
+              </p>
+              <p>
+                <strong>Pending:</strong>{" "}
+                {user?.targetAchieved?.scooty?.current?.pending || 0}
+              </p>
             </div>
           </div>
         </section>
@@ -307,37 +407,55 @@ const Employe = () => {
                     <tr>
                       <td className="border p-2">Battery</td>
                       <td className="border p-2">
-                        {user?.targetAchieved?.battery?.history?.find(entry => entry.month === selectedHistoryMonth)?.total || 0}
+                        {user?.targetAchieved?.battery?.history?.find(
+                          (entry) => entry.month === selectedHistoryMonth
+                        )?.total || 0}
                       </td>
                       <td className="border p-2">
-                        {user?.targetAchieved?.battery?.history?.find(entry => entry.month === selectedHistoryMonth)?.completed || 0}
+                        {user?.targetAchieved?.battery?.history?.find(
+                          (entry) => entry.month === selectedHistoryMonth
+                        )?.completed || 0}
                       </td>
                       <td className="border p-2">
-                        {user?.targetAchieved?.battery?.history?.find(entry => entry.month === selectedHistoryMonth)?.pending || 0}
+                        {user?.targetAchieved?.battery?.history?.find(
+                          (entry) => entry.month === selectedHistoryMonth
+                        )?.pending || 0}
                       </td>
                     </tr>
                     <tr>
                       <td className="border p-2">E-Rickshaw</td>
                       <td className="border p-2">
-                        {user?.targetAchieved?.eRickshaw?.history?.find(entry => entry.month === selectedHistoryMonth)?.total || 0}
+                        {user?.targetAchieved?.eRickshaw?.history?.find(
+                          (entry) => entry.month === selectedHistoryMonth
+                        )?.total || 0}
                       </td>
                       <td className="border p-2">
-                        {user?.targetAchieved?.eRickshaw?.history?.find(entry => entry.month === selectedHistoryMonth)?.completed || 0}
+                        {user?.targetAchieved?.eRickshaw?.history?.find(
+                          (entry) => entry.month === selectedHistoryMonth
+                        )?.completed || 0}
                       </td>
                       <td className="border p-2">
-                        {user?.targetAchieved?.eRickshaw?.history?.find(entry => entry.month === selectedHistoryMonth)?.pending || 0}
+                        {user?.targetAchieved?.eRickshaw?.history?.find(
+                          (entry) => entry.month === selectedHistoryMonth
+                        )?.pending || 0}
                       </td>
                     </tr>
                     <tr>
                       <td className="border p-2">Scooty</td>
                       <td className="border p-2">
-                        {user?.targetAchieved?.scooty?.history?.find(entry => entry.month === selectedHistoryMonth)?.total || 0}
+                        {user?.targetAchieved?.scooty?.history?.find(
+                          (entry) => entry.month === selectedHistoryMonth
+                        )?.total || 0}
                       </td>
                       <td className="border p-2">
-                        {user?.targetAchieved?.scooty?.history?.find(entry => entry.month === selectedHistoryMonth)?.completed || 0}
+                        {user?.targetAchieved?.scooty?.history?.find(
+                          (entry) => entry.month === selectedHistoryMonth
+                        )?.completed || 0}
                       </td>
                       <td className="border p-2">
-                        {user?.targetAchieved?.scooty?.history?.find(entry => entry.month === selectedHistoryMonth)?.pending || 0}
+                        {user?.targetAchieved?.scooty?.history?.find(
+                          (entry) => entry.month === selectedHistoryMonth
+                        )?.pending || 0}
                       </td>
                     </tr>
                   </>
@@ -381,83 +499,23 @@ const Employe = () => {
           </div>
         </section>
 
-        <section className="bg-white rounded-xl shadow-md p-8">
-          <h2 className="text-2xl font-semibold text-[#d86331] mb-4">
-            Leads History
-          </h2>
-          <div className="flex gap-4 mb-4">
-            <select
-              value={filterMonth}
-              onChange={(e) => setFilterMonth(e.target.value)}
-              className="border p-2 rounded"
-            >
-              <option value="">Select Month</option>
-              <option value="January">January</option>
-              <option value="February">February</option>
-              <option value="March">March</option>
-              <option value="April">April</option>
-              <option value="May">May</option>
-              <option value="June">June</option>
-              <option value="July">July</option>
-              <option value="August">August</option>
-              <option value="September">September</option>
-              <option value="October">October</option>
-              <option value="November">November</option>
-              <option value="December">December</option>
-            </select>
-            <input
-              type="number"
-              placeholder="Enter Date"
-              value={filterDate}
-              onChange={(e) => setFilterDate(e.target.value)}
-              className="border p-2 rounded"
-              min="1"
-              max="31"
-            />
-          </div>
-          <table className="min-w-full bg-white border border-gray-200">
-            <thead>
-              <tr>
-                <th className="border p-2">Date</th>
-                <th className="border p-2">Download</th>
-                <th className="border p-2">Delete</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredLeads.length > 0 ? (
-                filteredLeads.map((lead, index) => (
-                  <tr key={index}>
-                    <td className="border p-2">{formatDateTime(lead.uploadDate)}</td>
-                    <td className="border p-2">
-                      <a
-                        href={lead.fileUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-500 underline"
-                      >
-                        Download
-                      </a>
-                    </td>
-                    <td className="border p-2">
-                      <button
-                        onClick={() => handleDeleteFile(lead._id)}
-                        className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="3" className="border p-2 text-center">
-                    No leads found.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </section>
+        <HistoryTable
+          title="Leads History"
+          data={filteredLeadsTarget}
+          filterMonth={filterMonthTarget}
+          setFilterMonth={setFilterMonthTarget}
+          formatDateTime={formatDateTime}
+        />
+
+        <HistoryTable
+          title="Feedback History"
+          data={filteredLeads}
+          filterMonth={filterMonth}
+          setFilterMonth={setFilterMonth}
+          formatDateTime={formatDateTime}
+          showDelete={true}
+          handleDeleteFile={handleDeleteFile}
+        />
       </main>
     </div>
   );
