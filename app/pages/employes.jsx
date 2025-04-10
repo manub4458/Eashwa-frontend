@@ -29,6 +29,9 @@ const Employe = () => {
     });
   }
 
+//   router.delete("/leads/regular-file/:fileId", deleteRegularLeadFile);  feedback delete employee
+// router.delete("/leads/target-file/:fileId", deleteTargetLeadFile); 
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -200,12 +203,52 @@ const Employe = () => {
     }
   };
 
-  const handleDeleteFile = (fileId) => {
-    const updatedLeads = uploadedLeads.filter((lead) => lead._id !== fileId);
-    setUploadedLeads(updatedLeads);
-    localStorage.setItem("uploadedLeads", JSON.stringify(updatedLeads));
-    alert("File deleted successfully!");
+  // const handleDeleteFile = (fileId) => {
+  //   const updatedLeads = uploadedLeads.filter((lead) => lead._id !== fileId);
+  //   setUploadedLeads(updatedLeads);
+  //   localStorage.setItem("uploadedLeads", JSON.stringify(updatedLeads));
+  //   alert("File deleted successfully!");
+  // };
+
+  // const handleDeleteFile = async (fileId) => {
+  //   try {
+  //     const token = localStorage.getItem("token");
+  
+  //     const response = await axios.delete(`https://backend-eashwa.vercel.app/api/user/leads/regular-file/${fileId}`, {
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //     });
+  
+  //     console.log("File deleted successfully:", response.data);
+  //     fetchLeadsHistory(token);
+  
+  //     // Optional: update your local state or refetch data
+  //   } catch (error) {
+  //     console.error("Error deleting file:", error.response?.data || error.message);
+  //   }
+  // };
+  const handleDeleteFile = async (fileId) => {
+    try {
+      const token = localStorage.getItem("token");
+     
+  
+      const response = await axios.delete(
+        `https://backend-eashwa.vercel.app/api/user/leads/regular-file/${fileId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      console.log("File deleted successfully:", response.data);
+      fetchLeadsHistory(token);
+    } catch (error) {
+      console.error("Error deleting file:", error.response?.data || error.message);
+    }
   };
+  
 
   const filteredLeads = uploadedLeads.filter((lead) => {
     const leadDate = new Date(lead.uploadDate);

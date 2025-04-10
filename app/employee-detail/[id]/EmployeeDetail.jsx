@@ -115,12 +115,54 @@ const EmployeeDetail = () => {
     }
   };
 
-  const handleDeleteFile = (fileId) => {
-    const updatedLeads = uploadedLeads.filter((lead) => lead._id !== fileId);
-    setUploadedLeads(updatedLeads);
-    localStorage.setItem("uploadedLeads", JSON.stringify(updatedLeads)); // Optional: sync with Employe
-    alert("File deleted successfully!");
+  const handleDeleteFile = async (fileId) => {
+    try {
+      const token = localStorage.getItem("token");
+  
+      const response = await axios.delete(
+        `https://backend-eashwa.vercel.app/api/user/leads/regular-file/${fileId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          data: {
+            requestId: id, // send requestId in body
+          },
+        }
+      );
+  
+      console.log("File deleted successfully:", response.data);
+      fetchLeadsHistory(token);
+    } catch (error) {
+      console.error("Error deleting file:", error.response?.data || error.message);
+    }
   };
+
+  const handleTargetDeleteFile = async (fileId) => {
+    try {
+      const token = localStorage.getItem("token");
+  
+      const response = await axios.delete(
+        `https://backend-eashwa.vercel.app/api/user/leads/target-file/${fileId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          data: {
+            requestId: id, // send requestId in body
+          },
+        }
+      );
+  
+      console.log("File deleted successfully:", response.data);
+      fetchTargetLeadsHistory(token);
+    } catch (error) {
+      console.error("Error deleting file:", error.response?.data || error.message);
+    }
+  };
+  
 
   const filteredLeads = uploadedLeads.filter((lead) => {
     const leadDate = new Date(lead.uploadDate);
@@ -698,6 +740,7 @@ const EmployeeDetail = () => {
           setFilterMonth={setFilterMonthTarget}
           formatDateTime={formatDateTime}
           showDelete={true}
+          handleDeleteFile={handleTargetDeleteFile}
         />
 
         <HistoryTable
