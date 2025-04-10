@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams } from "next/navigation";
 import * as XLSX from "xlsx";
- 
+
 const EmployeeDetail = () => {
   const [user, setUser] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -12,12 +12,13 @@ const EmployeeDetail = () => {
   const [leads, setLeads] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedLeads, setUploadedLeads] = useState([]);
+  const [uploadedTargetLeads, setUploadedTargetLeads] = useState([]);
   const [filterMonth, setFilterMonth] = useState("");
   const [filterDate, setFilterDate] = useState("");
   const [selectedHistoryMonth, setSelectedHistoryMonth] = useState("");
   const { id } = useParams();
   const fileInputRef = React.useRef(null);
- 
+
   // Format date and time consistently
   function formatDateTime(isoString) {
     const date = new Date(isoString);
@@ -27,17 +28,17 @@ const EmployeeDetail = () => {
       day: "numeric",
     });
   }
- 
+
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
- 
+
     try {
       setIsUploading(true);
       const token = localStorage.getItem("token");
       const formData = new FormData();
       formData.append("file", file);
- 
+
       const uploadResponse = await axios.post(
         "https://backend-eashwa.vercel.app/api/images/upload-excel",
         formData,
@@ -48,9 +49,9 @@ const EmployeeDetail = () => {
           },
         }
       );
- 
+
       const fileUrl = uploadResponse.data.fileUrl;
- 
+
       await axios.post(
         "https://backend-eashwa.vercel.app/api/user/process-leads",
         {
@@ -64,10 +65,11 @@ const EmployeeDetail = () => {
           },
         }
       );
- 
+
       alert("Lead file uploaded successfully!");
       await fetchUser();
       await fetchLeadsHistory(token);
+      await fetchTargetLeadsHistory(token);
     } catch (error) {
       console.error("Error uploading file:", error);
       alert("Failed to upload file. Please try again.");
@@ -78,7 +80,7 @@ const EmployeeDetail = () => {
       }
     }
   };
- 
+
   const fetchLeadsHistory = async (token) => {
     try {
       const response = await axios.get(
@@ -94,19 +96,34 @@ const EmployeeDetail = () => {
       console.error("Error fetching leads history:", error);
     }
   };
- 
+
+  const fetchTargetLeadsHistory = async (token) => {
+    try {
+      const response = await axios.get(
+        `https://backend-eashwa.vercel.app/api/user/get-target-lead/${id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      const data = response.data;
+      setUploadedTargetLeads(data.files);
+    } catch (error) {
+      console.error("Error fetching leads history:", error);
+    }
+  };
+
   const handleDeleteFile = (fileId) => {
     const updatedLeads = uploadedLeads.filter((lead) => lead._id !== fileId);
     setUploadedLeads(updatedLeads);
     localStorage.setItem("uploadedLeads", JSON.stringify(updatedLeads)); // Optional: sync with Employe
     alert("File deleted successfully!");
   };
- 
+
   const filteredLeads = uploadedLeads.filter((lead) => {
     const leadDate = new Date(lead.uploadDate);
     const leadMonth = leadDate.toLocaleString("default", { month: "long" });
     const leadDay = leadDate.getDate();
- 
+
     if (filterMonth && filterDate) {
       return leadMonth === filterMonth && leadDay === parseInt(filterDate);
     } else if (filterMonth) {
@@ -116,9 +133,22 @@ const EmployeeDetail = () => {
     }
     return true;
   });
- 
-  
- 
+
+  const filteredLeadsTarget = uploadedTargetLeads.filter((lead) => {
+    const leadDate = new Date(lead.uploadDate);
+    const leadMonth = leadDate.toLocaleString("default", { month: "long" });
+    const leadDay = leadDate.getDate();
+
+    if (filterMonth && filterDate) {
+      return leadMonth === filterMonth && leadDay === parseInt(filterDate);
+    } else if (filterMonth) {
+      return leadMonth === filterMonth;
+    } else if (filterDate) {
+      return leadDay === parseInt(filterDate);
+    }
+    return true;
+  });
+
   async function downloadTemplateFile() {
     try {
       const fileUrl =
@@ -138,7 +168,7 @@ const EmployeeDetail = () => {
       console.error("Error downloading file:", error);
     }
   }
- 
+
   const fetchUser = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -152,7 +182,7 @@ const EmployeeDetail = () => {
       setUser(userData);
       setVisits(response.data.visitors);
       setLeads(response.data.leads);
- 
+
       const allMonths = [
         ...(userData?.targetAchieved?.battery?.history || []).map(
           (entry) => entry.month
@@ -172,20 +202,21 @@ const EmployeeDetail = () => {
       console.error("Error fetching user:", error);
     }
   };
- 
+
   useEffect(() => {
     const token = localStorage.getItem("token");
     fetchUser();
     fetchLeadsHistory(token);
+    fetchTargetLeadsHistory(token);
   }, [id]);
- 
+
   const handleDownload = () => {
     const worksheet = XLSX.utils.json_to_sheet(visits);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Visits");
     XLSX.writeFile(workbook, "visits.xlsx");
   };
- 
+
   const handleTargetUpdate = async () => {
     try {
       setIsLoading(true);
@@ -194,7 +225,7 @@ const EmployeeDetail = () => {
       const currentMonth = `${currentDate.getFullYear()}-${String(
         currentDate.getMonth() + 1
       ).padStart(2, "0")}`;
- 
+
       await axios.put(
         `https://backend-eashwa.vercel.app/api/user/update-target/${id}`,
         {
@@ -216,7 +247,7 @@ const EmployeeDetail = () => {
       setIsLoading(false);
     }
   };
- 
+
   const handleInputChange = React.useCallback((productType, field, value) => {
     setUser((prev) => ({
       ...prev,
@@ -238,7 +269,7 @@ const EmployeeDetail = () => {
       },
     }));
   }, []);
- 
+
   const handleLeadDownload = () => {
     try {
       const excelData = leads?.map((lead, index) => ({
@@ -257,7 +288,7 @@ const EmployeeDetail = () => {
         "Interest Status": lead.interestedAndNotInterested,
         "Office Visit": lead.officeVisitRequired ? "Yes" : "No",
       }));
- 
+
       const worksheet = XLSX.utils.json_to_sheet(excelData);
       const columnWidths = [
         { wch: 8 },
@@ -284,7 +315,7 @@ const EmployeeDetail = () => {
       alert("Error downloading leads. Please try again.");
     }
   };
- 
+
   const getUniqueMonths = () => {
     const allMonths = [
       ...(user?.targetAchieved?.battery?.history || []).map(
@@ -299,9 +330,9 @@ const EmployeeDetail = () => {
     ];
     return [...new Set(allMonths)].sort();
   };
- 
+
   if (!user) return <div>Loading...</div>;
- 
+
   const TargetCard = React.memo(
     ({ title, data, productType, onInputChange }) => (
       <div className="p-6 bg-white rounded-lg shadow-md">
@@ -365,9 +396,9 @@ const EmployeeDetail = () => {
       </div>
     )
   );
- 
+
   TargetCard.displayName = "TargetCard";
- 
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-100">
       <header className="bg-[#d86331] py-6 shadow-md">
@@ -377,7 +408,7 @@ const EmployeeDetail = () => {
           </h1>
         </div>
       </header>
- 
+
       <main className="container mx-auto px-6 py-8 flex-1">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-1 bg-white rounded-lg shadow-lg p-6">
@@ -418,7 +449,7 @@ const EmployeeDetail = () => {
               </p>
             </div>
           </div>
- 
+
           <div className="lg:col-span-2">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-[#d86331]">
@@ -463,7 +494,7 @@ const EmployeeDetail = () => {
                 </div>
               </div>
             </div>
- 
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <TargetCard
                 title="Battery"
@@ -484,7 +515,7 @@ const EmployeeDetail = () => {
                 onInputChange={handleInputChange}
               />
             </div>
- 
+
             <div className="mt-8 bg-white rounded-lg shadow-md p-6">
               <h2 className="text-2xl font-bold text-[#d86331] mb-4">
                 Target History
@@ -601,7 +632,7 @@ const EmployeeDetail = () => {
             </div>
           </div>
         </div>
- 
+
         <div className="bg-white my-10 shadow-lg rounded-lg p-6 border border-indigo-200">
           <h2 className="text-2xl font-bold text-[#d86331] mb-4">
             Monthly Visit Table
@@ -653,10 +684,90 @@ const EmployeeDetail = () => {
             </table>
           </div>
         </div>
- 
+
         <section className="bg-white rounded-xl shadow-md p-8">
           <h2 className="text-2xl font-semibold text-[#d86331] mb-4">
             Leads History
+          </h2>
+          <div className="flex gap-4 mb-4">
+            <select
+              value={filterMonth}
+              onChange={(e) => setFilterMonth(e.target.value)}
+              className="border p-2 rounded"
+            >
+              <option value="">Select Month</option>
+              <option value="January">January</option>
+              <option value="February">February</option>
+              <option value="March">March</option>
+              <option value="April">April</option>
+              <option value="May">May</option>
+              <option value="June">June</option>
+              <option value="July">July</option>
+              <option value="August">August</option>
+              <option value="September">September</option>
+              <option value="October">October</option>
+              <option value="November">November</option>
+              <option value="December">December</option>
+            </select>
+            <input
+              type="number"
+              placeholder="Enter Date"
+              value={filterDate}
+              onChange={(e) => setFilterDate(e.target.value)}
+              className="border p-2 rounded"
+              min="1"
+              max="31"
+            />
+          </div>
+          <table className="min-w-full bg-white border border-gray-200">
+            <thead>
+              <tr>
+                <th className="border p-2">Date</th>
+                <th className="border p-2">Download</th>
+                <th className="border p-2">Delete</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredLeadsTarget.length > 0 ? (
+                filteredLeadsTarget.map((lead) => (
+                  <tr key={lead._id} className="text-center hover:bg-gray-50">
+                    <td className="border p-2">
+                      {formatDateTime(lead.uploadDate)}
+                    </td>
+                    <td className="border p-2">
+                      <a
+                        href={lead.fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-500 underline"
+                      >
+                        Download
+                      </a>
+                    </td>
+                    <td className="border p-2">
+                      <button
+                        onClick={() => handleDeleteFile(lead._id)}
+                        className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="3" className="border p-2 text-center">
+                    No leads found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </section>
+
+        <section className="bg-white rounded-xl shadow-md p-8">
+          <h2 className="text-2xl font-semibold text-[#d86331] mb-4">
+            Feedbacks History
           </h2>
           <div className="flex gap-4 mb-4">
             <select
@@ -734,7 +845,7 @@ const EmployeeDetail = () => {
           </table>
         </section>
       </main>
- 
+
       <footer className="bg-gray-800 text-white py-4 mt-auto">
         <div className="container mx-auto text-center">
           <p className="text-sm">
@@ -745,5 +856,5 @@ const EmployeeDetail = () => {
     </div>
   );
 };
- 
+
 export default EmployeeDetail;

@@ -36,7 +36,7 @@ const Employe = () => {
     const token = localStorage.getItem("token");
     if (!token) {
       router.push("/login");
-      return;
+      return;F
     }
 
     const userData = localStorage.getItem("user");
