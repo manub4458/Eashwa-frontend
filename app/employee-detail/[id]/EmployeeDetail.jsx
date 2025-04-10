@@ -14,7 +14,9 @@ const EmployeeDetail = () => {
   const [uploadedLeads, setUploadedLeads] = useState([]);
   const [uploadedTargetLeads, setUploadedTargetLeads] = useState([]);
   const [filterMonth, setFilterMonth] = useState("");
+  const [filterMonthTarget, setFilterMonthTarget] = useState("");
   const [filterDate, setFilterDate] = useState("");
+  const [filterDateTarget, setFilterDateTarget] = useState("");
   const [selectedHistoryMonth, setSelectedHistoryMonth] = useState("");
   const { id } = useParams();
   const fileInputRef = React.useRef(null);
@@ -139,12 +141,15 @@ const EmployeeDetail = () => {
     const leadMonth = leadDate.toLocaleString("default", { month: "long" });
     const leadDay = leadDate.getDate();
 
-    if (filterMonth && filterDate) {
-      return leadMonth === filterMonth && leadDay === parseInt(filterDate);
-    } else if (filterMonth) {
-      return leadMonth === filterMonth;
-    } else if (filterDate) {
-      return leadDay === parseInt(filterDate);
+    if (filterMonthTarget && filterDateTarget) {
+      return (
+        leadMonth === filterMonthTarget &&
+        leadDay === parseInt(filterDateTarget)
+      );
+    } else if (filterMonthTarget) {
+      return leadMonth === filterMonthTarget;
+    } else if (filterDateTarget) {
+      return leadDay === parseInt(filterDateTarget);
     }
     return true;
   });
@@ -691,8 +696,8 @@ const EmployeeDetail = () => {
           </h2>
           <div className="flex gap-4 mb-4">
             <select
-              value={filterMonth}
-              onChange={(e) => setFilterMonth(e.target.value)}
+              value={filterMonthTarget}
+              onChange={(e) => setFilterMonthTarget(e.target.value)}
               className="border p-2 rounded"
             >
               <option value="">Select Month</option>
