@@ -29,8 +29,8 @@ const Employe = () => {
     });
   }
 
-//   router.delete("/leads/regular-file/:fileId", deleteRegularLeadFile);  feedback delete employee
-// router.delete("/leads/target-file/:fileId", deleteTargetLeadFile); 
+  //   router.delete("/leads/regular-file/:fileId", deleteRegularLeadFile);  feedback delete employee
+  // router.delete("/leads/target-file/:fileId", deleteTargetLeadFile);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -213,16 +213,16 @@ const Employe = () => {
   // const handleDeleteFile = async (fileId) => {
   //   try {
   //     const token = localStorage.getItem("token");
-  
+
   //     const response = await axios.delete(`https://backend-eashwa.vercel.app/api/user/leads/regular-file/${fileId}`, {
   //       headers: {
   //         Authorization: `Bearer ${token}`,
   //       },
   //     });
-  
+
   //     console.log("File deleted successfully:", response.data);
   //     fetchLeadsHistory(token);
-  
+
   //     // Optional: update your local state or refetch data
   //   } catch (error) {
   //     console.error("Error deleting file:", error.response?.data || error.message);
@@ -231,8 +231,7 @@ const Employe = () => {
   const handleDeleteFile = async (fileId) => {
     try {
       const token = localStorage.getItem("token");
-     
-  
+
       const response = await axios.delete(
         `https://backend-eashwa.vercel.app/api/user/leads/regular-file/${fileId}`,
         {
@@ -241,14 +240,16 @@ const Employe = () => {
           },
         }
       );
-  
+
       console.log("File deleted successfully:", response.data);
       fetchLeadsHistory(token);
     } catch (error) {
-      console.error("Error deleting file:", error.response?.data || error.message);
+      console.error(
+        "Error deleting file:",
+        error.response?.data || error.message
+      );
     }
   };
-  
 
   const filteredLeads = uploadedLeads.filter((lead) => {
     const leadDate = new Date(lead.uploadDate);
@@ -523,7 +524,7 @@ const Employe = () => {
 
         <section className="bg-white rounded-xl shadow-md p-8">
           <h2 className="text-2xl font-semibold text-[#d86331] mb-4">
-            Upload Leads
+            Upload Feedbacks
           </h2>
           <div className="flex items-center space-x-4">
             <input
