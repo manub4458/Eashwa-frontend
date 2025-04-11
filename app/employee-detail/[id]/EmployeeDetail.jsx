@@ -118,7 +118,7 @@ const EmployeeDetail = () => {
   const handleDeleteFile = async (fileId) => {
     try {
       const token = localStorage.getItem("token");
-  
+
       const response = await axios.delete(
         `https://backend-eashwa.vercel.app/api/user/leads/regular-file/${fileId}`,
         {
@@ -131,18 +131,21 @@ const EmployeeDetail = () => {
           },
         }
       );
-  
+
       console.log("File deleted successfully:", response.data);
       fetchLeadsHistory(token);
     } catch (error) {
-      console.error("Error deleting file:", error.response?.data || error.message);
+      console.error(
+        "Error deleting file:",
+        error.response?.data || error.message
+      );
     }
   };
 
   const handleTargetDeleteFile = async (fileId) => {
     try {
       const token = localStorage.getItem("token");
-  
+
       const response = await axios.delete(
         `https://backend-eashwa.vercel.app/api/user/leads/target-file/${fileId}`,
         {
@@ -155,14 +158,16 @@ const EmployeeDetail = () => {
           },
         }
       );
-  
+
       console.log("File deleted successfully:", response.data);
       fetchTargetLeadsHistory(token);
     } catch (error) {
-      console.error("Error deleting file:", error.response?.data || error.message);
+      console.error(
+        "Error deleting file:",
+        error.response?.data || error.message
+      );
     }
   };
-  
 
   const filteredLeads = uploadedLeads.filter((lead) => {
     const leadDate = new Date(lead.uploadDate);
@@ -601,7 +606,7 @@ const EmployeeDetail = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {selectedHistoryMonth ? (
+                    {/* {selectedHistoryMonth ? (
                       <>
                         <tr>
                           <td className="border border-gray-200 px-4 py-2">
@@ -661,6 +666,97 @@ const EmployeeDetail = () => {
                             {user.targetAchieved.scooty.history.find(
                               (entry) => entry.month === selectedHistoryMonth
                             )?.pending || 0}
+                          </td>
+                        </tr>
+                      </>
+                    ) : (
+                      <tr>
+                        <td
+                          colSpan="4"
+                          className="border border-gray-200 px-4 py-2 text-center"
+                        >
+                          No history available
+                        </td>
+                      </tr>
+                    )} */}
+                    {selectedHistoryMonth ? (
+                      <>
+                        <tr>
+                          <td className="border border-gray-200 px-4 py-2">
+                            Battery
+                          </td>
+                          <td className="border border-gray-200 px-4 py-2">
+                            {[...user.targetAchieved.battery.history]
+                              .reverse()
+                              .find(
+                                (entry) => entry.month === selectedHistoryMonth
+                              )?.total || 0}
+                          </td>
+                          <td className="border border-gray-200 px-4 py-2">
+                            {[...user.targetAchieved.battery.history]
+                              .reverse()
+                              .find(
+                                (entry) => entry.month === selectedHistoryMonth
+                              )?.completed || 0}
+                          </td>
+                          <td className="border border-gray-200 px-4 py-2">
+                            {[...user.targetAchieved.battery.history]
+                              .reverse()
+                              .find(
+                                (entry) => entry.month === selectedHistoryMonth
+                              )?.pending || 0}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="border border-gray-200 px-4 py-2">
+                            E-Rickshaw
+                          </td>
+                          <td className="border border-gray-200 px-4 py-2">
+                            {[...user.targetAchieved.eRickshaw.history]
+                              .reverse()
+                              .find(
+                                (entry) => entry.month === selectedHistoryMonth
+                              )?.total || 0}
+                          </td>
+                          <td className="border border-gray-200 px-4 py-2">
+                            {[...user.targetAchieved.eRickshaw.history]
+                              .reverse()
+                              .find(
+                                (entry) => entry.month === selectedHistoryMonth
+                              )?.completed || 0}
+                          </td>
+                          <td className="border border-gray-200 px-4 py-2">
+                            {[...user.targetAchieved.eRickshaw.history]
+                              .reverse()
+                              .find(
+                                (entry) => entry.month === selectedHistoryMonth
+                              )?.pending || 0}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="border border-gray-200 px-4 py-2">
+                            Scooty
+                          </td>
+                          <td className="border border-gray-200 px-4 py-2">
+                            {[...user.targetAchieved.scooty.history]
+                              .reverse()
+                              .find(
+                                (entry) => entry.month === selectedHistoryMonth
+                              )?.total || 0}
+                          </td>
+                          <td className="border border-gray-200 px-4 py-2">
+                            {[...user.targetAchieved.scooty.history]
+                              .reverse()
+                              .find(
+                                (entry) => entry.month === selectedHistoryMonth
+                              )?.completed || 0}
+                          </td>
+                          <td className="border border-gray-200 px-4 py-2">
+                            {[...user.targetAchieved.scooty.history]
+                              .reverse()
+                              .find(
+                                (entry) => entry.month === selectedHistoryMonth
+                              )?.pending || 0}
                           </td>
                         </tr>
                       </>
