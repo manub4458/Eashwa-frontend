@@ -27,8 +27,9 @@ const LoginHrPage = () => {
         if (response.data.user.role === "employee") {
           router.push("/employees");
         } else if (
-          response.data.user.role === "hr" ||
-          response.data.user.role === "admin"
+          response.data.user.role === "hr" || 
+          response.data.user.role === "admin" || 
+          response.data.user.role === "manager" 
         ) {
           router.push("/hr-dash");
         } else {

@@ -446,70 +446,97 @@ const Employe = () => {
                 </tr>
               </thead>
               <tbody>
-                {selectedHistoryMonth ? (
-                  <>
-                    <tr>
-                      <td className="border p-2">Battery</td>
-                      <td className="border p-2">
-                        {user?.targetAchieved?.battery?.history?.find(
-                          (entry) => entry.month === selectedHistoryMonth
-                        )?.total || 0}
-                      </td>
-                      <td className="border p-2">
-                        {user?.targetAchieved?.battery?.history?.find(
-                          (entry) => entry.month === selectedHistoryMonth
-                        )?.completed || 0}
-                      </td>
-                      <td className="border p-2">
-                        {user?.targetAchieved?.battery?.history?.find(
-                          (entry) => entry.month === selectedHistoryMonth
-                        )?.pending || 0}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="border p-2">E-Rickshaw</td>
-                      <td className="border p-2">
-                        {user?.targetAchieved?.eRickshaw?.history?.find(
-                          (entry) => entry.month === selectedHistoryMonth
-                        )?.total || 0}
-                      </td>
-                      <td className="border p-2">
-                        {user?.targetAchieved?.eRickshaw?.history?.find(
-                          (entry) => entry.month === selectedHistoryMonth
-                        )?.completed || 0}
-                      </td>
-                      <td className="border p-2">
-                        {user?.targetAchieved?.eRickshaw?.history?.find(
-                          (entry) => entry.month === selectedHistoryMonth
-                        )?.pending || 0}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="border p-2">Scooty</td>
-                      <td className="border p-2">
-                        {user?.targetAchieved?.scooty?.history?.find(
-                          (entry) => entry.month === selectedHistoryMonth
-                        )?.total || 0}
-                      </td>
-                      <td className="border p-2">
-                        {user?.targetAchieved?.scooty?.history?.find(
-                          (entry) => entry.month === selectedHistoryMonth
-                        )?.completed || 0}
-                      </td>
-                      <td className="border p-2">
-                        {user?.targetAchieved?.scooty?.history?.find(
-                          (entry) => entry.month === selectedHistoryMonth
-                        )?.pending || 0}
-                      </td>
-                    </tr>
-                  </>
-                ) : (
-                  <tr>
-                    <td colSpan="4" className="border p-2 text-center">
-                      No history available
-                    </td>
-                  </tr>
-                )}
+              {selectedHistoryMonth ? (
+                      <>
+                        <tr>
+                          <td className="border border-gray-200 px-4 py-2">
+                            Battery
+                          </td>
+                          <td className="border border-gray-200 px-4 py-2">
+                            {[...user.targetAchieved.battery.history]
+                              .reverse()
+                              .find(
+                                (entry) => entry.month === selectedHistoryMonth
+                              )?.total || 0}
+                          </td>
+                          <td className="border border-gray-200 px-4 py-2">
+                            {[...user.targetAchieved.battery.history]
+                              .reverse()
+                              .find(
+                                (entry) => entry.month === selectedHistoryMonth
+                              )?.completed || 0}
+                          </td>
+                          <td className="border border-gray-200 px-4 py-2">
+                            {[...user.targetAchieved.battery.history]
+                              .reverse()
+                              .find(
+                                (entry) => entry.month === selectedHistoryMonth
+                              )?.pending || 0}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="border border-gray-200 px-4 py-2">
+                            E-Rickshaw
+                          </td>
+                          <td className="border border-gray-200 px-4 py-2">
+                            {[...user.targetAchieved.eRickshaw.history]
+                              .reverse()
+                              .find(
+                                (entry) => entry.month === selectedHistoryMonth
+                              )?.total || 0}
+                          </td>
+                          <td className="border border-gray-200 px-4 py-2">
+                            {[...user.targetAchieved.eRickshaw.history]
+                              .reverse()
+                              .find(
+                                (entry) => entry.month === selectedHistoryMonth
+                              )?.completed || 0}
+                          </td>
+                          <td className="border border-gray-200 px-4 py-2">
+                            {[...user.targetAchieved.eRickshaw.history]
+                              .reverse()
+                              .find(
+                                (entry) => entry.month === selectedHistoryMonth
+                              )?.pending || 0}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="border border-gray-200 px-4 py-2">
+                            Scooty
+                          </td>
+                          <td className="border border-gray-200 px-4 py-2">
+                            {[...user.targetAchieved.scooty.history]
+                              .reverse()
+                              .find(
+                                (entry) => entry.month === selectedHistoryMonth
+                              )?.total || 0}
+                          </td>
+                          <td className="border border-gray-200 px-4 py-2">
+                            {[...user.targetAchieved.scooty.history]
+                              .reverse()
+                              .find(
+                                (entry) => entry.month === selectedHistoryMonth
+                              )?.completed || 0}
+                          </td>
+                          <td className="border border-gray-200 px-4 py-2">
+                            {[...user.targetAchieved.scooty.history]
+                              .reverse()
+                              .find(
+                                (entry) => entry.month === selectedHistoryMonth
+                              )?.pending || 0}
+                          </td>
+                        </tr>
+                      </>
+                    ) : (
+                      <tr>
+                        <td
+                          colSpan="4"
+                          className="border border-gray-200 px-4 py-2 text-center"
+                        >
+                          No history available
+                        </td>
+                      </tr>
+                    )}
               </tbody>
             </table>
           </div>

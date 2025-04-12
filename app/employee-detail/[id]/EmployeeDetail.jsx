@@ -4,6 +4,7 @@ import axios from "axios";
 import { useParams } from "next/navigation";
 import * as XLSX from "xlsx";
 import HistoryTable from "../../../components/ui/HistoryTable";
+import Link from "next/link";
 
 const EmployeeDetail = () => {
   const [user, setUser] = useState(null);
@@ -19,6 +20,7 @@ const EmployeeDetail = () => {
   const [filterDate, setFilterDate] = useState("");
   const [filterDateTarget, setFilterDateTarget] = useState("");
   const [selectedHistoryMonth, setSelectedHistoryMonth] = useState("");
+  const [employees, setEmployees] = useState([]);
   const { id } = useParams();
   const fileInputRef = React.useRef(null);
 
@@ -31,6 +33,28 @@ const EmployeeDetail = () => {
       day: "numeric",
     });
   }
+
+  const fetchEmployees = async () => {
+    try {
+      const token = localStorage.getItem("token"); // Assuming the token is stored in localStorage
+      const response = await axios.get(
+        `https://backend-eashwa.vercel.app/api/user/admin-managed-employees/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // Include token for authentication
+          },
+        }
+      );
+      console.log("response", response);
+      setEmployees(response.data.employees); 
+
+      // setHrInfo(response.data.requestingUser); 
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+
+
 
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
@@ -261,6 +285,7 @@ const EmployeeDetail = () => {
     fetchUser();
     fetchLeadsHistory(token);
     fetchTargetLeadsHistory(token);
+    fetchEmployees();
   }, [id]);
 
   const handleDownload = () => {
@@ -848,6 +873,60 @@ const EmployeeDetail = () => {
           showDelete={true}
           handleDeleteFile={handleDeleteFile}
         />
+
+<main className="container mx-auto px-6 py-12">
+        <h2 className="text-2xl font-bold text-[#d86331] mb-8">
+          Employee Information
+        </h2>
+
+        {/* Employee Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+          {employees.length > 0 ? (
+            employees.map((employee) => (
+              <Link
+                key={employee._id}
+                href={`/employee-detail/${employee._id}`}
+              >
+                <div className="bg-white rounded-xl shadow-lg border-t-4 border-[#d86331] p-6 flex flex-col items-center transition-transform transform hover:scale-105">
+                  <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-blue-400 shadow-lg mb-4">
+                    <img
+                      src={
+                        employee.profilePicture || "/placeholder-profile.png"
+                      }
+                      alt={`${employee.name}'s profile`}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-800">
+                    {employee.name || "N/A"}
+                  </h3>
+                  <p className="text-gray-500 text-sm">
+                    {employee.post || "N/A"}
+                  </p>
+                  <div className="mt-4 text-sm text-gray-600 space-y-1">
+                    <p>
+                      <strong>Email:</strong> {employee.email || "N/A"}
+                    </p>
+                    <p>
+                      <strong>Phone:</strong> {employee.phone || "N/A"}
+                    </p>
+                    <p>
+                      <strong>Employee ID:</strong>{" "}
+                      {employee.employeeId || "N/A"}
+                    </p>
+                    <p>
+                      <strong>Joining Date:</strong>{" "}
+                      {employee.joiningDate || "N/A"}
+                    </p>
+                  </div>
+                </div>
+              </Link>
+            ))
+          ) : (
+            <p className="text-center text-gray-500">No employees found.</p>
+          )}
+        </div>
+      </main>
       </main>
 
       <footer className="bg-gray-800 text-white py-4 mt-auto">
@@ -857,6 +936,7 @@ const EmployeeDetail = () => {
           </p>
         </div>
       </footer>
+
     </div>
   );
 };

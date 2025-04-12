@@ -22,15 +22,36 @@ const HrDashboard = () => {
           }
         );
         console.log("response", response);
-        setEmployees(response.data.employees); // Assuming the response contains an array of employees
+        // setEmployees(response.data.employees); 
         setHrInfo(response.data.requestingUser); // Assuming the response contains HR info
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     };
 
+    const fetchEmployees = async () => {
+      try {
+        const token = localStorage.getItem("token"); // Assuming the token is stored in localStorage
+        const response = await axios.get(
+          "https://backend-eashwa.vercel.app/api/user/managed-employees",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`, // Include token for authentication
+            },
+          }
+        );
+        console.log("response", response);
+        setEmployees(response.data.employees); 
+
+        // setHrInfo(response.data.requestingUser); 
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
     fetchData();
+    fetchEmployees();
   }, []);
+
 
   const handleLogout = () => {
     localStorage.removeItem("token");
