@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import HistoryTable from "../../components/ui/HistoryTable";
+import { FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
 
 const Employe = () => {
   const [user, setUser] = useState(null);
@@ -29,9 +30,6 @@ const Employe = () => {
     });
   }
 
-  //   router.delete("/leads/regular-file/:fileId", deleteRegularLeadFile);  feedback delete employee
-  // router.delete("/leads/target-file/:fileId", deleteTargetLeadFile);
-
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -44,13 +42,15 @@ const Employe = () => {
     if (!token) {
       router.push("/login");
       return;
-      F;
     }
 
     const userData = localStorage.getItem("user");
     if (userData) {
       const parsedUser = JSON.parse(userData);
-      setUser(parsedUser);
+      setUser({
+        ...parsedUser,
+        ratings: parsedUser.ratings || { history: [], current: 0 },
+      });
       const allMonths = [
         ...(parsedUser?.targetAchieved?.battery?.history || []).map(
           (entry) => entry.month
@@ -92,8 +92,12 @@ const Employe = () => {
       }
 
       const data = await response.json();
-      localStorage.setItem("user", JSON.stringify(data.user));
-      setUser(data.user);
+      const userData = {
+        ...data.user,
+        ratings: data.user.ratings || { history: [], current: 0 },
+      };
+      localStorage.setItem("user", JSON.stringify(userData));
+      setUser(userData);
       const allMonths = [
         ...(data.user?.targetAchieved?.battery?.history || []).map(
           (entry) => entry.month
@@ -203,31 +207,6 @@ const Employe = () => {
     }
   };
 
-  // const handleDeleteFile = (fileId) => {
-  //   const updatedLeads = uploadedLeads.filter((lead) => lead._id !== fileId);
-  //   setUploadedLeads(updatedLeads);
-  //   localStorage.setItem("uploadedLeads", JSON.stringify(updatedLeads));
-  //   alert("File deleted successfully!");
-  // };
-
-  // const handleDeleteFile = async (fileId) => {
-  //   try {
-  //     const token = localStorage.getItem("token");
-
-  //     const response = await axios.delete(`https://backend-eashwa.vercel.app/api/user/leads/regular-file/${fileId}`, {
-  //       headers: {
-  //         Authorization: `Bearer ${token}`,
-  //       },
-  //     });
-
-  //     console.log("File deleted successfully:", response.data);
-  //     fetchLeadsHistory(token);
-
-  //     // Optional: update your local state or refetch data
-  //   } catch (error) {
-  //     console.error("Error deleting file:", error.response?.data || error.message);
-  //   }
-  // };
   const handleDeleteFile = async (fileId) => {
     try {
       const token = localStorage.getItem("token");
@@ -361,8 +340,140 @@ const Employe = () => {
             </div>
           </div>
         </section>
+        <section className="bg-white rounded-xl shadow-md p-8">
+          <h2 className="text-2xl font-semibold text-[#d86331] mb-4">
+            Current Rating
+          </h2>
+          <div className="mb-6">
+            {/* <h3 className="text-xl font-medium text-[#d86331] mb-2">
+              Current Rating
+            </h3> */}
+            <div className="flex items-center gap-2">
+              {user?.ratings?.current ? (
+                <>
+                  <div className="flex">
+                    {[...Array(5)].map((_, index) => {
+                      const ratingValue = user?.ratings.current;
+                      if (index + 1 <= Math.floor(ratingValue)) {
+                        return (
+                          <FaStar
+                            key={index}
+                            size={20}
+                            className="text-yellow-400"
+                          />
+                        );
+                      } else if (
+                        index < ratingValue &&
+                        ratingValue % 1 >= 0.3
+                      ) {
+                        return (
+                          <FaStarHalfAlt
+                            key={index}
+                            size={20}
+                            className="text-yellow-400"
+                          />
+                        );
+                      } else {
+                        return (
+                          <FaRegStar
+                            key={index}
+                            size={20}
+                            className="text-gray-300"
+                          />
+                        );
+                      }
+                    })}
+                  </div>
+                  <span className="text-gray-700">
+                    {user.ratings.current.toFixed(1)}
+                  </span>
+                </>
+              ) : (
+                <p className="text-gray-500">No current rating available</p>
+              )}
+            </div>
+          </div>
+          <div>
+            <h3 className="text-xl font-medium text-[#d86331] mb-2">
+              Rating History
+            </h3>
+            <div className="overflow-x-auto">
+              <table className="min-w-full bg-white border border-gray-200">
+                <thead>
+                  <tr className="bg-indigo-100">
+                    <th className="border border-gray-200 px-4 py-2">Month</th>
+                    <th className="border border-gray-200 px-4 py-2">
+                      Admin Rating
+                    </th>
+                    <th className="border border-gray-200 px-4 py-2">
+                      Manager Rating
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {user?.ratings?.history?.length > 0 ? (
+                    user?.ratings.history.map((entry, index) => (
+                      <tr key={index} className="text-center">
+                        <td className="border border-gray-200 px-4 py-2">
+                          {entry.month}
+                        </td>
+                        <td className="border border-gray-200 px-4 py-2">
+                          {entry.adminRating ? (
+                            <div className="flex justify-center">
+                              {[...Array(5)].map((_, i) => (
+                                <FaStar
+                                  key={i}
+                                  size={16}
+                                  className={
+                                    i < entry.adminRating
+                                      ? "text-yellow-400"
+                                      : "text-gray-300"
+                                  }
+                                />
+                              ))}
+                            </div>
+                          ) : (
+                            "-"
+                          )}
+                        </td>
+                        <td className="border border-gray-200 px-4 py-2">
+                          {entry.managerRating ? (
+                            <div className="flex justify-center">
+                              {[...Array(5)].map((_, i) => (
+                                <FaStar
+                                  key={i}
+                                  size={16}
+                                  className={
+                                    i < entry.managerRating
+                                      ? "text-yellow-400"
+                                      : "text-gray-300"
+                                  }
+                                />
+                              ))}
+                            </div>
+                          ) : (
+                            "-"
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td
+                        colSpan="3"
+                        className="border border-gray-200 px-4 py-2 text-center"
+                      >
+                        No rating history available
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
 
-        <section className="bg-white rounded-xl shadow-lg p-8 border-2 border-indigo-400">
+        <section className="bg-white rounded-xl shadow-lg p-8 border-2">
           <h2 className="text-3xl font-semibold text-[#d86331] mb-6 text-center">
             Current Monthly Targets
           </h2>
@@ -446,97 +557,88 @@ const Employe = () => {
                 </tr>
               </thead>
               <tbody>
-              {selectedHistoryMonth ? (
-                      <>
-                        <tr>
-                          <td className="border border-gray-200 px-4 py-2">
-                            Battery
-                          </td>
-                          <td className="border border-gray-200 px-4 py-2">
-                            {[...user.targetAchieved.battery.history]
-                              .reverse()
-                              .find(
-                                (entry) => entry.month === selectedHistoryMonth
-                              )?.total || 0}
-                          </td>
-                          <td className="border border-gray-200 px-4 py-2">
-                            {[...user.targetAchieved.battery.history]
-                              .reverse()
-                              .find(
-                                (entry) => entry.month === selectedHistoryMonth
-                              )?.completed || 0}
-                          </td>
-                          <td className="border border-gray-200 px-4 py-2">
-                            {[...user.targetAchieved.battery.history]
-                              .reverse()
-                              .find(
-                                (entry) => entry.month === selectedHistoryMonth
-                              )?.pending || 0}
-                          </td>
-                        </tr>
-                        <tr>
-                          <td className="border border-gray-200 px-4 py-2">
-                            E-Rickshaw
-                          </td>
-                          <td className="border border-gray-200 px-4 py-2">
-                            {[...user.targetAchieved.eRickshaw.history]
-                              .reverse()
-                              .find(
-                                (entry) => entry.month === selectedHistoryMonth
-                              )?.total || 0}
-                          </td>
-                          <td className="border border-gray-200 px-4 py-2">
-                            {[...user.targetAchieved.eRickshaw.history]
-                              .reverse()
-                              .find(
-                                (entry) => entry.month === selectedHistoryMonth
-                              )?.completed || 0}
-                          </td>
-                          <td className="border border-gray-200 px-4 py-2">
-                            {[...user.targetAchieved.eRickshaw.history]
-                              .reverse()
-                              .find(
-                                (entry) => entry.month === selectedHistoryMonth
-                              )?.pending || 0}
-                          </td>
-                        </tr>
-                        <tr>
-                          <td className="border border-gray-200 px-4 py-2">
-                            Scooty
-                          </td>
-                          <td className="border border-gray-200 px-4 py-2">
-                            {[...user.targetAchieved.scooty.history]
-                              .reverse()
-                              .find(
-                                (entry) => entry.month === selectedHistoryMonth
-                              )?.total || 0}
-                          </td>
-                          <td className="border border-gray-200 px-4 py-2">
-                            {[...user.targetAchieved.scooty.history]
-                              .reverse()
-                              .find(
-                                (entry) => entry.month === selectedHistoryMonth
-                              )?.completed || 0}
-                          </td>
-                          <td className="border border-gray-200 px-4 py-2">
-                            {[...user.targetAchieved.scooty.history]
-                              .reverse()
-                              .find(
-                                (entry) => entry.month === selectedHistoryMonth
-                              )?.pending || 0}
-                          </td>
-                        </tr>
-                      </>
-                    ) : (
-                      <tr>
-                        <td
-                          colSpan="4"
-                          className="border border-gray-200 px-4 py-2 text-center"
-                        >
-                          No history available
-                        </td>
-                      </tr>
-                    )}
+                {selectedHistoryMonth ? (
+                  <>
+                    <tr>
+                      <td className="border border-gray-200 px-4 py-2">
+                        Battery
+                      </td>
+                      <td className="border border-gray-200 px-4 py-2">
+                        {[...user.targetAchieved.battery.history]
+                          .reverse()
+                          .find((entry) => entry.month === selectedHistoryMonth)
+                          ?.total || 0}
+                      </td>
+                      <td className="border border-gray-200 px-4 py-2">
+                        {[...user.targetAchieved.battery.history]
+                          .reverse()
+                          .find((entry) => entry.month === selectedHistoryMonth)
+                          ?.completed || 0}
+                      </td>
+                      <td className="border border-gray-200 px-4 py-2">
+                        {[...user.targetAchieved.battery.history]
+                          .reverse()
+                          .find((entry) => entry.month === selectedHistoryMonth)
+                          ?.pending || 0}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-gray-200 px-4 py-2">
+                        E-Rickshaw
+                      </td>
+                      <td className="border border-gray-200 px-4 py-2">
+                        {[...user.targetAchieved.eRickshaw.history]
+                          .reverse()
+                          .find((entry) => entry.month === selectedHistoryMonth)
+                          ?.total || 0}
+                      </td>
+                      <td className="border border-gray-200 px-4 py-2">
+                        {[...user.targetAchieved.eRickshaw.history]
+                          .reverse()
+                          .find((entry) => entry.month === selectedHistoryMonth)
+                          ?.completed || 0}
+                      </td>
+                      <td className="border border-gray-200 px-4 py-2">
+                        {[...user.targetAchieved.eRickshaw.history]
+                          .reverse()
+                          .find((entry) => entry.month === selectedHistoryMonth)
+                          ?.pending || 0}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-gray-200 px-4 py-2">
+                        Scooty
+                      </td>
+                      <td className="border border-gray-200 px-4 py-2">
+                        {[...user.targetAchieved.scooty.history]
+                          .reverse()
+                          .find((entry) => entry.month === selectedHistoryMonth)
+                          ?.total || 0}
+                      </td>
+                      <td className="border border-gray-200 px-4 py-2">
+                        {[...user.targetAchieved.scooty.history]
+                          .reverse()
+                          .find((entry) => entry.month === selectedHistoryMonth)
+                          ?.completed || 0}
+                      </td>
+                      <td className="border border-gray-200 px-4 py-2">
+                        {[...user.targetAchieved.scooty.history]
+                          .reverse()
+                          .find((entry) => entry.month === selectedHistoryMonth)
+                          ?.pending || 0}
+                      </td>
+                    </tr>
+                  </>
+                ) : (
+                  <tr>
+                    <td
+                      colSpan="4"
+                      className="border border-gray-200 px-4 py-2 text-center"
+                    >
+                      No history available
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
