@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import * as XLSX from "xlsx";
 import HistoryTable from "../../../components/ui/HistoryTable";
 import Link from "next/link";
+import { FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
 
 const EmployeeDetail = () => {
   const [user, setUser] = useState(null);
@@ -21,6 +22,9 @@ const EmployeeDetail = () => {
   const [filterDateTarget, setFilterDateTarget] = useState("");
   const [selectedHistoryMonth, setSelectedHistoryMonth] = useState("");
   const [employees, setEmployees] = useState([]);
+  const [rating, setRating] = useState(0);
+  const [ratingMonth, setRatingMonth] = useState("");
+  const [isSubmittingRating, setIsSubmittingRating] = useState(false);
   const { id } = useParams();
   const fileInputRef = React.useRef(null);
 
@@ -36,25 +40,20 @@ const EmployeeDetail = () => {
 
   const fetchEmployees = async () => {
     try {
-      const token = localStorage.getItem("token"); // Assuming the token is stored in localStorage
+      const token = localStorage.getItem("token");
       const response = await axios.get(
         `https://backend-eashwa.vercel.app/api/user/admin-managed-employees/${id}`,
         {
           headers: {
-            Authorization: `Bearer ${token}`, // Include token for authentication
+            Authorization: `Bearer ${token}`,
           },
         }
       );
-      console.log("response", response);
-      setEmployees(response.data.employees); 
-
-      // setHrInfo(response.data.requestingUser); 
+      setEmployees(response.data.employees);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
   };
-
-
 
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
@@ -118,7 +117,6 @@ const EmployeeDetail = () => {
       );
       const data = response.data;
       setUploadedLeads(data.files);
-      localStorage.setItem("uploadedLeads", JSON.stringify(employeeLeads)); // Optional: sync with Employe
     } catch (error) {
       console.error("Error fetching leads history:", error);
     }
@@ -151,7 +149,7 @@ const EmployeeDetail = () => {
             "Content-Type": "application/json",
           },
           data: {
-            requestId: id, // send requestId in body
+            requestId: id,
           },
         }
       );
@@ -178,7 +176,7 @@ const EmployeeDetail = () => {
             "Content-Type": "application/json",
           },
           data: {
-            requestId: id, // send requestId in body
+            requestId: id,
           },
         }
       );
@@ -256,7 +254,10 @@ const EmployeeDetail = () => {
         }
       );
       const userData = response.data.user;
-      setUser(userData);
+      setUser({
+        ...userData,
+        ratings: userData.ratings || { history: [] },
+      });
       setVisits(response.data.visitors);
       setLeads(response.data.leads);
 
@@ -277,6 +278,55 @@ const EmployeeDetail = () => {
       }
     } catch (error) {
       console.error("Error fetching user:", error);
+    }
+  };
+
+  const submitRating = async () => {
+    try {
+      setIsSubmittingRating(true);
+      const token = localStorage.getItem("token");
+      const userInfo = JSON.parse(localStorage.getItem("user"));
+      const currentDate = new Date();
+      const formattedMonth =
+        ratingMonth ||
+        `${currentDate.getFullYear()}-${String(
+          currentDate.getMonth() + 1
+        ).padStart(2, "0")}`;
+
+      const ratingData = {
+        ratings: {
+          history: [
+            {
+              month: formattedMonth,
+              [userInfo.role === "admin" ? "adminRating" : "managerRating"]:
+                rating,
+              [userInfo.role === "admin" ? "adminId" : "managerId"]:
+                userInfo._id,
+            },
+          ],
+        },
+      };
+
+      await axios.patch(
+        `https://backend-eashwa.vercel.app/api/user/update-employee/${id}`,
+        ratingData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      alert("Rating submitted successfully!");
+      setRating(0);
+      setRatingMonth("");
+      await fetchUser();
+    } catch (error) {
+      console.error("Error submitting rating:", error);
+      alert("Failed to submit rating. Please try again.");
+    } finally {
+      setIsSubmittingRating(false);
     }
   };
 
@@ -631,79 +681,6 @@ const EmployeeDetail = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {/* {selectedHistoryMonth ? (
-                      <>
-                        <tr>
-                          <td className="border border-gray-200 px-4 py-2">
-                            Battery
-                          </td>
-                          <td className="border border-gray-200 px-4 py-2">
-                            {user.targetAchieved.battery.history.find(
-                              (entry) => entry.month === selectedHistoryMonth
-                            )?.total || 0}
-                          </td>
-                          <td className="border border-gray-200 px-4 py-2">
-                            {user.targetAchieved.battery.history.find(
-                              (entry) => entry.month === selectedHistoryMonth
-                            )?.completed || 0}
-                          </td>
-                          <td className="border border-gray-200 px-4 py-2">
-                            {user.targetAchieved.battery.history.find(
-                              (entry) => entry.month === selectedHistoryMonth
-                            )?.pending || 0}
-                          </td>
-                        </tr>
-                        <tr>
-                          <td className="border border-gray-200 px-4 py-2">
-                            E-Rickshaw
-                          </td>
-                          <td className="border border-gray-200 px-4 py-2">
-                            {user.targetAchieved.eRickshaw.history.find(
-                              (entry) => entry.month === selectedHistoryMonth
-                            )?.total || 0}
-                          </td>
-                          <td className="border border-gray-200 px-4 py-2">
-                            {user.targetAchieved.eRickshaw.history.find(
-                              (entry) => entry.month === selectedHistoryMonth
-                            )?.completed || 0}
-                          </td>
-                          <td className="border border-gray-200 px-4 py-2">
-                            {user.targetAchieved.eRickshaw.history.find(
-                              (entry) => entry.month === selectedHistoryMonth
-                            )?.pending || 0}
-                          </td>
-                        </tr>
-                        <tr>
-                          <td className="border border-gray-200 px-4 py-2">
-                            Scooty
-                          </td>
-                          <td className="border border-gray-200 px-4 py-2">
-                            {user.targetAchieved.scooty.history.find(
-                              (entry) => entry.month === selectedHistoryMonth
-                            )?.total || 0}
-                          </td>
-                          <td className="border border-gray-200 px-4 py-2">
-                            {user.targetAchieved.scooty.history.find(
-                              (entry) => entry.month === selectedHistoryMonth
-                            )?.completed || 0}
-                          </td>
-                          <td className="border border-gray-200 px-4 py-2">
-                            {user.targetAchieved.scooty.history.find(
-                              (entry) => entry.month === selectedHistoryMonth
-                            )?.pending || 0}
-                          </td>
-                        </tr>
-                      </>
-                    ) : (
-                      <tr>
-                        <td
-                          colSpan="4"
-                          className="border border-gray-200 px-4 py-2 text-center"
-                        >
-                          No history available
-                        </td>
-                      </tr>
-                    )} */}
                     {selectedHistoryMonth ? (
                       <>
                         <tr>
@@ -787,6 +764,7 @@ const EmployeeDetail = () => {
                       </>
                     ) : (
                       <tr>
+                        exchanging
                         <td
                           colSpan="4"
                           className="border border-gray-200 px-4 py-2 text-center"
@@ -797,6 +775,179 @@ const EmployeeDetail = () => {
                     )}
                   </tbody>
                 </table>
+              </div>
+            </div>
+
+            <div className="mt-8 bg-white rounded-lg shadow-md p-6">
+              <h2 className="text-2xl font-bold text-[#d86331] mb-4">
+                Employee Rating
+              </h2>
+              <div className="flex flex-col md:flex-row gap-4 mb-4">
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Select Month
+                  </label>
+                  <input
+                    type="month"
+                    value={ratingMonth}
+                    onChange={(e) => setRatingMonth(e.target.value)}
+                    className="border p-2 rounded w-full focus:border-[#d86331] focus:ring-[#d86331]"
+                  />
+                </div>
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Rating (1-5)
+                  </label>
+                  <div className="flex gap-1">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <FaStar
+                        key={star}
+                        size={24}
+                        className={`cursor-pointer ${
+                          star <= rating ? "text-yellow-400" : "text-gray-300"
+                        }`}
+                        onClick={() => setRating(star)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={submitRating}
+                disabled={isSubmittingRating || rating === 0}
+                className="bg-[#d86331] text-white px-6 py-2 rounded-lg hover:bg-[#c55a2d] transition-colors disabled:opacity-50"
+              >
+                {isSubmittingRating ? "Submitting..." : "Submit Rating"}
+              </button>
+              <div className="my-8">
+                <h3 className="text-lg font-semibold text-[#d86331] mb-2">
+                  Current Rating
+                </h3>
+                <div className="flex items-center gap-2">
+                  {user?.ratings?.current ? (
+                    <>
+                      <div className="flex">
+                        {[...Array(5)].map((_, index) => {
+                          const ratingValue = user.ratings.current;
+                          if (index + 1 <= Math.floor(ratingValue)) {
+                            return (
+                              <FaStar
+                                key={index}
+                                size={20}
+                                className="text-yellow-400"
+                              />
+                            );
+                          } else if (
+                            index < ratingValue &&
+                            ratingValue % 1 >= 0.3
+                          ) {
+                            return (
+                              <FaStarHalfAlt
+                                key={index}
+                                size={20}
+                                className="text-yellow-400"
+                              />
+                            );
+                          } else {
+                            return (
+                              <FaRegStar
+                                key={index}
+                                size={20}
+                                className="text-gray-300"
+                              />
+                            );
+                          }
+                        })}
+                      </div>
+                      <span className="text-gray-700">
+                        {user.ratings.current.toFixed(1)}
+                      </span>
+                    </>
+                  ) : (
+                    <p className="text-gray-500">No current rating</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="mt-6">
+                <h3 className="text-lg font-semibold text-[#d86331] mb-2">
+                  Rating History
+                </h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full table-auto border-collapse border border-gray-200">
+                    <thead>
+                      <tr className="bg-indigo-100">
+                        <th className="border border-gray-200 px-4 py-2">
+                          Month
+                        </th>
+                        <th className="border border-gray-200 px-4 py-2">
+                          Admin Rating
+                        </th>
+                        <th className="border border-gray-200 px-4 py-2">
+                          Manager Rating
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {user.ratings?.history?.length > 0 ? (
+                        user.ratings.history.map((entry, index) => (
+                          <tr key={index} className="text-center">
+                            <td className="border border-gray-200 px-4 py-2">
+                              {entry.month}
+                            </td>
+                            <td className="border border-gray-200 px-4 py-2">
+                              {entry.adminRating ? (
+                                <div className="flex justify-center">
+                                  {[...Array(5)].map((_, i) => (
+                                    <FaStar
+                                      key={i}
+                                      size={16}
+                                      className={
+                                        i < entry.adminRating
+                                          ? "text-yellow-400"
+                                          : "text-gray-300"
+                                      }
+                                    />
+                                  ))}
+                                </div>
+                              ) : (
+                                "-"
+                              )}
+                            </td>
+                            <td className="border border-gray-200 px-4 py-2">
+                              {entry.managerRating ? (
+                                <div className="flex justify-center">
+                                  {[...Array(5)].map((_, i) => (
+                                    <FaStar
+                                      key={i}
+                                      size={16}
+                                      className={
+                                        i < entry.managerRating
+                                          ? "text-yellow-400"
+                                          : "text-gray-300"
+                                      }
+                                    />
+                                  ))}
+                                </div>
+                              ) : (
+                                "-"
+                              )}
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td
+                            colSpan="3"
+                            className="border border-gray-200 px-4 py-2 text-center"
+                          >
+                            No rating history available
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </div>
@@ -874,59 +1025,58 @@ const EmployeeDetail = () => {
           handleDeleteFile={handleDeleteFile}
         />
 
-<main className="container mx-auto px-6 py-12">
-        <h2 className="text-2xl font-bold text-[#d86331] mb-8">
-          Employee Information
-        </h2>
+        <main className="container mx-auto px-6 py-12">
+          <h2 className="text-2xl font-bold text-[#d86331] mb-8">
+            Employee Information
+          </h2>
 
-        {/* Employee Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-          {employees.length > 0 ? (
-            employees.map((employee) => (
-              <Link
-                key={employee._id}
-                href={`/employee-detail/${employee._id}`}
-              >
-                <div className="bg-white rounded-xl shadow-lg border-t-4 border-[#d86331] p-6 flex flex-col items-center transition-transform transform hover:scale-105">
-                  <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-blue-400 shadow-lg mb-4">
-                    <img
-                      src={
-                        employee.profilePicture || "/placeholder-profile.png"
-                      }
-                      alt={`${employee.name}'s profile`}
-                      className="w-full h-full object-cover"
-                    />
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+            {employees.length > 0 ? (
+              employees.map((employee) => (
+                <Link
+                  key={employee._id}
+                  href={`/employee-detail/${employee._id}`}
+                >
+                  <div className="bg-white rounded-xl shadow-lg border-t-4 border-[#d86331] p-6 flex flex-col items-center transition-transform transform hover:scale-105">
+                    <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-blue-400 shadow-lg mb-4">
+                      <img
+                        src={
+                          employee.profilePicture || "/placeholder-profile.png"
+                        }
+                        alt={`${employee.name}'s profile`}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-800">
+                      {employee.name || "N/A"}
+                    </h3>
+                    <p className="text-gray-500 text-sm">
+                      {employee.post || "N/A"}
+                    </p>
+                    <div className="mt-4 text-sm text-gray-600 space-y-1">
+                      <p>
+                        <strong>Email:</strong> {employee.email || "N/A"}
+                      </p>
+                      <p>
+                        <strong>Phone:</strong> {employee.phone || "N/A"}
+                      </p>
+                      <p>
+                        <strong>Employee ID:</strong>{" "}
+                        {employee.employeeId || "N/A"}
+                      </p>
+                      <p>
+                        <strong>Joining Date:</strong>{" "}
+                        {employee.joiningDate || "N/A"}
+                      </p>
+                    </div>
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-800">
-                    {employee.name || "N/A"}
-                  </h3>
-                  <p className="text-gray-500 text-sm">
-                    {employee.post || "N/A"}
-                  </p>
-                  <div className="mt-4 text-sm text-gray-600 space-y-1">
-                    <p>
-                      <strong>Email:</strong> {employee.email || "N/A"}
-                    </p>
-                    <p>
-                      <strong>Phone:</strong> {employee.phone || "N/A"}
-                    </p>
-                    <p>
-                      <strong>Employee ID:</strong>{" "}
-                      {employee.employeeId || "N/A"}
-                    </p>
-                    <p>
-                      <strong>Joining Date:</strong>{" "}
-                      {employee.joiningDate || "N/A"}
-                    </p>
-                  </div>
-                </div>
-              </Link>
-            ))
-          ) : (
-            <p className="text-center text-gray-500">No employees found.</p>
-          )}
-        </div>
-      </main>
+                </Link>
+              ))
+            ) : (
+              <p className="text-center text-gray-500">No employees found.</p>
+            )}
+          </div>
+        </main>
       </main>
 
       <footer className="bg-gray-800 text-white py-4 mt-auto">
@@ -936,7 +1086,6 @@ const EmployeeDetail = () => {
           </p>
         </div>
       </footer>
-
     </div>
   );
 };
