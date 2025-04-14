@@ -340,14 +340,12 @@ const Employe = () => {
             </div>
           </div>
         </section>
+
         <section className="bg-white rounded-xl shadow-md p-8">
           <h2 className="text-2xl font-semibold text-[#d86331] mb-4">
             Current Rating
           </h2>
           <div className="mb-6">
-            {/* <h3 className="text-xl font-medium text-[#d86331] mb-2">
-              Current Rating
-            </h3> */}
             <div className="flex items-center gap-2">
               {user?.ratings?.current ? (
                 <>
@@ -492,6 +490,10 @@ const Employe = () => {
                 <strong>Pending:</strong>{" "}
                 {user?.targetAchieved?.battery?.current?.pending || 0}
               </p>
+              <p>
+                <strong>Extra:</strong>{" "}
+                {user?.targetAchieved?.battery?.current?.extra || 0}
+              </p>
             </div>
             <div className="p-6 bg-indigo-50 rounded-lg shadow-md">
               <h3 className="text-xl font-bold text-[#d86331] mb-2">
@@ -509,6 +511,10 @@ const Employe = () => {
                 <strong>Pending:</strong>{" "}
                 {user?.targetAchieved?.eRickshaw?.current?.pending || 0}
               </p>
+              <p>
+                <strong>Extra:</strong>{" "}
+                {user?.targetAchieved?.eRickshaw?.current?.extra || 0}
+              </p>
             </div>
             <div className="p-6 bg-indigo-50 rounded-lg shadow-md">
               <h3 className="text-xl font-bold text-[#d86331] mb-2">Scooty</h3>
@@ -523,6 +529,10 @@ const Employe = () => {
               <p>
                 <strong>Pending:</strong>{" "}
                 {user?.targetAchieved?.scooty?.current?.pending || 0}
+              </p>
+              <p>
+                <strong>Extra:</strong>{" "}
+                {user?.targetAchieved?.scooty?.current?.extra || 0}
               </p>
             </div>
           </div>
@@ -554,6 +564,7 @@ const Employe = () => {
                   <th className="border p-2">Total</th>
                   <th className="border p-2">Completed</th>
                   <th className="border p-2">Pending</th>
+                  <th className="border p-2">Extra</th>
                 </tr>
               </thead>
               <tbody>
@@ -581,6 +592,12 @@ const Employe = () => {
                           .find((entry) => entry.month === selectedHistoryMonth)
                           ?.pending || 0}
                       </td>
+                      <td className="border border-gray-200 px-4 py-2">
+                        {[...user.targetAchieved.battery.history]
+                          .reverse()
+                          .find((entry) => entry.month === selectedHistoryMonth)
+                          ?.extra || 0}
+                      </td>
                     </tr>
                     <tr>
                       <td className="border border-gray-200 px-4 py-2">
@@ -603,6 +620,12 @@ const Employe = () => {
                           .reverse()
                           .find((entry) => entry.month === selectedHistoryMonth)
                           ?.pending || 0}
+                      </td>
+                      <td className="border border-gray-200 px-4 py-2">
+                        {[...user.targetAchieved.eRickshaw.history]
+                          .reverse()
+                          .find((entry) => entry.month === selectedHistoryMonth)
+                          ?.extra || 0}
                       </td>
                     </tr>
                     <tr>
@@ -627,12 +650,18 @@ const Employe = () => {
                           .find((entry) => entry.month === selectedHistoryMonth)
                           ?.pending || 0}
                       </td>
+                      <td className="border border-gray-200 px-4 py-2">
+                        {[...user.targetAchieved.scooty.history]
+                          .reverse()
+                          .find((entry) => entry.month === selectedHistoryMonth)
+                          ?.extra || 0}
+                      </td>
                     </tr>
                   </>
                 ) : (
                   <tr>
                     <td
-                      colSpan="4"
+                      colSpan="5"
                       className="border border-gray-200 px-4 py-2 text-center"
                     >
                       No history available

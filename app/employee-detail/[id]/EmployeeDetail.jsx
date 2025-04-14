@@ -358,9 +358,21 @@ const EmployeeDetail = () => {
         `https://backend-eashwa.vercel.app/api/user/update-target/${id}`,
         {
           month: currentMonth,
-          battery: user.targetAchieved.battery.current,
-          eRickshaw: user.targetAchieved.eRickshaw.current,
-          scooty: user.targetAchieved.scooty.current,
+          battery: {
+            total: user.targetAchieved.battery.current.total,
+            completed: user.targetAchieved.battery.current.completed,
+            extra: user.targetAchieved.battery.current.extra || 0,
+          },
+          eRickshaw: {
+            total: user.targetAchieved.eRickshaw.current.total,
+            completed: user.targetAchieved.eRickshaw.current.completed,
+            extra: user.targetAchieved.eRickshaw.current.extra || 0,
+          },
+          scooty: {
+            total: user.targetAchieved.scooty.current.total,
+            completed: user.targetAchieved.scooty.current.completed,
+            extra: user.targetAchieved.scooty.current.extra || 0,
+          },
         },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -377,25 +389,40 @@ const EmployeeDetail = () => {
   };
 
   const handleInputChange = React.useCallback((productType, field, value) => {
-    setUser((prev) => ({
-      ...prev,
-      targetAchieved: {
-        ...prev.targetAchieved,
-        [productType]: {
-          ...prev.targetAchieved[productType],
-          current: {
-            ...prev.targetAchieved[productType].current,
-            [field]: parseInt(value) || 0,
-            pending:
-              field === "total"
-                ? (parseInt(value) || 0) -
-                  prev.targetAchieved[productType].current.completed
-                : prev.targetAchieved[productType].current.total -
-                  (parseInt(value) || 0),
+    setUser((prev) => {
+      const newValue = parseInt(value) || 0;
+      const currentData = prev.targetAchieved[productType].current;
+      let updatedData = { ...currentData };
+
+      if (field === "total") {
+        updatedData.total = newValue;
+        updatedData.pending = newValue - currentData.completed;
+        updatedData.extra =
+          currentData.completed > newValue
+            ? currentData.completed - newValue
+            : 0;
+      } else if (field === "completed") {
+        updatedData.completed = newValue;
+        updatedData.pending = currentData.total - newValue;
+        updatedData.extra =
+          newValue > currentData.total ? newValue - currentData.total : 0;
+      }
+
+      // Ensure pending and extra are non-negative
+      updatedData.pending = Math.max(0, updatedData.pending);
+      updatedData.extra = Math.max(0, updatedData.extra);
+
+      return {
+        ...prev,
+        targetAchieved: {
+          ...prev.targetAchieved,
+          [productType]: {
+            ...prev.targetAchieved[productType],
+            current: updatedData,
           },
         },
-      },
-    }));
+      };
+    });
   }, []);
 
   const handleLeadDownload = () => {
@@ -491,7 +518,6 @@ const EmployeeDetail = () => {
                 onChange={(e) =>
                   onInputChange(productType, "completed", e.target.value)
                 }
-                max={data.current.total}
               />
             </div>
             <div>
@@ -502,6 +528,17 @@ const EmployeeDetail = () => {
                 type="number"
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#d86331] focus:ring-[#d86331]"
                 value={data.current.pending}
+                disabled
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Extra
+              </label>
+              <input
+                type="number"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#d86331] focus:ring-[#d86331]"
+                value={data.current.extra || 0}
                 disabled
               />
             </div>
@@ -518,6 +555,10 @@ const EmployeeDetail = () => {
             <p>
               <span className="font-medium">Pending:</span>{" "}
               {data.current.pending}
+            </p>
+            <p>
+              <span className="font-medium">Extra:</span>{" "}
+              {data.current.extra || 0}
             </p>
           </div>
         )}
@@ -678,6 +719,9 @@ const EmployeeDetail = () => {
                       <th className="border border-gray-200 px-4 py-2">
                         Pending
                       </th>
+                      <th className="border border-gray-200 px-4 py-2">
+                        Extra
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -708,6 +752,13 @@ const EmployeeDetail = () => {
                                 (entry) => entry.month === selectedHistoryMonth
                               )?.pending || 0}
                           </td>
+                          <td className="border border-gray-200 px-4 py-2">
+                            {[...user.targetAchieved.battery.history]
+                              .reverse()
+                              .find(
+                                (entry) => entry.month === selectedHistoryMonth
+                              )?.extra || 0}
+                          </td>
                         </tr>
                         <tr>
                           <td className="border border-gray-200 px-4 py-2">
@@ -733,6 +784,13 @@ const EmployeeDetail = () => {
                               .find(
                                 (entry) => entry.month === selectedHistoryMonth
                               )?.pending || 0}
+                          </td>
+                          <td className="border border-gray-200 px-4 py-2">
+                            {[...user.targetAchieved.eRickshaw.history]
+                              .reverse()
+                              .find(
+                                (entry) => entry.month === selectedHistoryMonth
+                              )?.extra || 0}
                           </td>
                         </tr>
                         <tr>
@@ -760,13 +818,19 @@ const EmployeeDetail = () => {
                                 (entry) => entry.month === selectedHistoryMonth
                               )?.pending || 0}
                           </td>
+                          <td className="border border-gray-200 px-4 py-2">
+                            {[...user.targetAchieved.scooty.history]
+                              .reverse()
+                              .find(
+                                (entry) => entry.month === selectedHistoryMonth
+                              )?.extra || 0}
+                          </td>
                         </tr>
                       </>
                     ) : (
                       <tr>
-                        exchanging
                         <td
-                          colSpan="4"
+                          colSpan="5"
                           className="border border-gray-200 px-4 py-2 text-center"
                         >
                           No history available
