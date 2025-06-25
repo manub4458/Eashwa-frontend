@@ -14,7 +14,7 @@ const HrDashboard = () => {
       try {
         const token = localStorage.getItem("token"); // Assuming the token is stored in localStorage
         const response = await axios.get(
-          "https://backend-eashwa-dgaw.vercel.app/api/user/employees/",
+          "https://backend-eashwa.vercel.app/api/user/employees/",
           {
             headers: {
               Authorization: `Bearer ${token}`, // Include token for authentication
@@ -33,7 +33,7 @@ const HrDashboard = () => {
       try {
         const token = localStorage.getItem("token"); // Assuming the token is stored in localStorage
         const response = await axios.get(
-          "https://backend-eashwa-dgaw.vercel.app/api/user/managed-employees",
+          "https://backend-eashwa.vercel.app/api/user/managed-employees",
           {
             headers: {
               Authorization: `Bearer ${token}`, // Include token for authentication

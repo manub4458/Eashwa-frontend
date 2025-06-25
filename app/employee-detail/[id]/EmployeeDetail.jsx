@@ -42,7 +42,7 @@ const EmployeeDetail = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        `https://backend-eashwa-dgaw.vercel.app/api/user/admin-managed-employees/${id}`,
+        `https://backend-eashwa.vercel.app/api/user/admin-managed-employees/${id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -66,7 +66,7 @@ const EmployeeDetail = () => {
       formData.append("file", file);
 
       const uploadResponse = await axios.post(
-        "https://backend-eashwa-dgaw.vercel.app/api/images/upload-excel",
+        "https://backend-eashwa.vercel.app/api/images/upload-excel",
         formData,
         {
           headers: {
@@ -79,7 +79,7 @@ const EmployeeDetail = () => {
       const fileUrl = uploadResponse.data.fileUrl;
 
       await axios.post(
-        "https://backend-eashwa-dgaw.vercel.app/api/user/process-leads",
+        "https://backend-eashwa.vercel.app/api/user/process-leads",
         {
           fileUrl: fileUrl,
           employeeId: id,
@@ -110,7 +110,7 @@ const EmployeeDetail = () => {
   const fetchLeadsHistory = async (token) => {
     try {
       const response = await axios.get(
-        `https://backend-eashwa-dgaw.vercel.app/api/user/get-file-lead/${id}`,
+        `https://backend-eashwa.vercel.app/api/user/get-file-lead/${id}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -125,7 +125,7 @@ const EmployeeDetail = () => {
   const fetchTargetLeadsHistory = async (token) => {
     try {
       const response = await axios.get(
-        `https://backend-eashwa-dgaw.vercel.app/api/user/get-target-lead/${id}`,
+        `https://backend-eashwa.vercel.app/api/user/get-target-lead/${id}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -142,7 +142,7 @@ const EmployeeDetail = () => {
       const token = localStorage.getItem("token");
 
       const response = await axios.delete(
-        `https://backend-eashwa-dgaw.vercel.app/api/user/leads/regular-file/${fileId}`,
+        `https://backend-eashwa.vercel.app/api/user/leads/regular-file/${fileId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -169,7 +169,7 @@ const EmployeeDetail = () => {
       const token = localStorage.getItem("token");
 
       const response = await axios.delete(
-        `https://backend-eashwa-dgaw.vercel.app/api/user/leads/target-file/${fileId}`,
+        `https://backend-eashwa.vercel.app/api/user/leads/target-file/${fileId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -248,7 +248,7 @@ const EmployeeDetail = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        `https://backend-eashwa-dgaw.vercel.app/api/user/employee-detail/${id}`,
+        `https://backend-eashwa.vercel.app/api/user/employee-detail/${id}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -308,7 +308,7 @@ const EmployeeDetail = () => {
       };
 
       await axios.patch(
-        `https://backend-eashwa-dgaw.vercel.app/api/user/update-employee/${id}`,
+        `https://backend-eashwa.vercel.app/api/user/update-employee/${id}`,
         ratingData,
         {
           headers: {
@@ -355,7 +355,7 @@ const EmployeeDetail = () => {
       ).padStart(2, "0")}`;
 
       await axios.put(
-        `https://backend-eashwa-dgaw.vercel.app/api/user/update-target/${id}`,
+        `https://backend-eashwa.vercel.app/api/user/update-target/${id}`,
         {
           month: currentMonth,
           battery: {

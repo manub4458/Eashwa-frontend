@@ -10,7 +10,7 @@ const MonthlyReportPage = () => {
     const fetchTopEmployees = async () => {
       try {
         const response = await fetch(
-          "https://backend-eashwa-dgaw.vercel.app/api/user/top-employees"
+          "https://backend-eashwa.vercel.app/api/user/top-employees"
         );
         if (!response.ok) {
           throw new Error("Failed to fetch data.");

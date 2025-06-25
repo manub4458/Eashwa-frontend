@@ -22,7 +22,7 @@ const UpdateTargetForm = () => {
     try {
       const token = localStorage.getItem("token"); // Fetch token from localStorage
       const response = await axios.put(
-        `https://backend-eashwa-dgaw.vercel.app/api/user/update-target/${id}`,
+        `https://backend-eashwa.vercel.app/api/user/update-target/${id}`,
         data,
         {
           headers: {
