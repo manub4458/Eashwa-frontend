@@ -61,14 +61,18 @@ const Page = () => {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
+          
         }
       );
+
       return response;
+      console.log("Response",response);
     } catch (error) {
       console.error("Error adding stock:", error);
       throw error;
     }
   };
+  
   
 
   if (!token) return null;
