@@ -112,7 +112,7 @@ const BatteryForm = () => {
 
     try {
       const response = await fetch(
-        'https://backend-eashwa.vercel.app/api/request/submit-request',
+        'https://backend-eashwa-dgaw.vercel.app/api/request/submit-request',
         {
           method: "POST",
           headers: {

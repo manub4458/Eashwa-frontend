@@ -35,7 +35,7 @@ const VisitingForm = () => {
   const fetchVisitors = async (token) => {
     try {
       const response = await axios.get(
-        "https://backend-eashwa.vercel.app/api/user/get-visitor",
+        "https://backend-eashwa-dgaw.vercel.app/api/user/get-visitor",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -55,7 +55,7 @@ const VisitingForm = () => {
   const fetchLeads = async (token) => {
     try {
       const response = await axios.get(
-        "https://backend-eashwa.vercel.app/api/user/leads",
+        "https://backend-eashwa-dgaw.vercel.app/api/user/leads",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -150,7 +150,7 @@ const VisitingForm = () => {
       } else {
         // API call to add a visitor
         const response = await axios.post(
-          "https://backend-eashwa.vercel.app/api/user/add-visitor",
+          "https://backend-eashwa-dgaw.vercel.app/api/user/add-visitor",
           newVisit,
           {
             headers: {
@@ -205,7 +205,7 @@ const VisitingForm = () => {
   const handleDelete = async (id) => {
     try {
       const response = await axios.delete(
-        `https://backend-eashwa.vercel.app/api/user/delete-visitor/${id}`,
+        `https://backend-eashwa-dgaw.vercel.app/api/user/delete-visitor/${id}`,
         {
           headers: {
             Authorization: `Bearer ${authToken}`,

@@ -20,7 +20,7 @@ const LeadsHistory = () => {
         formData.append("file", selectedFile);
 
         try {
-            const response = await axios.post("https://backend-eashwa.vercel.app/api/leads/history", formData, {
+            const response = await axios.post("https://backend-eashwa-dgaw.vercel.app/api/leads/history", formData, {
                 headers: { "Content-Type": "multipart/form-data" }
             });
 
