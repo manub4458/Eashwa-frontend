@@ -6,7 +6,8 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import HistoryTable from "../../components/ui/HistoryTable";
 import { FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
-
+import OrdersTable from './ordersTable'
+import AdminOrdersTable from "./adminOrdersTable";
 const Employe = () => {
   const [user, setUser] = useState(null);
   const [uploadedLeads, setUploadedLeads] = useState([]);
@@ -470,7 +471,21 @@ const Employe = () => {
             </div>
           </div>
         </section>
+{/* button section  */}
 
+<Link href='/detail-form'>
+<button
+  class="px-6 py-3 mt-6 rounded-2xl bg-gradient-to-r from-orange-400 to-orange-600 
+         text-white font-semibold tracking-wide shadow-lg 
+         hover:shadow-xl hover:scale-105 active:scale-95 
+         transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-orange-300"
+  onclick="window.location.href='#form'"
+>
+  fill the form, click here
+</button>
+</Link>
+<AdminOrdersTable />
+<OrdersTable />
         <section className="bg-white rounded-xl shadow-lg p-8 border-2">
           <h2 className="text-3xl font-semibold text-[#d86331] mb-6 text-center">
             Current Monthly Targets

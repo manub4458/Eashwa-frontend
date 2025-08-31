@@ -3,6 +3,8 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import AdminOrdersTable from './adminOrdersTable';
+
 
 const HrDashboard = () => {
   const [employees, setEmployees] = useState([]);
@@ -119,6 +121,7 @@ const HrDashboard = () => {
         </section>
       )}
 
+<AdminOrdersTable />
       {/* Main Section */}
       <main className="container mx-auto px-6 py-12">
         <h2 className="text-2xl font-bold text-[#d86331] mb-8">
