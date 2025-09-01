@@ -13,6 +13,7 @@ const AdminOrdersTable = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isDispatchHead, setIsDispatchHead] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   // ✅ Fixed row-specific states
   const [selectedOrderId, setSelectedOrderId] = useState(null);
@@ -21,6 +22,10 @@ const AdminOrdersTable = () => {
   const [deliveryOrderId, setDeliveryOrderId] = useState(null);
   const [driverNumber, setDriverNumber] = useState('');
   const [vehicleNumber, setVehicleNumber] = useState('');
+
+  // ✅ Drag and drop states
+  const [draggedOrder, setDraggedOrder] = useState(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   // ✅ Fetch orders API
   const fetchOrders = async () => {
@@ -41,6 +46,7 @@ const AdminOrdersTable = () => {
       }
 
       setIsAuthorized(true);
+      setIsAdmin(username === 'admin@eashwa.in');
       setIsDispatchHead(username === 'EASWS0A30');
 
       const queryParams = new URLSearchParams({
@@ -66,7 +72,18 @@ const AdminOrdersTable = () => {
         throw new Error(data.message || 'Failed to fetch orders');
       }
 
-      setOrders(data.orders);
+      // Sort orders by priority if admin
+      let sortedOrders = data.orders;
+      if (username === 'admin@eashwa.in') {
+        sortedOrders = [...data.orders].sort((a, b) => {
+          // If priority is not set, use the default order
+          const priorityA = a.priority !== undefined ? a.priority : (currentPage - 1) * limit + data.orders.indexOf(a) + 1;
+          const priorityB = b.priority !== undefined ? b.priority : (currentPage - 1) * limit + data.orders.indexOf(b) + 1;
+          return priorityA - priorityB;
+        });
+      }
+
+      setOrders(sortedOrders);
       setTotalPages(data.totalPages);
       setCurrentPage(data.currentPage);
     } catch (err) {
@@ -150,6 +167,74 @@ const AdminOrdersTable = () => {
     } catch (err) {
       console.error(err);
       setError(err.message);
+    }
+  };
+
+  // ✅ Update priority
+  const updateOrderPriority = async (orderId, priority) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('Unauthorized');
+
+      const response = await fetch(
+        `https://backend-eashwa.vercel.app/api/orders/priority/${orderId}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ priority }),
+        }
+      );
+
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || 'Failed to update priority');
+      }
+
+      return data.order;
+    } catch (err) {
+      console.error(err);
+      setError(err.message);
+      throw err;
+    }
+  };
+
+  // ✅ Drag and drop handlers
+  const handleDragStart = (e, order) => {
+    if (!isAdmin) return;
+    
+    setDraggedOrder(order);
+    setIsDragging(true);
+    e.dataTransfer.setData('text/plain', order._id);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e, targetOrder) => {
+    if (!isAdmin || !draggedOrder || draggedOrder._id === targetOrder._id) return;
+    
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = async (e, targetOrder) => {
+    if (!isAdmin || !draggedOrder || draggedOrder._id === targetOrder._id) return;
+    
+    e.preventDefault();
+    setIsDragging(false);
+    
+    try {
+      // Update the priority of the dragged order to match the target order
+      await updateOrderPriority(draggedOrder._id, targetOrder.priority || ((currentPage - 1) * limit + orders.indexOf(targetOrder) + 1));
+      
+      // Also update the target order's priority to maintain consistency
+      await updateOrderPriority(targetOrder._id, draggedOrder.priority || ((currentPage - 1) * limit + orders.indexOf(draggedOrder) + 1));
+      
+      // Refresh the orders list
+      fetchOrders();
+    } catch (err) {
+      console.error('Error updating priorities:', err);
     }
   };
 
@@ -320,6 +405,11 @@ const AdminOrdersTable = () => {
               <table className="min-w-full divide-y divide-orange-200">
                 <thead className="bg-gradient-to-r from-orange-100 to-orange-200">
                   <tr>
+                    {isAdmin && (
+                      <th className="px-6 py-3 text-center text-sm font-semibold text-gray-900">
+                        Priority
+                      </th>
+                    )}
                     <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
                       Sr No.
                     </th>
@@ -345,7 +435,7 @@ const AdminOrdersTable = () => {
                   {orders.length === 0 ? (
                     <tr>
                       <td
-                        colSpan={17}
+                        colSpan={isAdmin ? 18 : 17}
                         className="px-6 py-4 text-center text-gray-500 bg-gray-50"
                       >
                         {month
@@ -355,7 +445,19 @@ const AdminOrdersTable = () => {
                     </tr>
                   ) : (
                     orders.map((order, index) => (
-                      <tr key={order._id || order.id || order.piNumber}>
+                      <tr 
+                        key={order._id || order.id || order.piNumber}
+                        draggable={isAdmin}
+                        onDragStart={(e) => handleDragStart(e, order)}
+                        onDragOver={(e) => handleDragOver(e, order)}
+                        onDrop={(e) => handleDrop(e, order)}
+                        className={isDragging && draggedOrder?._id === order._id ? "opacity-50 bg-orange-100" : ""}
+                      >
+                        {isAdmin && (
+                          <td className="px-4 py-3 text-center cursor-move drag-handle">
+                            {order.priority !== undefined ? order.priority : (currentPage - 1) * limit + index + 1}
+                          </td>
+                        )}
                         <td className="px-4 py-3">
                           {(currentPage - 1) * limit + index + 1}
                         </td>
@@ -381,7 +483,7 @@ const AdminOrdersTable = () => {
                         </td>
                         <td className="px-4 py-3 relative">
                           {isDispatchHead &&
-                          order.status === 'ready_for_dispatch' ? (
+                          (order.status === 'ready_for_dispatch' || order.status === 'pending') ? (
                             <div className="relative">
                               <button
                                 onClick={() => {
@@ -397,22 +499,26 @@ const AdminOrdersTable = () => {
                                 {humanizeStatus(order.status)} ▼
                               </button>
                               
-                              {/* ✅ Fixed dropdown - only shows for current order */}
+                              {/* ✅ Dropdown with conditional options */}
                               {showDropdown === (order._id || order.id || order.piNumber) && (
                                 <div className="absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-10 min-w-32">
-                                  <button
-                                    onClick={() =>
-                                      handleStatusChange(order._id || order.id || order.piNumber, 'pending')
-                                    }
-                                    className="w-full text-left px-3 py-2 hover:bg-red-50 hover:text-red-700 transition duration-200 text-sm"
-                                  >
-                                    Pending
-                                  </button>
+                                  {order.status === 'ready_for_dispatch' && (
+                                    <button
+                                      onClick={() =>
+                                        handleStatusChange(order._id || order.id || order.piNumber, 'pending')
+                                      }
+                                      className="w-full text-left px-3 py-2 hover:bg-red-50 hover:text-red-700 transition duration-200 text-sm"
+                                    >
+                                      Pending
+                                    </button>
+                                  )}
                                   <button
                                     onClick={() =>
                                       handleStatusChange(order._id || order.id || order.piNumber, 'deliver')
                                     }
-                                    className="w-full text-left px-3 py-2 hover:bg-green-50 hover:text-green-700 transition duration-200 text-sm border-t border-gray-200"
+                                    className={`w-full text-left px-3 py-2 hover:bg-green-50 hover:text-green-700 transition duration-200 text-sm ${
+                                      order.status === 'ready_for_dispatch' ? 'border-t border-gray-200' : ''
+                                    }`}
                                   >
                                     Deliver
                                   </button>
