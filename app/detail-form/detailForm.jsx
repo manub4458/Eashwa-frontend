@@ -50,7 +50,7 @@ const DetailForm = () => {
         const formDataUpload = new FormData();
         formDataUpload.append('file', selectedFile);
 
-        const uploadResponse = await fetch('http://localhost:5000/api/images/upload-pdf', {
+        const uploadResponse = await fetch('https://backend-eashwa.vercel.app/api/images/upload-pdf', {
           method: 'POST',
           body: formDataUpload,
         });
@@ -85,7 +85,7 @@ const DetailForm = () => {
         throw new Error('Please log in to submit the order');
       }
 
-      const response = await fetch('http://localhost:5000/api/orders/submit', {
+      const response = await fetch('https://backend-eashwa.vercel.app/api/orders/submit', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

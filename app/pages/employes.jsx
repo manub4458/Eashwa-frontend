@@ -7,7 +7,7 @@ import axios from "axios";
 import HistoryTable from "../../components/ui/HistoryTable";
 import { FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
 import OrdersTable from './ordersTable'
-import AdminOrdersTable from "./adminOrdersTable";
+// import AdminOrdersTable from "./adminOrdersTable";
 const Employe = () => {
   const [user, setUser] = useState(null);
   const [uploadedLeads, setUploadedLeads] = useState([]);
@@ -484,7 +484,7 @@ const Employe = () => {
   fill the form, click here
 </button>
 </Link>
-<AdminOrdersTable />
+{/* <AdminOrdersTable /> */}
 <OrdersTable />
         <section className="bg-white rounded-xl shadow-lg p-8 border-2">
           <h2 className="text-3xl font-semibold text-[#d86331] mb-6 text-center">

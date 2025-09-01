@@ -30,7 +30,7 @@ const OrdersTable = () => {
       }).toString();
       console.log(`Fetching orders with params: ${queryParams}`); // Debug log
 
-      const response = await fetch(`http://localhost:5000/api/orders/my-orders?${queryParams}`, {
+      const response = await fetch(`https://backend-eashwa.vercel.app/api/orders/my-orders?${queryParams}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
