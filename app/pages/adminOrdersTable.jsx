@@ -76,9 +76,9 @@ const AdminOrdersTable = () => {
       let sortedOrders = data.orders;
       if (username === 'admin@eashwa.in') {
         sortedOrders = [...data.orders].sort((a, b) => {
-          // If priority is not set, use the default order
-          const priorityA = a.priority !== undefined ? a.priority : (currentPage - 1) * limit + data.orders.indexOf(a) + 1;
-          const priorityB = b.priority !== undefined ? b.priority : (currentPage - 1) * limit + data.orders.indexOf(b) + 1;
+          // If priority is not set or invalid, use the default order
+          const priorityA = (a.priority && a.priority < 1000) ? a.priority : (currentPage - 1) * limit + data.orders.indexOf(a) + 1;
+          const priorityB = (b.priority && b.priority < 1000) ? b.priority : (currentPage - 1) * limit + data.orders.indexOf(b) + 1;
           return priorityA - priorityB;
         });
       }
@@ -176,6 +176,9 @@ const AdminOrdersTable = () => {
       const token = localStorage.getItem('token');
       if (!token) throw new Error('Unauthorized');
 
+      // Validate priority to prevent extremely large values
+      const validPriority = Math.max(1, Math.min(1000, priority));
+
       const response = await fetch(
         `https://backend-eashwa.vercel.app/api/orders/priority/${orderId}`,
         {
@@ -184,7 +187,7 @@ const AdminOrdersTable = () => {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ priority }),
+          body: JSON.stringify({ priority: validPriority }),
         }
       );
 
@@ -225,11 +228,20 @@ const AdminOrdersTable = () => {
     setIsDragging(false);
     
     try {
+      // Get the correct priority values (filter out invalid ones)
+      const targetPriority = (targetOrder.priority && targetOrder.priority < 1000) 
+        ? targetOrder.priority 
+        : (currentPage - 1) * limit + orders.indexOf(targetOrder) + 1;
+      
+      const draggedPriority = (draggedOrder.priority && draggedOrder.priority < 1000) 
+        ? draggedOrder.priority 
+        : (currentPage - 1) * limit + orders.indexOf(draggedOrder) + 1;
+
       // Update the priority of the dragged order to match the target order
-      await updateOrderPriority(draggedOrder._id, targetOrder.priority || ((currentPage - 1) * limit + orders.indexOf(targetOrder) + 1));
+      await updateOrderPriority(draggedOrder._id, targetPriority);
       
       // Also update the target order's priority to maintain consistency
-      await updateOrderPriority(targetOrder._id, draggedOrder.priority || ((currentPage - 1) * limit + orders.indexOf(draggedOrder) + 1));
+      await updateOrderPriority(targetOrder._id, draggedPriority);
       
       // Refresh the orders list
       fetchOrders();
@@ -274,6 +286,16 @@ const AdminOrdersTable = () => {
       .split('_')
       .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
       .join(' ');
+
+  // ✅ Function to display priority number correctly
+  const displayPriority = (order, index) => {
+    const priority = order.priority;
+    // If priority is invalid (too large), show the row number instead
+    if (priority && priority > 1000) {
+      return (currentPage - 1) * limit + index + 1;
+    }
+    return priority || (currentPage - 1) * limit + index + 1;
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-white p-4 sm:p-6 lg:p-8">
@@ -400,47 +422,86 @@ const AdminOrdersTable = () => {
             </svg>
           </div>
         ) : isAuthorized ? (
-          <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+          <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-orange-200">
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-orange-200">
-                <thead className="bg-gradient-to-r from-orange-100 to-orange-200">
+                <thead className="bg-gradient-to-r from-orange-500 to-orange-600">
                   <tr>
                     {isAdmin && (
-                      <th className="px-6 py-3 text-center text-sm font-semibold text-gray-900">
+                      <th className="px-6 py-4 text-center text-sm font-semibold text-white uppercase tracking-wider">
                         Priority
                       </th>
                     )}
-                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">
                       Sr No.
                     </th>
-                    <th className="px-6 py-3">PI Number</th>
-                    <th className="px-6 py-3">Party Name</th>
-                    <th className="px-6 py-3">Showroom</th>
-                    <th className="px-6 py-3">Location</th>
-                    <th className="px-6 py-3">Quantity</th>
-                    <th className="px-6 py-3">Total Amount</th>
-                    <th className="px-6 py-3">Amount Received</th>
-                    <th className="px-6 py-3">Agent</th>
-                    <th className="px-6 py-3">Agent Phone</th>
-                    <th className="px-6 py-3">Dealer Phone</th>
-                    <th className="px-6 py-3">Model</th>
-                    <th className="px-6 py-3">Color Variants</th>
-                    <th className="px-6 py-3">Battery Type</th>
-                    <th className="px-6 py-3">Deadline</th>
-                    <th className="px-6 py-3">Status</th>
-                    <th className="px-6 py-3">PDF</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">
+                      PI Number
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">
+                      Party Name
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">
+                      Showroom
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">
+                      Location
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">
+                      Quantity
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">
+                      Total Amount
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">
+                      Amount Received
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">
+                      Agent
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">
+                      Agent Phone
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">
+                      Dealer Phone
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">
+                      Model
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">
+                      Color Variants
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">
+                      Battery Type
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">
+                      Deadline
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">
+                      PDF
+                    </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-orange-100">
+                <tbody className="bg-white divide-y divide-orange-200">
                   {orders.length === 0 ? (
                     <tr>
                       <td
                         colSpan={isAdmin ? 18 : 17}
-                        className="px-6 py-4 text-center text-gray-500 bg-gray-50"
+                        className="px-6 py-8 text-center text-gray-500 bg-orange-50"
                       >
-                        {month
-                          ? `No orders found for ${month}`
-                          : 'No orders found'}
+                        <div className="flex flex-col items-center justify-center">
+                          <svg className="w-16 h-16 text-orange-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                          </svg>
+                          <p className="text-xl font-medium text-orange-500">
+                            {month
+                              ? `No orders found for ${month}`
+                              : 'No orders found'}
+                          </p>
+                        </div>
                       </td>
                     </tr>
                   ) : (
@@ -451,37 +512,59 @@ const AdminOrdersTable = () => {
                         onDragStart={(e) => handleDragStart(e, order)}
                         onDragOver={(e) => handleDragOver(e, order)}
                         onDrop={(e) => handleDrop(e, order)}
-                        className={isDragging && draggedOrder?._id === order._id ? "opacity-50 bg-orange-100" : ""}
+                        className={`hover:bg-orange-50 transition-colors duration-200 ${isDragging && draggedOrder?._id === order._id ? "opacity-50 bg-orange-100" : ""}`}
                       >
                         {isAdmin && (
-                          <td className="px-4 py-3 text-center cursor-move drag-handle">
-                            {order.priority !== undefined ? order.priority : (currentPage - 1) * limit + index + 1}
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-center font-medium text-gray-900 cursor-move drag-handle">
+                            {displayPriority(order, index)}
                           </td>
                         )}
-                        <td className="px-4 py-3">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                           {(currentPage - 1) * limit + index + 1}
                         </td>
-                        <td className="px-4 py-3">{order.piNumber}</td>
-                        <td className="px-4 py-3">{order.partyName}</td>
-                        <td className="px-4 py-3">{order.showroomName}</td>
-                        <td className="px-4 py-3">{order.location}</td>
-                        <td className="px-4 py-3">{order.quantity}</td>
-                        <td className="px-4 py-3">
-                          ₹{order.totalAmount.toFixed(2)}
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-orange-600">
+                          {order.piNumber}
                         </td>
-                        <td className="px-4 py-3">
-                          ₹{order.amountReceived.toFixed(2)}
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {order.partyName}
                         </td>
-                        <td className="px-4 py-3">{order.agentName}</td>
-                        <td className="px-4 py-3">{order.agentPhone}</td>
-                        <td className="px-4 py-3">{order.dealerPhone}</td>
-                        <td className="px-4 py-3">{order.orderModel}</td>
-                        <td className="px-4 py-3">{order.colorVariants}</td>
-                        <td className="px-4 py-3">{order.batteryType}</td>
-                        <td className="px-4 py-3">
-                          {new Date(order.deadline).toLocaleDateString()}
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {order.showroomName}
                         </td>
-                        <td className="px-4 py-3 relative">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {order.location}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                          {order.quantity}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
+                          ₹{order.totalAmount?.toFixed(2) || '0.00'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
+                          ₹{order.amountReceived?.toFixed(2) || '0.00'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {order.agentName}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {order.agentPhone}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {order.dealerPhone}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {order.orderModel}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {order.colorVariants}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {order.batteryType}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {order.deadline ? new Date(order.deadline).toLocaleDateString() : 'N/A'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm relative">
                           {isDispatchHead &&
                           (order.status === 'ready_for_dispatch' || order.status === 'pending') ? (
                             <div className="relative">
@@ -492,7 +575,7 @@ const AdminOrdersTable = () => {
                                     showDropdown === uniqueId ? null : uniqueId
                                   );
                                 }}
-                                className={`px-3 py-1 rounded ${getStatusGradient(
+                                className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusGradient(
                                   order.status
                                 )} hover:opacity-90 transition duration-200`}
                               >
@@ -509,7 +592,7 @@ const AdminOrdersTable = () => {
                                       }
                                       className="w-full text-left px-3 py-2 hover:bg-red-50 hover:text-red-700 transition duration-200 text-sm"
                                     >
-                                      Pending
+                                      Mark as Pending
                                     </button>
                                   )}
                                   <button
@@ -520,34 +603,36 @@ const AdminOrdersTable = () => {
                                       order.status === 'ready_for_dispatch' ? 'border-t border-gray-200' : ''
                                     }`}
                                   >
-                                    Deliver
+                                    Mark as Delivered
                                   </button>
                                 </div>
                               )}
                             </div>
                           ) : (
-                            <button
-                              className={`px-3 py-1 rounded ${getStatusGradient(
+                            <span
+                              className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusGradient(
                                 order.status
                               )}`}
-                              disabled
                             >
                               {humanizeStatus(order.status)}
-                            </button>
+                            </span>
                           )}
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {order.piPdf ? (
                             <a
                               href={order.piPdf}
                               target="_blank"
                               rel="noreferrer"
-                              className="text-orange-600 underline hover:text-orange-800 transition duration-200"
+                              className="text-orange-600 hover:text-orange-800 transition duration-200 font-medium flex items-center"
                             >
+                              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                              </svg>
                               View PDF
                             </a>
                           ) : (
-                            'N/A'
+                            <span className="text-gray-400">N/A</span>
                           )}
                         </td>
                       </tr>
@@ -558,30 +643,38 @@ const AdminOrdersTable = () => {
             </div>
 
             {/* Pagination */}
-            <div className="mt-6 flex justify-between items-center px-6 py-4">
-              <button
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1 || isLoading}
-                className="px-4 py-2 bg-orange-500 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-orange-600 transition duration-200"
-              >
-                Previous
-              </button>
-              <span className="text-gray-700 font-medium">
-                Page {currentPage} of {totalPages}
-              </span>
-              <button
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages || isLoading}
-                className="px-4 py-2 bg-orange-500 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-orange-600 transition duration-200"
-              >
-                Next
-              </button>
+            <div className="bg-orange-50 px-6 py-4 flex items-center justify-between border-t border-orange-200">
+              <div className="flex-1 flex justify-between items-center">
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1 || isLoading}
+                  className="relative inline-flex items-center px-4 py-2 border border-orange-300 text-sm font-medium rounded-md text-orange-700 bg-white hover:bg-orange-50 disabled:opacity-50 disabled:pointer-events-none transition duration-200"
+                >
+                  Previous
+                </button>
+                <div className="hidden md:block">
+                  <p className="text-sm text-gray-700">
+                    Showing page <span className="font-medium">{currentPage}</span> of{' '}
+                    <span className="font-medium">{totalPages}</span>
+                  </p>
+                </div>
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages || isLoading}
+                  className="relative inline-flex items-center px-4 py-2 border border-orange-300 text-sm font-medium rounded-md text-orange-700 bg-white hover:bg-orange-50 disabled:opacity-50 disabled:pointer-events-none transition duration-200"
+                >
+                  Next
+                </button>
+              </div>
             </div>
           </div>
         ) : (
           !error && (
-            <div className="text-center text-red-600 bg-red-50 p-6 rounded-lg shadow-md">
-              You are not authorized to view this page.
+            <div className="text-center text-red-600 bg-red-50 p-6 rounded-lg shadow-md border border-red-200">
+              <svg className="w-16 h-16 mx-auto text-red-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+              </svg>
+              <p className="text-xl font-medium">You are not authorized to view this page.</p>
             </div>
           )
         )}
