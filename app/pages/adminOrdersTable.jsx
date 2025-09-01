@@ -14,10 +14,13 @@ const AdminOrdersTable = () => {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isDispatchHead, setIsDispatchHead] = useState(false);
 
-  // ✅ Row-specific states
+  // ✅ Fixed row-specific states
   const [selectedOrderId, setSelectedOrderId] = useState(null);
-  const [driverInputs, setDriverInputs] = useState({});
-  const [vehicleInputs, setVehicleInputs] = useState({});
+  const [showDropdown, setShowDropdown] = useState(null);
+  const [showDeliveryPopup, setShowDeliveryPopup] = useState(false);
+  const [deliveryOrderId, setDeliveryOrderId] = useState(null);
+  const [driverNumber, setDriverNumber] = useState('');
+  const [vehicleNumber, setVehicleNumber] = useState('');
 
   // ✅ Fetch orders API
   const fetchOrders = async () => {
@@ -91,42 +94,71 @@ const AdminOrdersTable = () => {
           }
         );
         if (!response.ok) throw new Error('Failed to mark as pending');
+        
+        // Close dropdown and refresh
+        setShowDropdown(null);
         fetchOrders();
       }
 
       if (newStatus === 'deliver') {
-        const driverNumber = driverInputs[orderId] || '';
-        const vehicleNumber = vehicleInputs[orderId] || '';
-
-        if (!driverNumber || !vehicleNumber) {
-          alert('Please enter driver and vehicle number');
-          return;
-        }
-
-        const response = await fetch(
-          `https://backend-eashwa.vercel.app/api/orders/deliver/${orderId}`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({ driverNumber, vehicleNumber }),
-          }
-        );
-        if (!response.ok) throw new Error('Failed to confirm delivery');
-
-        // reset only for that row
-        setSelectedOrderId(null);
-        setDriverInputs((prev) => ({ ...prev, [orderId]: '' }));
-        setVehicleInputs((prev) => ({ ...prev, [orderId]: '' }));
-
-        fetchOrders();
+        // Open delivery popup
+        setDeliveryOrderId(orderId);
+        setShowDeliveryPopup(true);
+        setShowDropdown(null);
       }
     } catch (err) {
       console.error(err);
       setError(err.message);
     }
+  };
+
+  // ✅ Handle delivery confirmation
+  const handleDeliveryConfirm = async () => {
+    if (!driverNumber || !vehicleNumber) {
+      alert('Please enter driver and vehicle number');
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('Unauthorized');
+
+      const response = await fetch(
+        `https://backend-eashwa.vercel.app/api/orders/deliver/${deliveryOrderId}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ 
+            driverNumber: driverNumber.trim(), 
+            vehicleNumber: vehicleNumber.trim() 
+          }),
+        }
+      );
+      
+      if (!response.ok) throw new Error('Failed to confirm delivery');
+
+      // Reset popup state
+      setShowDeliveryPopup(false);
+      setDeliveryOrderId(null);
+      setDriverNumber('');
+      setVehicleNumber('');
+      
+      fetchOrders();
+    } catch (err) {
+      console.error(err);
+      setError(err.message);
+    }
+  };
+
+  // ✅ Close popup
+  const closeDeliveryPopup = () => {
+    setShowDeliveryPopup(false);
+    setDeliveryOrderId(null);
+    setDriverNumber('');
+    setVehicleNumber('');
   };
 
   useEffect(() => {
@@ -163,7 +195,7 @@ const AdminOrdersTable = () => {
       <div className="max-w-7xl mx-auto">
         <div className="bg-white rounded-xl shadow-lg p-6 mb-6 border border-orange-200">
           <h1 className="text-4xl font-bold text-orange-700 mb-4 text-center">
-            Admin - All Orders Dashboard
+            All Orders Dashboard
           </h1>
           {error && (
             <p className="text-red-600 mb-4 p-3 bg-red-50 rounded-lg text-center animate-pulse border border-red-200">
@@ -208,6 +240,57 @@ const AdminOrdersTable = () => {
             </div>
           </div>
         </div>
+
+        {/* Delivery Popup */}
+        {showDeliveryPopup && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-96 max-w-90vw">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                Confirm Delivery Details
+              </h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Driver Number
+                  </label>
+                  <input
+                    type="text"
+                    value={driverNumber}
+                    onChange={(e) => setDriverNumber(e.target.value)}
+                    placeholder="Enter driver number"
+                    className="w-full border border-gray-300 rounded-lg p-2 focus:border-orange-500 focus:ring-orange-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Vehicle Number
+                  </label>
+                  <input
+                    type="text"
+                    value={vehicleNumber}
+                    onChange={(e) => setVehicleNumber(e.target.value)}
+                    placeholder="Enter vehicle number"
+                    className="w-full border border-gray-300 rounded-lg p-2 focus:border-orange-500 focus:ring-orange-500"
+                  />
+                </div>
+              </div>
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={handleDeliveryConfirm}
+                  className="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition duration-200"
+                >
+                  Confirm Delivery
+                </button>
+                <button
+                  onClick={closeDeliveryPopup}
+                  className="flex-1 bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition duration-200"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Loader / Table */}
         {isLoading ? (
@@ -272,7 +355,7 @@ const AdminOrdersTable = () => {
                     </tr>
                   ) : (
                     orders.map((order, index) => (
-                      <tr key={order.piNumber}>
+                      <tr key={order._id || order.id || order.piNumber}>
                         <td className="px-4 py-3">
                           {(currentPage - 1) * limit + index + 1}
                         </td>
@@ -296,62 +379,44 @@ const AdminOrdersTable = () => {
                         <td className="px-4 py-3">
                           {new Date(order.deadline).toLocaleDateString()}
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-3 relative">
                           {isDispatchHead &&
                           order.status === 'ready_for_dispatch' ? (
-                            <div>
-                              {selectedOrderId === order.id ? (
-                                <div className="space-y-2">
-                                  <input
-                                    type="text"
-                                    value={driverInputs[order.id] || ''}
-                                    onChange={(e) =>
-                                      setDriverInputs((prev) => ({
-                                        ...prev,
-                                        [order.id]: e.target.value,
-                                      }))
-                                    }
-                                    placeholder="Driver Number"
-                                    className="border rounded p-1"
-                                  />
-                                  <input
-                                    type="text"
-                                    value={vehicleInputs[order.id] || ''}
-                                    onChange={(e) =>
-                                      setVehicleInputs((prev) => ({
-                                        ...prev,
-                                        [order.id]: e.target.value,
-                                      }))
-                                    }
-                                    placeholder="Vehicle Number"
-                                    className="border rounded p-1"
-                                  />
+                            <div className="relative">
+                              <button
+                                onClick={() => {
+                                  const uniqueId = order._id || order.id || order.piNumber;
+                                  setShowDropdown(
+                                    showDropdown === uniqueId ? null : uniqueId
+                                  );
+                                }}
+                                className={`px-3 py-1 rounded ${getStatusGradient(
+                                  order.status
+                                )} hover:opacity-90 transition duration-200`}
+                              >
+                                {humanizeStatus(order.status)} ▼
+                              </button>
+                              
+                              {/* ✅ Fixed dropdown - only shows for current order */}
+                              {showDropdown === (order._id || order.id || order.piNumber) && (
+                                <div className="absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-10 min-w-32">
                                   <button
                                     onClick={() =>
-                                      handleStatusChange(order.id, 'deliver')
+                                      handleStatusChange(order._id || order.id || order.piNumber, 'pending')
                                     }
-                                    className="bg-green-500 text-white px-3 py-1 rounded"
+                                    className="w-full text-left px-3 py-2 hover:bg-red-50 hover:text-red-700 transition duration-200 text-sm"
                                   >
-                                    Confirm Delivery
+                                    Pending
                                   </button>
                                   <button
                                     onClick={() =>
-                                      handleStatusChange(order.id, 'pending')
+                                      handleStatusChange(order._id || order.id || order.piNumber, 'deliver')
                                     }
-                                    className="bg-red-500 text-white px-3 py-1 rounded ml-2"
+                                    className="w-full text-left px-3 py-2 hover:bg-green-50 hover:text-green-700 transition duration-200 text-sm border-t border-gray-200"
                                   >
-                                    Mark Pending
+                                    Deliver
                                   </button>
                                 </div>
-                              ) : (
-                                <button
-                                  onClick={() => setSelectedOrderId(order.id)}
-                                  className={`px-3 py-1 rounded ${getStatusGradient(
-                                    order.status
-                                  )}`}
-                                >
-                                  {humanizeStatus(order.status)}
-                                </button>
                               )}
                             </div>
                           ) : (
@@ -359,6 +424,7 @@ const AdminOrdersTable = () => {
                               className={`px-3 py-1 rounded ${getStatusGradient(
                                 order.status
                               )}`}
+                              disabled
                             >
                               {humanizeStatus(order.status)}
                             </button>
@@ -370,7 +436,7 @@ const AdminOrdersTable = () => {
                               href={order.piPdf}
                               target="_blank"
                               rel="noreferrer"
-                              className="text-orange-600 underline"
+                              className="text-orange-600 underline hover:text-orange-800 transition duration-200"
                             >
                               View PDF
                             </a>
@@ -386,21 +452,21 @@ const AdminOrdersTable = () => {
             </div>
 
             {/* Pagination */}
-            <div className="mt-6 flex justify-between items-center">
+            <div className="mt-6 flex justify-between items-center px-6 py-4">
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1 || isLoading}
-                className="px-4 py-2 bg-orange-200 rounded disabled:opacity-50"
+                className="px-4 py-2 bg-orange-500 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-orange-600 transition duration-200"
               >
-                Prev
+                Previous
               </button>
-              <span>
+              <span className="text-gray-700 font-medium">
                 Page {currentPage} of {totalPages}
               </span>
               <button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages || isLoading}
-                className="px-4 py-2 bg-orange-200 rounded disabled:opacity-50"
+                className="px-4 py-2 bg-orange-500 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-orange-600 transition duration-200"
               >
                 Next
               </button>
@@ -412,6 +478,14 @@ const AdminOrdersTable = () => {
               You are not authorized to view this page.
             </div>
           )
+        )}
+
+        {/* ✅ Click outside to close dropdown */}
+        {showDropdown && (
+          <div
+            className="fixed inset-0 z-0"
+            onClick={() => setShowDropdown(null)}
+          ></div>
         )}
       </div>
     </div>

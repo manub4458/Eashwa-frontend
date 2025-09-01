@@ -481,7 +481,7 @@ const Employe = () => {
          transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-orange-300"
   onclick="window.location.href='#form'"
 >
-  fill the form, click here
+  Place New Order
 </button>
 </Link>
 {/* <AdminOrdersTable /> */}
