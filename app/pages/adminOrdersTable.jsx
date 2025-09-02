@@ -72,15 +72,21 @@ const AdminOrdersTable = () => {
         throw new Error(data.message || 'Failed to fetch orders');
       }
 
-      // Sort orders by priority if admin
+      // ✅ Fixed priority sorting for admin - consecutive numbers
       let sortedOrders = data.orders;
       if (username === 'admin@eashwa.in') {
+        // Sort by priority first, then assign consecutive numbers
         sortedOrders = [...data.orders].sort((a, b) => {
-          // If priority is not set or invalid, use the default order
-          const priorityA = (a.priority && a.priority < 1000) ? a.priority : (currentPage - 1) * limit + data.orders.indexOf(a) + 1;
-          const priorityB = (b.priority && b.priority < 1000) ? b.priority : (currentPage - 1) * limit + data.orders.indexOf(b) + 1;
+          const priorityA = a.priority || 999999;
+          const priorityB = b.priority || 999999;
           return priorityA - priorityB;
         });
+        
+        // Reassign consecutive priorities to avoid duplicates
+        sortedOrders = sortedOrders.map((order, index) => ({
+          ...order,
+          displayPriority: index + 1 + (currentPage - 1) * limit
+        }));
       }
 
       setOrders(sortedOrders);
@@ -170,14 +176,11 @@ const AdminOrdersTable = () => {
     }
   };
 
-  // ✅ Update priority
-  const updateOrderPriority = async (orderId, priority) => {
+  // ✅ Update priority with consecutive numbering
+  const updateOrderPriority = async (orderId, newPriority) => {
     try {
       const token = localStorage.getItem('token');
       if (!token) throw new Error('Unauthorized');
-
-      // Validate priority to prevent extremely large values
-      const validPriority = Math.max(1, Math.min(1000, priority));
 
       const response = await fetch(
         `https://backend-eashwa.vercel.app/api/orders/priority/${orderId}`,
@@ -187,7 +190,7 @@ const AdminOrdersTable = () => {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ priority: validPriority }),
+          body: JSON.stringify({ priority: newPriority }),
         }
       );
 
@@ -204,7 +207,7 @@ const AdminOrdersTable = () => {
     }
   };
 
-  // ✅ Drag and drop handlers
+  // ✅ Fixed drag and drop with consecutive priority reassignment
   const handleDragStart = (e, order) => {
     if (!isAdmin) return;
     
@@ -228,20 +231,27 @@ const AdminOrdersTable = () => {
     setIsDragging(false);
     
     try {
-      // Get the correct priority values (filter out invalid ones)
-      const targetPriority = (targetOrder.priority && targetOrder.priority < 1000) 
-        ? targetOrder.priority 
-        : (currentPage - 1) * limit + orders.indexOf(targetOrder) + 1;
+      const draggedIndex = orders.findIndex(order => order._id === draggedOrder._id);
+      const targetIndex = orders.findIndex(order => order._id === targetOrder._id);
       
-      const draggedPriority = (draggedOrder.priority && draggedOrder.priority < 1000) 
-        ? draggedOrder.priority 
-        : (currentPage - 1) * limit + orders.indexOf(draggedOrder) + 1;
-
-      // Update the priority of the dragged order to match the target order
+      // Calculate new priorities based on target position
+      const targetPriority = targetIndex + 1 + (currentPage - 1) * limit;
+      
+      // Update dragged order priority
       await updateOrderPriority(draggedOrder._id, targetPriority);
       
-      // Also update the target order's priority to maintain consistency
-      await updateOrderPriority(targetOrder._id, draggedPriority);
+      // Update all other orders to maintain consecutive numbering
+      const updatedOrders = [...orders];
+      const [movedOrder] = updatedOrders.splice(draggedIndex, 1);
+      updatedOrders.splice(targetIndex, 0, movedOrder);
+      
+      // Batch update all priorities to maintain sequence
+      for (let i = 0; i < updatedOrders.length; i++) {
+        const newPriority = i + 1 + (currentPage - 1) * limit;
+        if (updatedOrders[i].priority !== newPriority) {
+          await updateOrderPriority(updatedOrders[i]._id, newPriority);
+        }
+      }
       
       // Refresh the orders list
       fetchOrders();
@@ -272,6 +282,8 @@ const AdminOrdersTable = () => {
     switch (status?.toLowerCase()) {
       case 'pending':
         return 'bg-gradient-to-r from-red-400 to-red-600 text-white';
+      case 'pending_verification':
+        return 'bg-gradient-to-r from-yellow-400 to-yellow-600 text-white';
       case 'ready_for_dispatch':
         return 'bg-gradient-to-r from-orange-400 to-orange-600 text-white';
       case 'completed':
@@ -287,14 +299,39 @@ const AdminOrdersTable = () => {
       .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
       .join(' ');
 
-  // ✅ Function to display priority number correctly
+  // ✅ Function to display consecutive priority numbers
   const displayPriority = (order, index) => {
-    const priority = order.priority;
-    // If priority is invalid (too large), show the row number instead
-    if (priority && priority > 1000) {
-      return (currentPage - 1) * limit + index + 1;
+    if (isAdmin) {
+      return order.displayPriority || (index + 1 + (currentPage - 1) * limit);
     }
-    return priority || (currentPage - 1) * limit + index + 1;
+    return index + 1 + (currentPage - 1) * limit;
+  };
+
+  // ✅ Function to determine if dropdown should show for dispatch head
+  const shouldShowDropdown = (status) => {
+    if (!isDispatchHead) return false;
+    
+    // Show dropdown for these statuses
+    const editableStatuses = ['pending', 'ready_for_dispatch', 'pending_verification'];
+    return editableStatuses.includes(status);
+  };
+
+  // ✅ Function to get dropdown options based on status
+  const getDropdownOptions = (status) => {
+    switch (status) {
+      case 'pending':
+        return [{ label: 'Mark as Delivered', value: 'deliver' }];
+      
+      case 'ready_for_dispatch':
+      case 'pending_verification':
+        return [
+          { label: 'Mark as Pending', value: 'pending' },
+          { label: 'Mark as Delivered', value: 'deliver' }
+        ];
+      
+      default:
+        return [];
+    }
   };
 
   return (
@@ -565,8 +602,7 @@ const AdminOrdersTable = () => {
                           {order.deadline ? new Date(order.deadline).toLocaleDateString() : 'N/A'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm relative">
-                          {isDispatchHead &&
-                          (order.status === 'ready_for_dispatch' || order.status === 'pending') ? (
+                          {shouldShowDropdown(order.status) ? (
                             <div className="relative">
                               <button
                                 onClick={() => {
@@ -582,29 +618,24 @@ const AdminOrdersTable = () => {
                                 {humanizeStatus(order.status)} ▼
                               </button>
                               
-                              {/* ✅ Dropdown with conditional options */}
+                              {/* ✅ Updated dropdown with proper logic */}
                               {showDropdown === (order._id || order.id || order.piNumber) && (
-                                <div className="absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-10 min-w-32">
-                                  {order.status === 'ready_for_dispatch' && (
+                                <div className="absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-10 min-w-40">
+                                  {getDropdownOptions(order.status).map((option, optionIndex) => (
                                     <button
+                                      key={option.value}
                                       onClick={() =>
-                                        handleStatusChange(order._id || order.id || order.piNumber, 'pending')
+                                        handleStatusChange(order._id || order.id || order.piNumber, option.value)
                                       }
-                                      className="w-full text-left px-3 py-2 hover:bg-red-50 hover:text-red-700 transition duration-200 text-sm"
+                                      className={`w-full text-left px-3 py-2 hover:bg-gray-50 transition duration-200 text-sm ${
+                                        optionIndex > 0 ? 'border-t border-gray-200' : ''
+                                      } ${
+                                        option.value === 'pending' ? 'hover:text-red-700' : 'hover:text-green-700'
+                                      }`}
                                     >
-                                      Mark as Pending
+                                      {option.label}
                                     </button>
-                                  )}
-                                  <button
-                                    onClick={() =>
-                                      handleStatusChange(order._id || order.id || order.piNumber, 'deliver')
-                                    }
-                                    className={`w-full text-left px-3 py-2 hover:bg-green-50 hover:text-green-700 transition duration-200 text-sm ${
-                                      order.status === 'ready_for_dispatch' ? 'border-t border-gray-200' : ''
-                                    }`}
-                                  >
-                                    Mark as Delivered
-                                  </button>
+                                  ))}
                                 </div>
                               )}
                             </div>
