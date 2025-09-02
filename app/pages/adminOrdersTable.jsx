@@ -1,15 +1,15 @@
-'use client'
-import React, { useState, useEffect } from 'react';
+"use client";
+import React, { useState, useEffect } from "react";
 
 const AdminOrdersTable = () => {
   const [orders, setOrders] = useState([]);
   const [totalPages, setTotalPages] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
   const [limit] = useState(10);
-  const [month, setMonth] = useState('');
-  const [orderId, setOrderId] = useState('');
-  const [sortBy, setSortBy] = useState('latest');
-  const [error, setError] = useState('');
+  const [month, setMonth] = useState("");
+  const [orderId, setOrderId] = useState("");
+  const [sortBy, setSortBy] = useState("latest");
+  const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isDispatchHead, setIsDispatchHead] = useState(false);
@@ -20,8 +20,8 @@ const AdminOrdersTable = () => {
   const [showDropdown, setShowDropdown] = useState(null);
   const [showDeliveryPopup, setShowDeliveryPopup] = useState(false);
   const [deliveryOrderId, setDeliveryOrderId] = useState(null);
-  const [driverNumber, setDriverNumber] = useState('');
-  const [vehicleNumber, setVehicleNumber] = useState('');
+  const [driverNumber, setDriverNumber] = useState("");
+  const [vehicleNumber, setVehicleNumber] = useState("");
 
   // ✅ Drag and drop states
   const [draggedOrder, setDraggedOrder] = useState(null);
@@ -30,24 +30,24 @@ const AdminOrdersTable = () => {
   // ✅ Fetch orders API
   const fetchOrders = async () => {
     setIsLoading(true);
-    setError('');
+    setError("");
     try {
-      const token = localStorage.getItem('token');
-      if (!token) throw new Error('Please log in to view orders');
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("Please log in to view orders");
 
-      const userData = JSON.parse(localStorage.getItem('user') || '{}');
+      const userData = JSON.parse(localStorage.getItem("user") || "{}");
       const username = userData.employeeId;
-      const authorizedUsers = ['admin@eashwa.in', 'EASWS0A30'];
+      const authorizedUsers = ["admin@eashwa.in", "EASWS0A30"];
 
       if (!authorizedUsers.includes(username)) {
         setIsAuthorized(false);
-        setError('You are not authorized to view this page.');
+        setError("You are not authorized to view this page.");
         return;
       }
 
       setIsAuthorized(true);
-      setIsAdmin(username === 'admin@eashwa.in');
-      setIsDispatchHead(username === 'EASWS0A30');
+      setIsAdmin(username === "admin@eashwa.in");
+      setIsDispatchHead(username === "EASWS0A30");
 
       const queryParams = new URLSearchParams({
         page: currentPage.toString(),
@@ -61,7 +61,7 @@ const AdminOrdersTable = () => {
         `https://backend-eashwa.vercel.app/api/orders/all-orders?${queryParams}`,
         {
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
         }
@@ -69,23 +69,23 @@ const AdminOrdersTable = () => {
 
       const data = await response.json();
       if (!response.ok || !data.success) {
-        throw new Error(data.message || 'Failed to fetch orders');
+        throw new Error(data.message || "Failed to fetch orders");
       }
 
       // ✅ Fixed priority sorting for admin - consecutive numbers
       let sortedOrders = data.orders;
-      if (username === 'admin@eashwa.in') {
+      if (username === "admin@eashwa.in") {
         // Sort by priority first, then assign consecutive numbers
         sortedOrders = [...data.orders].sort((a, b) => {
           const priorityA = a.priority || 999999;
           const priorityB = b.priority || 999999;
           return priorityA - priorityB;
         });
-        
+
         // Reassign consecutive priorities to avoid duplicates
         sortedOrders = sortedOrders.map((order, index) => ({
           ...order,
-          displayPriority: index + 1 + (currentPage - 1) * limit
+          displayPriority: index + 1 + (currentPage - 1) * limit,
         }));
       }
 
@@ -93,7 +93,7 @@ const AdminOrdersTable = () => {
       setTotalPages(data.totalPages);
       setCurrentPage(data.currentPage);
     } catch (err) {
-      setError(err.message || 'Something went wrong');
+      setError(err.message || "Something went wrong");
     } finally {
       setIsLoading(false);
     }
@@ -102,28 +102,28 @@ const AdminOrdersTable = () => {
   // ✅ Update status
   const handleStatusChange = async (orderId, newStatus) => {
     try {
-      const token = localStorage.getItem('token');
-      if (!token) throw new Error('Unauthorized');
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("Unauthorized");
 
-      if (newStatus === 'pending') {
+      if (newStatus === "pending") {
         const response = await fetch(
           `https://backend-eashwa.vercel.app/api/orders/pending/${orderId}`,
           {
-            method: 'POST',
+            method: "POST",
             headers: {
-              'Content-Type': 'application/json',
+              "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
             },
           }
         );
-        if (!response.ok) throw new Error('Failed to mark as pending');
-        
+        if (!response.ok) throw new Error("Failed to mark as pending");
+
         // Close dropdown and refresh
         setShowDropdown(null);
         fetchOrders();
       }
 
-      if (newStatus === 'deliver') {
+      if (newStatus === "deliver") {
         // Open delivery popup
         setDeliveryOrderId(orderId);
         setShowDeliveryPopup(true);
@@ -138,37 +138,37 @@ const AdminOrdersTable = () => {
   // ✅ Handle delivery confirmation
   const handleDeliveryConfirm = async () => {
     if (!driverNumber || !vehicleNumber) {
-      alert('Please enter driver and vehicle number');
+      alert("Please enter driver and vehicle number");
       return;
     }
 
     try {
-      const token = localStorage.getItem('token');
-      if (!token) throw new Error('Unauthorized');
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("Unauthorized");
 
       const response = await fetch(
         `https://backend-eashwa.vercel.app/api/orders/deliver/${deliveryOrderId}`,
         {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ 
-            driverNumber: driverNumber.trim(), 
-            vehicleNumber: vehicleNumber.trim() 
+          body: JSON.stringify({
+            driverNumber: driverNumber.trim(),
+            vehicleNumber: vehicleNumber.trim(),
           }),
         }
       );
-      
-      if (!response.ok) throw new Error('Failed to confirm delivery');
+
+      if (!response.ok) throw new Error("Failed to confirm delivery");
 
       // Reset popup state
       setShowDeliveryPopup(false);
       setDeliveryOrderId(null);
-      setDriverNumber('');
-      setVehicleNumber('');
-      
+      setDriverNumber("");
+      setVehicleNumber("");
+
       fetchOrders();
     } catch (err) {
       console.error(err);
@@ -179,15 +179,15 @@ const AdminOrdersTable = () => {
   // ✅ Update priority with consecutive numbering
   const updateOrderPriority = async (orderId, newPriority) => {
     try {
-      const token = localStorage.getItem('token');
-      if (!token) throw new Error('Unauthorized');
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("Unauthorized");
 
       const response = await fetch(
         `https://backend-eashwa.vercel.app/api/orders/priority/${orderId}`,
         {
-          method: 'PATCH',
+          method: "PATCH",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({ priority: newPriority }),
@@ -196,7 +196,7 @@ const AdminOrdersTable = () => {
 
       const data = await response.json();
       if (!response.ok || !data.success) {
-        throw new Error(data.message || 'Failed to update priority');
+        throw new Error(data.message || "Failed to update priority");
       }
 
       return data.order;
@@ -210,41 +210,47 @@ const AdminOrdersTable = () => {
   // ✅ Fixed drag and drop with consecutive priority reassignment
   const handleDragStart = (e, order) => {
     if (!isAdmin) return;
-    
+
     setDraggedOrder(order);
     setIsDragging(true);
-    e.dataTransfer.setData('text/plain', order._id);
-    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData("text/plain", order._id);
+    e.dataTransfer.effectAllowed = "move";
   };
 
   const handleDragOver = (e, targetOrder) => {
-    if (!isAdmin || !draggedOrder || draggedOrder._id === targetOrder._id) return;
-    
+    if (!isAdmin || !draggedOrder || draggedOrder._id === targetOrder._id)
+      return;
+
     e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
+    e.dataTransfer.dropEffect = "move";
   };
 
   const handleDrop = async (e, targetOrder) => {
-    if (!isAdmin || !draggedOrder || draggedOrder._id === targetOrder._id) return;
-    
+    if (!isAdmin || !draggedOrder || draggedOrder._id === targetOrder._id)
+      return;
+
     e.preventDefault();
     setIsDragging(false);
-    
+
     try {
-      const draggedIndex = orders.findIndex(order => order._id === draggedOrder._id);
-      const targetIndex = orders.findIndex(order => order._id === targetOrder._id);
-      
+      const draggedIndex = orders.findIndex(
+        (order) => order._id === draggedOrder._id
+      );
+      const targetIndex = orders.findIndex(
+        (order) => order._id === targetOrder._id
+      );
+
       // Calculate new priorities based on target position
       const targetPriority = targetIndex + 1 + (currentPage - 1) * limit;
-      
+
       // Update dragged order priority
       await updateOrderPriority(draggedOrder._id, targetPriority);
-      
+
       // Update all other orders to maintain consecutive numbering
       const updatedOrders = [...orders];
       const [movedOrder] = updatedOrders.splice(draggedIndex, 1);
       updatedOrders.splice(targetIndex, 0, movedOrder);
-      
+
       // Batch update all priorities to maintain sequence
       for (let i = 0; i < updatedOrders.length; i++) {
         const newPriority = i + 1 + (currentPage - 1) * limit;
@@ -252,11 +258,11 @@ const AdminOrdersTable = () => {
           await updateOrderPriority(updatedOrders[i]._id, newPriority);
         }
       }
-      
+
       // Refresh the orders list
       fetchOrders();
     } catch (err) {
-      console.error('Error updating priorities:', err);
+      console.error("Error updating priorities:", err);
     }
   };
 
@@ -264,8 +270,8 @@ const AdminOrdersTable = () => {
   const closeDeliveryPopup = () => {
     setShowDeliveryPopup(false);
     setDeliveryOrderId(null);
-    setDriverNumber('');
-    setVehicleNumber('');
+    setDriverNumber("");
+    setVehicleNumber("");
   };
 
   useEffect(() => {
@@ -280,29 +286,29 @@ const AdminOrdersTable = () => {
 
   const getStatusGradient = (status) => {
     switch (status?.toLowerCase()) {
-      case 'pending':
-        return 'bg-gradient-to-r from-red-400 to-red-600 text-white';
-      case 'pending_verification':
-        return 'bg-gradient-to-r from-yellow-400 to-yellow-600 text-white';
-      case 'ready_for_dispatch':
-        return 'bg-gradient-to-r from-orange-400 to-orange-600 text-white';
-      case 'completed':
-        return 'bg-gradient-to-r from-green-400 to-green-600 text-white';
+      case "pending":
+        return "bg-gradient-to-r from-red-400 to-red-600 text-white";
+      case "pending_verification":
+        return "bg-gradient-to-r from-yellow-400 to-yellow-600 text-white";
+      case "ready_for_dispatch":
+        return "bg-gradient-to-r from-orange-400 to-orange-600 text-white";
+      case "completed":
+        return "bg-gradient-to-r from-green-400 to-green-600 text-white";
       default:
-        return 'bg-gradient-to-r from-gray-400 to-gray-600 text-white';
+        return "bg-gradient-to-r from-gray-400 to-gray-600 text-white";
     }
   };
 
   const humanizeStatus = (status) =>
     status
-      .split('_')
+      .split("_")
       .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-      .join(' ');
+      .join(" ");
 
   // ✅ Function to display consecutive priority numbers
   const displayPriority = (order, index) => {
     if (isAdmin) {
-      return order.displayPriority || (index + 1 + (currentPage - 1) * limit);
+      return order.displayPriority || index + 1 + (currentPage - 1) * limit;
     }
     return index + 1 + (currentPage - 1) * limit;
   };
@@ -310,25 +316,26 @@ const AdminOrdersTable = () => {
   // ✅ Function to determine if dropdown should show for dispatch head
   const shouldShowDropdown = (status) => {
     if (!isDispatchHead) return false;
-    
+
     // Show dropdown for these statuses
-    const editableStatuses = ['pending', 'ready_for_dispatch', 'pending_verification'];
+    const editableStatuses = [
+      "pending",
+      "ready_for_dispatch",
+    ];
     return editableStatuses.includes(status);
   };
 
-  // ✅ Function to get dropdown options based on status
   const getDropdownOptions = (status) => {
     switch (status) {
-      case 'pending':
-        return [{ label: 'Mark as Delivered', value: 'deliver' }];
-      
-      case 'ready_for_dispatch':
-      case 'pending_verification':
+      case "pending":
+        return [{ label: "Mark as Delivered", value: "deliver" }];
+
+      case "ready_for_dispatch":
         return [
-          { label: 'Mark as Pending', value: 'pending' },
-          { label: 'Mark as Delivered', value: 'deliver' }
+          { label: "Mark as Pending", value: "pending" },
+          { label: "Mark as Delivered", value: "deliver" },
         ];
-      
+      // case "pending_verification":
       default:
         return [];
     }
@@ -530,26 +537,41 @@ const AdminOrdersTable = () => {
                         className="px-6 py-8 text-center text-gray-500 bg-orange-50"
                       >
                         <div className="flex flex-col items-center justify-center">
-                          <svg className="w-16 h-16 text-orange-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                          <svg
+                            className="w-16 h-16 text-orange-300 mb-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                            ></path>
                           </svg>
                           <p className="text-xl font-medium text-orange-500">
                             {month
                               ? `No orders found for ${month}`
-                              : 'No orders found'}
+                              : "No orders found"}
                           </p>
                         </div>
                       </td>
                     </tr>
                   ) : (
                     orders.map((order, index) => (
-                      <tr 
+                      <tr
                         key={order._id || order.id || order.piNumber}
                         draggable={isAdmin}
                         onDragStart={(e) => handleDragStart(e, order)}
                         onDragOver={(e) => handleDragOver(e, order)}
                         onDrop={(e) => handleDrop(e, order)}
-                        className={`hover:bg-orange-50 transition-colors duration-200 ${isDragging && draggedOrder?._id === order._id ? "opacity-50 bg-orange-100" : ""}`}
+                        className={`hover:bg-orange-50 transition-colors duration-200 ${
+                          isDragging && draggedOrder?._id === order._id
+                            ? "opacity-50 bg-orange-100"
+                            : ""
+                        }`}
                       >
                         {isAdmin && (
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-center font-medium text-gray-900 cursor-move drag-handle">
@@ -575,10 +597,10 @@ const AdminOrdersTable = () => {
                           {order.quantity}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
-                          ₹{order.totalAmount?.toFixed(2) || '0.00'}
+                          ₹{order.totalAmount?.toFixed(2) || "0.00"}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
-                          ₹{order.amountReceived?.toFixed(2) || '0.00'}
+                          ₹{order.amountReceived?.toFixed(2) || "0.00"}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {order.agentName}
@@ -599,14 +621,17 @@ const AdminOrdersTable = () => {
                           {order.batteryType}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {order.deadline ? new Date(order.deadline).toLocaleDateString() : 'N/A'}
+                          {order.deadline
+                            ? new Date(order.deadline).toLocaleDateString()
+                            : "N/A"}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm relative">
                           {shouldShowDropdown(order.status) ? (
                             <div className="relative">
                               <button
                                 onClick={() => {
-                                  const uniqueId = order._id || order.id || order.piNumber;
+                                  const uniqueId =
+                                    order._id || order.id || order.piNumber;
                                   setShowDropdown(
                                     showDropdown === uniqueId ? null : uniqueId
                                   );
@@ -617,25 +642,36 @@ const AdminOrdersTable = () => {
                               >
                                 {humanizeStatus(order.status)} ▼
                               </button>
-                              
-                              {/* ✅ Updated dropdown with proper logic */}
-                              {showDropdown === (order._id || order.id || order.piNumber) && (
-                                <div className="absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-10 min-w-40">
-                                  {getDropdownOptions(order.status).map((option, optionIndex) => (
-                                    <button
-                                      key={option.value}
-                                      onClick={() =>
-                                        handleStatusChange(order._id || order.id || order.piNumber, option.value)
-                                      }
-                                      className={`w-full text-left px-3 py-2 hover:bg-gray-50 transition duration-200 text-sm ${
-                                        optionIndex > 0 ? 'border-t border-gray-200' : ''
-                                      } ${
-                                        option.value === 'pending' ? 'hover:text-red-700' : 'hover:text-green-700'
-                                      }`}
-                                    >
-                                      {option.label}
-                                    </button>
-                                  ))}
+
+                              {showDropdown ===
+                                (order._id || order.id || order.piNumber) && (
+                                <div className="absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-10 min-w-40 flex flex-col">
+                                  {getDropdownOptions(order.status).map(
+                                    (option, optionIndex) => (
+                                      <button
+                                        key={option.value}
+                                        onClick={() =>
+                                          handleStatusChange(
+                                            order._id ||
+                                              order.id ||
+                                              order.piNumber,
+                                            option.value
+                                          )
+                                        }
+                                        className={`w-full text-left px-3 py-2 hover:bg-gray-50 transition duration-200 text-sm ${
+                                          optionIndex > 0
+                                            ? "border-t border-gray-200"
+                                            : ""
+                                        } ${
+                                          option.value === "pending"
+                                            ? "hover:text-red-700"
+                                            : "hover:text-green-700"
+                                        }`}
+                                      >
+                                        {option.label}
+                                      </button>
+                                    )
+                                  )}
                                 </div>
                               )}
                             </div>
@@ -657,8 +693,19 @@ const AdminOrdersTable = () => {
                               rel="noreferrer"
                               className="text-orange-600 hover:text-orange-800 transition duration-200 font-medium flex items-center"
                             >
-                              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                              <svg
+                                className="w-4 h-4 mr-1"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2"
+                                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                ></path>
                               </svg>
                               View PDF
                             </a>
@@ -685,7 +732,8 @@ const AdminOrdersTable = () => {
                 </button>
                 <div className="hidden md:block">
                   <p className="text-sm text-gray-700">
-                    Showing page <span className="font-medium">{currentPage}</span> of{' '}
+                    Showing page{" "}
+                    <span className="font-medium">{currentPage}</span> of{" "}
                     <span className="font-medium">{totalPages}</span>
                   </p>
                 </div>
@@ -702,10 +750,23 @@ const AdminOrdersTable = () => {
         ) : (
           !error && (
             <div className="text-center text-red-600 bg-red-50 p-6 rounded-lg shadow-md border border-red-200">
-              <svg className="w-16 h-16 mx-auto text-red-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+              <svg
+                className="w-16 h-16 mx-auto text-red-400 mb-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                ></path>
               </svg>
-              <p className="text-xl font-medium">You are not authorized to view this page.</p>
+              <p className="text-xl font-medium">
+                You are not authorized to view this page.
+              </p>
             </div>
           )
         )}
