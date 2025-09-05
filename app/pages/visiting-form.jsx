@@ -444,7 +444,7 @@ const VisitingForm = () => {
       {/* Monthly Visit Table */}
       <div className="bg-white shadow-lg rounded-lg p-6 border border-indigo-200">
         <h2 className="text-2xl font-bold text-[#d86331] mb-4">
-          My Monthly Visit Table
+          Monthly Visit Table
         </h2>
         <button
           onClick={handleDownload}
