@@ -15,19 +15,24 @@ const AdminOrdersTable = () => {
   const [isDispatchHead, setIsDispatchHead] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
-  // ✅ Fixed row-specific states
+  // Row-specific states
   const [selectedOrderId, setSelectedOrderId] = useState(null);
   const [showDropdown, setShowDropdown] = useState(null);
   const [showDeliveryPopup, setShowDeliveryPopup] = useState(false);
   const [deliveryOrderId, setDeliveryOrderId] = useState(null);
   const [driverNumber, setDriverNumber] = useState("");
   const [vehicleNumber, setVehicleNumber] = useState("");
+  const [transporterName, setTransporterName] = useState("");
+  // New state for pending popup
+  const [showPendingPopup, setShowPendingPopup] = useState(false);
+  const [pendingOrderId, setPendingOrderId] = useState(null);
+  const [pendingReason, setPendingReason] = useState("");
 
-  // ✅ Drag and drop states
+  // Drag and drop states
   const [draggedOrder, setDraggedOrder] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
 
-  // ✅ Fetch orders API
+  // Fetch orders API
   const fetchOrders = async () => {
     setIsLoading(true);
     setError("");
@@ -72,17 +77,14 @@ const AdminOrdersTable = () => {
         throw new Error(data.message || "Failed to fetch orders");
       }
 
-      // ✅ Fixed priority sorting for admin - consecutive numbers
       let sortedOrders = data.orders;
       if (username === "admin@eashwa.in") {
-        // Sort by priority first, then assign consecutive numbers
         sortedOrders = [...data.orders].sort((a, b) => {
           const priorityA = a.priority || 999999;
           const priorityB = b.priority || 999999;
           return priorityA - priorityB;
         });
 
-        // Reassign consecutive priorities to avoid duplicates
         sortedOrders = sortedOrders.map((order, index) => ({
           ...order,
           displayPriority: index + 1 + (currentPage - 1) * limit,
@@ -99,28 +101,17 @@ const AdminOrdersTable = () => {
     }
   };
 
-  // ✅ Update status
+  // Update status
   const handleStatusChange = async (orderId, newStatus) => {
     try {
       const token = localStorage.getItem("token");
       if (!token) throw new Error("Unauthorized");
 
       if (newStatus === "pending") {
-        const response = await fetch(
-          `https://backend-eashwa.vercel.app/api/orders/pending/${orderId}`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        if (!response.ok) throw new Error("Failed to mark as pending");
-
-        // Close dropdown and refresh
+        // Open pending popup
+        setPendingOrderId(orderId);
+        setShowPendingPopup(true);
         setShowDropdown(null);
-        fetchOrders();
       }
 
       if (newStatus === "deliver") {
@@ -135,9 +126,55 @@ const AdminOrdersTable = () => {
     }
   };
 
-  // ✅ Handle delivery confirmation
+  // Handle pending confirmation
+  const handlePendingConfirm = async () => {
+    if (!pendingReason.trim()) {
+      alert("Please enter a pending reason");
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("Unauthorized");
+
+      const response = await fetch(
+        `https://backend-eashwa.vercel.app/api/orders/pending/${pendingOrderId}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            pendingReason: pendingReason.trim(),
+          }),
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to mark as pending");
+
+      // Reset popup state
+      setShowPendingPopup(false);
+      setPendingOrderId(null);
+      setPendingReason("");
+      setShowDropdown(null);
+      fetchOrders();
+    } catch (err) {
+      console.error(err);
+      setError(err.message);
+    }
+  };
+
+  // Close pending popup
+  const closePendingPopup = () => {
+    setShowPendingPopup(false);
+    setPendingOrderId(null);
+    setPendingReason("");
+  };
+
+  // Handle delivery confirmation
   const handleDeliveryConfirm = async () => {
-    if (!driverNumber || !vehicleNumber) {
+    if (!driverNumber || !vehicleNumber || !transporterName) {
       alert("Please enter driver and vehicle number");
       return;
     }
@@ -157,18 +194,18 @@ const AdminOrdersTable = () => {
           body: JSON.stringify({
             driverNumber: driverNumber.trim(),
             vehicleNumber: vehicleNumber.trim(),
+            transporterName: transporterName.trim(),
           }),
         }
       );
 
       if (!response.ok) throw new Error("Failed to confirm delivery");
 
-      // Reset popup state
       setShowDeliveryPopup(false);
       setDeliveryOrderId(null);
       setDriverNumber("");
       setVehicleNumber("");
-
+      setTransporterName("");
       fetchOrders();
     } catch (err) {
       console.error(err);
@@ -176,7 +213,7 @@ const AdminOrdersTable = () => {
     }
   };
 
-  // ✅ Update priority with consecutive numbering
+  // Update priority with consecutive numbering
   const updateOrderPriority = async (orderId, newPriority) => {
     try {
       const token = localStorage.getItem("token");
@@ -207,7 +244,7 @@ const AdminOrdersTable = () => {
     }
   };
 
-  // ✅ Fixed drag and drop with consecutive priority reassignment
+  // Fixed drag and drop with consecutive priority reassignment
   const handleDragStart = (e, order) => {
     if (!isAdmin) return;
 
@@ -240,18 +277,13 @@ const AdminOrdersTable = () => {
         (order) => order._id === targetOrder._id
       );
 
-      // Calculate new priorities based on target position
       const targetPriority = targetIndex + 1 + (currentPage - 1) * limit;
-
-      // Update dragged order priority
       await updateOrderPriority(draggedOrder._id, targetPriority);
 
-      // Update all other orders to maintain consecutive numbering
       const updatedOrders = [...orders];
       const [movedOrder] = updatedOrders.splice(draggedIndex, 1);
       updatedOrders.splice(targetIndex, 0, movedOrder);
 
-      // Batch update all priorities to maintain sequence
       for (let i = 0; i < updatedOrders.length; i++) {
         const newPriority = i + 1 + (currentPage - 1) * limit;
         if (updatedOrders[i].priority !== newPriority) {
@@ -259,19 +291,19 @@ const AdminOrdersTable = () => {
         }
       }
 
-      // Refresh the orders list
       fetchOrders();
     } catch (err) {
       console.error("Error updating priorities:", err);
     }
   };
 
-  // ✅ Close popup
+  // Close delivery popup
   const closeDeliveryPopup = () => {
     setShowDeliveryPopup(false);
     setDeliveryOrderId(null);
     setDriverNumber("");
     setVehicleNumber("");
+    setTransporterName("");
   };
 
   useEffect(() => {
@@ -305,7 +337,6 @@ const AdminOrdersTable = () => {
       .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
       .join(" ");
 
-  // ✅ Function to display consecutive priority numbers
   const displayPriority = (order, index) => {
     if (isAdmin) {
       return order.displayPriority || index + 1 + (currentPage - 1) * limit;
@@ -313,15 +344,9 @@ const AdminOrdersTable = () => {
     return index + 1 + (currentPage - 1) * limit;
   };
 
-  // ✅ Function to determine if dropdown should show for dispatch head
   const shouldShowDropdown = (status) => {
     if (!isDispatchHead) return false;
-
-    // Show dropdown for these statuses
-    const editableStatuses = [
-      "pending",
-      "ready_for_dispatch",
-    ];
+    const editableStatuses = ["pending", "ready_for_dispatch"];
     return editableStatuses.includes(status);
   };
 
@@ -335,7 +360,6 @@ const AdminOrdersTable = () => {
           { label: "Mark as Pending", value: "pending" },
           { label: "Mark as Delivered", value: "deliver" },
         ];
-      // case "pending_verification":
       default:
         return [];
     }
@@ -402,6 +426,18 @@ const AdminOrdersTable = () => {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Transporter Name
+                  </label>
+                  <input
+                    type="text"
+                    value={transporterName}
+                    onChange={(e) => setTransporterName(e.target.value)}
+                    placeholder="Enter Transporter Name"
+                    className="w-full border border-gray-300 rounded-lg p-2 focus:border-orange-500 focus:ring-orange-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Driver Number
                   </label>
                   <input
@@ -434,6 +470,45 @@ const AdminOrdersTable = () => {
                 </button>
                 <button
                   onClick={closeDeliveryPopup}
+                  className="flex-1 bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition duration-200"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Pending Popup */}
+        {showPendingPopup && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-96 max-w-90vw">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                Enter Pending Reason
+              </h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Pending Reason
+                  </label>
+                  <textarea
+                    value={pendingReason}
+                    onChange={(e) => setPendingReason(e.target.value)}
+                    placeholder="Enter reason for marking as pending"
+                    className="w-full border border-gray-300 rounded-lg p-2 focus:border-orange-500 focus:ring-orange-500 resize-y"
+                    rows="4"
+                  />
+                </div>
+              </div>
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={handlePendingConfirm}
+                  className="flex-1 bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 transition duration-200"
+                >
+                  Confirm Pending
+                </button>
+                <button
+                  onClick={closePendingPopup}
                   className="flex-1 bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition duration-200"
                 >
                   Cancel
@@ -523,6 +598,9 @@ const AdminOrdersTable = () => {
                     </th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">
                       Status
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">
+                      Remark
                     </th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">
                       PDF
@@ -685,6 +763,9 @@ const AdminOrdersTable = () => {
                             </span>
                           )}
                         </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                          {order.pendingReason ? order.pendingReason : "-"}
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {order.piPdf ? (
                             <a
@@ -771,7 +852,6 @@ const AdminOrdersTable = () => {
           )
         )}
 
-        {/* ✅ Click outside to close dropdown */}
         {showDropdown && (
           <div
             className="fixed inset-0 z-0"
