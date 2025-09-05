@@ -14,28 +14,56 @@ const VisitingForm = () => {
   });
 
   const [visits, setVisits] = useState([]);
+  const [excelVisit, setExcelVisit] = useState([]);
   const [leads, setLeads] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [authToken, setAuthToken] = useState("");
   const [filterMonth, setFilterMonth] = useState(""); // State for month filter
   const [filterDate, setFilterDate] = useState(""); // State for date filter
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
 
   // Fetch visitors when component mounts
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
     if (storedToken) {
       setAuthToken(storedToken);
-      fetchVisitors(storedToken);
       fetchLeads(storedToken);
     }
   }, []);
 
-  // Fetch visitors API call
-  const fetchVisitors = async (token) => {
+  useEffect(() => {
+    const storedToken = localStorage.getItem("token");
+    if (storedToken) {
+      setAuthToken(storedToken);
+      fetchVisitors(storedToken, page, limit);
+    }
+  }, [page]);
+
+  const getPageNumbers = () => {
+    let start = Math.max(1, page - 1);
+    let end = Math.min(totalPages, page + 1);
+
+    if (page === 1) {
+      end = Math.min(totalPages, 3);
+    }
+    if (page === totalPages) {
+      start = Math.max(1, totalPages - 2);
+    }
+
+    const pages = [];
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    return pages;
+  };
+
+  const fetchVisitors = async (token, pageNumber = 1, pageLimit = 10) => {
     try {
       const response = await axios.get(
-        "https://backend-eashwa.vercel.app/api/user/get-visitor",
+        `https://backend-eashwa.vercel.app/api/user/get-visitor?page=${pageNumber}&limit=${pageLimit}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -44,7 +72,30 @@ const VisitingForm = () => {
       );
 
       if (response.status === 200) {
-        setVisits(response.data.visitorDetails);
+        setVisits(response.data.data);
+        setTotalPages(response.data.pagination.totalPages);
+        setPage(response.data.pagination.currentPage);
+        setLimit(response.data.pagination.itemsPerPage);
+      }
+    } catch (error) {
+      console.error("Error fetching visitors:", error);
+      alert("Failed to fetch visitors.");
+    }
+  };
+
+  const fetchExcelVisitors = async (token) => {
+    try {
+      const response = await axios.get(
+        `https://backend-eashwa.vercel.app/api/user/get-visitor?page=${1}&limit=${1000}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        return response.data.data;
       }
     } catch (error) {
       console.error("Error fetching visitors:", error);
@@ -214,7 +265,6 @@ const VisitingForm = () => {
       );
 
       if (response.status === 200) {
-        // Refetch visitors to get updated list from backend
         fetchVisitors(authToken);
         alert("Visit deleted successfully!");
       }
@@ -224,11 +274,15 @@ const VisitingForm = () => {
     }
   };
 
-  const handleDownload = () => {
-    const worksheet = XLSX.utils.json_to_sheet(visits);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Visits");
-    XLSX.writeFile(workbook, "visits.xlsx");
+  const handleDownload = async () => {
+    const storedToken = localStorage.getItem("token");
+    if (storedToken) {
+      const excelVisit = await fetchExcelVisitors(storedToken);
+      const worksheet = XLSX.utils.json_to_sheet(excelVisit);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Visits");
+      XLSX.writeFile(workbook, "visits.xlsx");
+    }
   };
 
   function formatDateTime(isoString) {
@@ -248,7 +302,6 @@ const VisitingForm = () => {
     return `${formattedDate} ${formattedTime}`;
   }
 
-  // Filter leads based on month and date
   const filteredLeads = leads.filter((lead) => {
     const leadDate = new Date(lead.leadDate);
     const leadMonth = leadDate.toLocaleString("default", { month: "long" });
@@ -261,7 +314,7 @@ const VisitingForm = () => {
     } else if (filterDate) {
       return leadDay === parseInt(filterDate);
     } else {
-      return true; // No filter applied
+      return true;
     }
   });
 
@@ -337,6 +390,8 @@ const VisitingForm = () => {
               type="datetime-local"
               id="dateTime"
               name="dateTime"
+              min={new Date().toISOString().split("T")[0] + "T00:00"}
+              max={new Date().toISOString().split("T")[0] + "T23:59"}
               value={formData.dateTime}
               onChange={handleChange}
               className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring focus:ring-indigo-200"
@@ -389,7 +444,7 @@ const VisitingForm = () => {
       {/* Monthly Visit Table */}
       <div className="bg-white shadow-lg rounded-lg p-6 border border-indigo-200">
         <h2 className="text-2xl font-bold text-[#d86331] mb-4">
-          Monthly Visit Table
+          My Monthly Visit Table
         </h2>
         <button
           onClick={handleDownload}
@@ -437,163 +492,34 @@ const VisitingForm = () => {
             </tbody>
           </table>
         </div>
-      </div>
-
-      {/* Lead Table with Filters */}
-      {/* <div className="bg-white my-10 shadow-lg rounded-lg p-6 border border-indigo-200">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold text-[#d86331]">Lead Table</h2>
-          <div className="flex gap-2">
-          
-            <select
-              value={filterMonth}
-              onChange={(e) => setFilterMonth(e.target.value)}
-              className="border p-2 rounded"
-            >
-              <option value="">Select Month</option>
-              <option value="January">January</option>
-              <option value="February">February</option>
-              <option value="March">March</option>
-              <option value="April">April</option>
-              <option value="May">May</option>
-              <option value="June">June</option>
-              <option value="July">July</option>
-              <option value="August">August</option>
-              <option value="September">September</option>
-              <option value="October">October</option>
-              <option value="November">November</option>
-              <option value="December">December</option>
-            </select>
-
-     
-            <input
-              type="number"
-              placeholder="Enter Date"
-              value={filterDate}
-              onChange={(e) => setFilterDate(e.target.value)}
-              className="border p-2 rounded"
-              min="1"
-              max="31"
-            />
-
+        <div className="flex justify-center space-x-2 my-4">
+          <button
+            onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+            disabled={page === 1}
+            className="px-2 py-1 bg-indigo-200 rounded disabled:opacity-50"
+          >
+            Prev
+          </button>
+          {getPageNumbers().map((num) => (
             <button
-              onClick={handleLeadDownload}
-              className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition"
+              key={num}
+              className={`px-2 py-1 rounded ${
+                page === num ? "bg-[#d86331] text-white" : "bg-indigo-100"
+              }`}
+              onClick={() => setPage(num)}
             >
-              Download Leads
+              {num}
             </button>
-          </div>
+          ))}
+          <button
+            onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+            disabled={page === totalPages}
+            className="px-2 py-1 bg-indigo-200 rounded disabled:opacity-50"
+          >
+            Next
+          </button>
         </div>
-
-        <div className="overflow-x-scroll">
-          {filteredLeads.length === 0 ? (
-            <div className="text-center py-4">No leads found</div>
-          ) : (
-            <table className="w-full table-auto border-collapse border border-gray-200">
-              <thead>
-                <tr className="bg-indigo-100">
-                  <th className="border border-gray-200 px-4 py-2">Sr. No.</th>
-                  <th className="border border-gray-200 px-4 py-2">
-                    Lead Date
-                  </th>
-                  <th className="border border-gray-200 px-4 py-2">
-                    Calling Date
-                  </th>
-                  <th className="border border-gray-200 px-4 py-2">
-                    Agent Name
-                  </th>
-                  <th className="border border-gray-200 px-4 py-2">
-                    Customer Name
-                  </th>
-                  <th className="border border-gray-200 px-4 py-2">
-                    Mobile Number
-                  </th>
-                  <th className="border border-gray-200 px-4 py-2">
-                    Occupation
-                  </th>
-                  <th className="border border-gray-200 px-4 py-2">Location</th>
-                  <th className="border border-gray-200 px-4 py-2">Town</th>
-                  <th className="border border-gray-200 px-4 py-2">State</th>
-                  <th className="border border-gray-200 px-4 py-2">Status</th>
-                  <th className="border border-gray-200 px-4 py-2">Remark</th>
-                  <th className="border border-gray-200 px-4 py-2">
-                    Interest Status
-                  </th>
-                  <th className="border border-gray-200 px-4 py-2">
-                    Office Visit
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredLeads.map((lead, index) => (
-                  <tr key={lead._id} className="text-center hover:bg-gray-50">
-                    <td className="border border-gray-200 px-4 py-2">
-                      {index + 1}
-                    </td>
-                    <td className="border border-gray-200 px-4 py-2">
-                      {new Date(lead.leadDate).toLocaleDateString()}
-                    </td>
-                    <td className="border border-gray-200 px-4 py-2">
-                      {new Date(lead.callingDate).toLocaleDateString()}
-                    </td>
-                    <td className="border border-gray-200 px-4 py-2">
-                      {lead.agentName}
-                    </td>
-                    <td className="border border-gray-200 px-4 py-2">
-                      {lead.customerName}
-                    </td>
-                    <td className="border border-gray-200 px-4 py-2">
-                      {lead.mobileNumber}
-                    </td>
-                    <td className="border border-gray-200 px-4 py-2">
-                      {lead.occupation}
-                    </td>
-                    <td className="border border-gray-200 px-4 py-2">
-                      {lead.location}
-                    </td>
-                    <td className="border border-gray-200 px-4 py-2">
-                      {lead.town}
-                    </td>
-                    <td className="border border-gray-200 px-4 py-2">
-                      {lead.state}
-                    </td>
-                    <td className="border border-gray-200 px-4 py-2">
-                      <span
-                        className={`px-2 py-1 rounded-full text-sm ${
-                          lead.status.toLowerCase() === "active"
-                            ? "bg-green-100 text-green-800"
-                            : lead.status.toLowerCase() === "pending"
-                            ? "bg-yellow-100 text-yellow-800"
-                            : "bg-red-100 text-red-800"
-                        }`}
-                      >
-                        {lead.status}
-                      </span>
-                    </td>
-                    <td className="border border-gray-200 px-4 py-2">
-                      {lead.remark}
-                    </td>
-                    <td className="border border-gray-200 px-4 py-2">
-                      {lead.interestedAndNotInterested}
-                    </td>
-                    <td className="border border-gray-200 px-4 py-2">
-                      <span
-                        className={`px-2 py-1 rounded-full text-sm ${
-                          lead.officeVisitRequired
-                            ? "bg-green-100 text-green-800"
-                            : "bg-red-100 text-red-800"
-                        }`}
-                      >
-                        {lead.officeVisitRequired ? "Yes" : "No"}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-      </div> */}
+      </div>
     </div>
   );
 };
