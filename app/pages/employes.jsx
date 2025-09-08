@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import HistoryTable from "../../components/ui/HistoryTable";
 import { FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
-import OrdersTable from './ordersTable'
+import OrdersTable from "./ordersTable";
 // import AdminOrdersTable from "./adminOrdersTable";
 const Employe = () => {
   const [user, setUser] = useState(null);
@@ -279,6 +279,15 @@ const Employe = () => {
     return [...new Set(allMonths)].sort();
   };
 
+  const formatDate = (date) => {
+    if (!date) return "";
+    const d = new Date(date);
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, "0"); // Months are 0-based
+    const year = d.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-indigo-50 to-indigo-100">
       <header className="bg-gradient-to-r py-4 shadow-md">
@@ -335,6 +344,13 @@ const Employe = () => {
               <p className="text-gray-700">
                 <strong>Joining Date:</strong> {user?.joiningDate || "N/A"}
               </p>
+              {user?.lastWorkingDate && (
+                <p className="text-gray-700">
+                  <strong>Last Working Date:</strong>{" "}
+                  {formatDate(user.lastWorkingDate)}
+                </p>
+              )}
+
               <p className="text-gray-700">
                 <strong>Designation:</strong> {user?.post || "N/A"}
               </p>
@@ -471,21 +487,21 @@ const Employe = () => {
             </div>
           </div>
         </section>
-{/* button section  */}
+        {/* button section  */}
 
-<Link href='/detail-form'>
-<button
-  class="px-6 py-3 mt-6 rounded-2xl bg-gradient-to-r from-orange-400 to-orange-600 
+        <Link href="/detail-form">
+          <button
+            class="px-6 py-3 mt-6 rounded-2xl bg-gradient-to-r from-orange-400 to-orange-600 
          text-white font-semibold tracking-wide shadow-lg 
          hover:shadow-xl hover:scale-105 active:scale-95 
          transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-orange-300"
-  onclick="window.location.href='#form'"
->
-  Place New Order
-</button>
-</Link>
-{/* <AdminOrdersTable /> */}
-<OrdersTable />
+            onclick="window.location.href='#form'"
+          >
+            Place New Order
+          </button>
+        </Link>
+        {/* <AdminOrdersTable /> */}
+        <OrdersTable />
         <section className="bg-white rounded-xl shadow-lg p-8 border-2">
           <h2 className="text-3xl font-semibold text-[#d86331] mb-6 text-center">
             Current Monthly Targets

@@ -3,8 +3,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import AdminOrdersTable from './adminOrdersTable';
-
+import AdminOrdersTable from "./adminOrdersTable";
 
 const HrDashboard = () => {
   const [employees, setEmployees] = useState([]);
@@ -24,7 +23,7 @@ const HrDashboard = () => {
           }
         );
         console.log("response", response);
-        // setEmployees(response.data.employees); 
+        // setEmployees(response.data.employees);
         setHrInfo(response.data.requestingUser); // Assuming the response contains HR info
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -43,9 +42,9 @@ const HrDashboard = () => {
           }
         );
         console.log("response", response);
-        setEmployees(response.data.employees); 
+        setEmployees(response.data.employees);
 
-        // setHrInfo(response.data.requestingUser); 
+        // setHrInfo(response.data.requestingUser);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -54,10 +53,18 @@ const HrDashboard = () => {
     fetchEmployees();
   }, []);
 
-
   const handleLogout = () => {
     localStorage.removeItem("token");
     router.push("/loginHr");
+  };
+
+  const formatDate = (date) => {
+    if (!date) return "";
+    const d = new Date(date);
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const year = d.getFullYear();
+    return `${day}-${month}-${year}`;
   };
 
   return (
@@ -81,13 +88,9 @@ const HrDashboard = () => {
       {hrInfo && (
         <section className="bg-white shadow-lg rounded-lg mx-auto mt-10 p-8 max-w-5xl border-t-4 border-[#d86331]">
           <h2 className="text-xl font-semibold text-[#d86331] mb-6 capitalize">
-          {
-            hrInfo.post
-          }
+            {hrInfo.post}
 
-         <span className="pl-2">
-         Information
-         </span>
+            <span className="pl-2">Information</span>
           </h2>
           <div className="flex items-center gap-6">
             <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-blue-500 shadow">
@@ -115,25 +118,30 @@ const HrDashboard = () => {
                 <p>
                   <strong>Joining Date:</strong> {hrInfo.joiningDate || "N/A"}
                 </p>
+                {hrInfo.lastWorkingDate && (
+                  <p>
+                    <strong>Last Working Date:</strong> {hrInfo.lastWorkingDate}
+                  </p>
+                )}
               </div>
             </div>
           </div>
         </section>
       )}
 
-<Link href='/admin-table'>
-<div className="flex justify-center my-4">
-  <button
-  class="flex justify-center  px-6 py-3 mt-6 rounded-2xl bg-gradient-to-r from-orange-400 to-orange-600 
+      <Link href="/admin-table">
+        <div className="flex justify-center my-4">
+          <button
+            class="flex justify-center  px-6 py-3 mt-6 rounded-2xl bg-gradient-to-r from-orange-400 to-orange-600 
          text-white font-semibold tracking-wide shadow-lg 
          hover:shadow-xl hover:scale-105 active:scale-95 
          transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-orange-300"
-  onclick="window.location.href='#form'"
->
-  Go to All Orders Dashboard
-</button>
-</div>
-</Link>
+            onclick="window.location.href='#form'"
+          >
+            Go to All Orders Dashboard
+          </button>
+        </div>
+      </Link>
       {/* Main Section */}
       <main className="container mx-auto px-6 py-12">
         <h2 className="text-2xl font-bold text-[#d86331] mb-8">
@@ -179,6 +187,12 @@ const HrDashboard = () => {
                       <strong>Joining Date:</strong>{" "}
                       {employee.joiningDate || "N/A"}
                     </p>
+                    {employee.lastWorkingDate && (
+                      <p>
+                        <strong>Last Working Date:</strong>{" "}
+                        {formatDate(employee.lastWorkingDate)}
+                      </p>
+                    )}
                   </div>
                 </div>
               </Link>

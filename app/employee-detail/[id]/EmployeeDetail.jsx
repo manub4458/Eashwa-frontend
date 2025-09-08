@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import * as XLSX from "xlsx";
 import HistoryTable from "../../../components/ui/HistoryTable";
 import Link from "next/link";
@@ -32,6 +32,7 @@ const EmployeeDetail = () => {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
+  const router = useRouter();
 
   const months = [
     { value: "1", label: "January" },
@@ -568,6 +569,15 @@ const EmployeeDetail = () => {
     return pages;
   };
 
+  const formatDate = (date) => {
+    if (!date) return "";
+    const d = new Date(date);
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, "0"); // Months are 0-based
+    const year = d.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
+
   if (!user) return <div>Loading...</div>;
 
   const TargetCard = React.memo(
@@ -691,6 +701,12 @@ const EmployeeDetail = () => {
                 <span className="font-medium">Joining Date:</span>{" "}
                 {user.joiningDate}
               </p>
+              {user.lastWorkingDate && (
+                <p>
+                  <span className="font-medium">Last Working Date:</span>{" "}
+                  {formatDate(user.lastWorkingDate)}
+                </p>
+              )}
               <p>
                 <span className="font-medium">Address:</span> {user.address}
               </p>
@@ -698,6 +714,12 @@ const EmployeeDetail = () => {
                 <span className="font-medium">Aadhaar:</span>{" "}
                 {user.aadhaarNumber}
               </p>
+              <button
+                onClick={() => router.push(`/last-working-day/${id}`)}
+                className="bg-orange-500 rounded-2xl text-white p-3 mx-auto"
+              >
+                Update Last working day
+              </button>
             </div>
           </div>
 
