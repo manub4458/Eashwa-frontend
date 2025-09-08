@@ -1,7 +1,7 @@
-"use client"
+"use client";
 import React, { useEffect, useState } from "react";
 // import AddStock from "../pages/StockAdd";
-import VehicleAdd from '../pages/vehicleAdd'
+import VehicleAdd from "../pages/vehicleAdd";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 
@@ -10,16 +10,22 @@ const Page = () => {
   const router = useRouter();
 
   const optionVehicle = [
+    "2-wheeler loader",
+    "3-wheeler loader",
     "Dangus pro",
     "Dangus plus",
     "Glide",
     "Glide plus",
+    "Henith",
+    "Nebo",
     "Nebo plus",
+    "Nebo Advance",
+    "Nebo XL",
+    "Nebo Super",
     "Rakkit 100",
     "Velox",
     "Velox pro",
     "Velox plus",
-    "Nebo",
   ];
 
   const productType = ["Vehicle"];
@@ -41,9 +47,9 @@ const Page = () => {
           item: data.vehicleType,
           quantity: data.quantity,
           updatedBy: data.addedBy,
-          specification: data.specification, // Ensure this is from `optionVehicle` if type is Vehicle
-          partyName: data.partyName, // Adding partyName
-          location: data.location, 
+          specification: data.specification,
+          partyName: data.partyName,
+          location: data.location,
         },
       ],
     };
@@ -74,10 +80,7 @@ const Page = () => {
       type="Add Vehicle  Stock"
       handleAddStock={handleAddStock}
       options={optionVehicle}
-      productType = {productType} // Update here to ensure only Vehicle options are shown
-      
-      
-  
+      productType={productType}
     />
   );
 };
