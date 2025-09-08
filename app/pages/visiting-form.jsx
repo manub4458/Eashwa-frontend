@@ -19,13 +19,34 @@ const VisitingForm = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [authToken, setAuthToken] = useState("");
-  const [filterMonth, setFilterMonth] = useState(""); // State for month filter
-  const [filterDate, setFilterDate] = useState(""); // State for date filter
+  const [filterMonth, setFilterMonth] = useState("");
+  const [filterYear, setFilterYear] = useState("");
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
 
-  // Fetch visitors when component mounts
+  // Available months for filter
+  const months = [
+    { value: "1", label: "January" },
+    { value: "2", label: "February" },
+    { value: "3", label: "March" },
+    { value: "4", label: "April" },
+    { value: "5", label: "May" },
+    { value: "6", label: "June" },
+    { value: "7", label: "July" },
+    { value: "8", label: "August" },
+    { value: "9", label: "September" },
+    { value: "10", label: "October" },
+    { value: "11", label: "November" },
+    { value: "12", label: "December" },
+  ];
+
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: currentYear - 2019 + 1 }, (_, i) => ({
+    value: (2020 + i).toString(),
+    label: (2020 + i).toString(),
+  }));
+
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
     if (storedToken) {
@@ -38,9 +59,9 @@ const VisitingForm = () => {
     const storedToken = localStorage.getItem("token");
     if (storedToken) {
       setAuthToken(storedToken);
-      fetchVisitors(storedToken, page, limit);
+      fetchVisitors(storedToken, page, limit, filterMonth, filterYear);
     }
-  }, [page]);
+  }, [page, filterMonth, filterYear]);
 
   const getPageNumbers = () => {
     let start = Math.max(1, page - 1);
@@ -60,16 +81,24 @@ const VisitingForm = () => {
     return pages;
   };
 
-  const fetchVisitors = async (token, pageNumber = 1, pageLimit = 10) => {
+  const fetchVisitors = async (
+    token,
+    pageNumber = 1,
+    pageLimit = 10,
+    month = "",
+    year = ""
+  ) => {
     try {
-      const response = await axios.get(
-        `https://backend-eashwa.vercel.app/api/user/get-visitor?page=${pageNumber}&limit=${pageLimit}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      let url = `https://backend-eashwa.vercel.app/api/user/get-visitor?page=${pageNumber}&limit=${pageLimit}`;
+      if (month && year) {
+        url += `&month=${month}&year=${year}`;
+      }
+
+      const response = await axios.get(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       if (response.status === 200) {
         setVisits(response.data.data);
@@ -85,21 +114,20 @@ const VisitingForm = () => {
 
   const fetchExcelVisitors = async (token) => {
     try {
-      const response = await axios.get(
-        `https://backend-eashwa.vercel.app/api/user/get-visitor?page=${1}&limit=${1000}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      let url = `https://backend-eashwa.vercel.app/api/user/get-visitor?page=1&limit=1000`;
+
+      const response = await axios.get(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       if (response.status === 200) {
         return response.data.data;
       }
     } catch (error) {
-      console.error("Error fetching visitors:", error);
-      alert("Failed to fetch visitors.");
+      console.error("Error fetching visitors for excel:", error);
+      alert("Failed to fetch visitors for excel.");
     }
   };
 
@@ -118,8 +146,8 @@ const VisitingForm = () => {
         setLeads(response.data.leads);
       }
     } catch (error) {
-      console.error("Error fetching visitors:", error);
-      alert("Failed to fetch visitors.");
+      console.error("Error fetching leads:", error);
+      alert("Failed to fetch leads.");
     }
   };
 
@@ -211,8 +239,7 @@ const VisitingForm = () => {
         );
 
         if (response.status === 201 || response.status === 200) {
-          // Refetch visitors to get updated list from backend
-          fetchVisitors(authToken);
+          fetchVisitors(authToken, page, limit, filterMonth, filterYear);
           alert("Visit logged successfully!");
         } else {
           throw new Error("Failed to log visit.");
@@ -265,7 +292,7 @@ const VisitingForm = () => {
       );
 
       if (response.status === 200) {
-        fetchVisitors(authToken);
+        fetchVisitors(authToken, page, limit, filterMonth, filterYear);
         alert("Visit deleted successfully!");
       }
     } catch (error) {
@@ -301,22 +328,6 @@ const VisitingForm = () => {
 
     return `${formattedDate} ${formattedTime}`;
   }
-
-  const filteredLeads = leads.filter((lead) => {
-    const leadDate = new Date(lead.leadDate);
-    const leadMonth = leadDate.toLocaleString("default", { month: "long" });
-    const leadDay = leadDate.getDate();
-
-    if (filterMonth && filterDate) {
-      return leadMonth === filterMonth && leadDay === parseInt(filterDate);
-    } else if (filterMonth) {
-      return leadMonth === filterMonth;
-    } else if (filterDate) {
-      return leadDay === parseInt(filterDate);
-    } else {
-      return true;
-    }
-  });
 
   return (
     <div className="container mx-auto p-4">
@@ -446,6 +457,50 @@ const VisitingForm = () => {
         <h2 className="text-2xl font-bold text-[#d86331] mb-4">
           Monthly Visit Table
         </h2>
+        <div className="flex space-x-4 mb-4">
+          <div>
+            <label
+              className="block text-gray-700 font-medium mb-1"
+              htmlFor="filterMonth"
+            >
+              Filter by Month
+            </label>
+            <select
+              id="filterMonth"
+              value={filterMonth}
+              onChange={(e) => setFilterMonth(e.target.value)}
+              className="p-2 border border-gray-300 rounded focus:outline-none focus:ring focus:ring-indigo-200"
+            >
+              <option value="">All Months</option>
+              {months.map((month) => (
+                <option key={month.value} value={month.value}>
+                  {month.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label
+              className="block text-gray-700 font-medium mb-1"
+              htmlFor="filterYear"
+            >
+              Filter by Year
+            </label>
+            <select
+              id="filterYear"
+              value={filterYear}
+              onChange={(e) => setFilterYear(e.target.value)}
+              className="p-2 border border-gray-300 rounded focus:outline-none focus:ring focus:ring-indigo-200"
+            >
+              <option value="">All Years</option>
+              {years.map((year) => (
+                <option key={year.value} value={year.value}>
+                  {year.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
         <button
           onClick={handleDownload}
           className="bg-indigo-600 text-white px-4 py-2 rounded mb-4 hover:bg-indigo-700 transition"

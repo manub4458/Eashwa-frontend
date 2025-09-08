@@ -27,6 +27,32 @@ const EmployeeDetail = () => {
   const [isSubmittingRating, setIsSubmittingRating] = useState(false);
   const { id } = useParams();
   const fileInputRef = React.useRef(null);
+  const [filterMonthVisit, setFilterMonthVisit] = useState("");
+  const [filterYear, setFilterYear] = useState("");
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
+
+  const months = [
+    { value: "1", label: "January" },
+    { value: "2", label: "February" },
+    { value: "3", label: "March" },
+    { value: "4", label: "April" },
+    { value: "5", label: "May" },
+    { value: "6", label: "June" },
+    { value: "7", label: "July" },
+    { value: "8", label: "August" },
+    { value: "9", label: "September" },
+    { value: "10", label: "October" },
+    { value: "11", label: "November" },
+    { value: "12", label: "December" },
+  ];
+
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: currentYear - 2019 + 1 }, (_, i) => ({
+    value: (2020 + i).toString(),
+    label: (2020 + i).toString(),
+  }));
 
   // Format date and time consistently
   function formatDateTime(isoString) {
@@ -52,6 +78,44 @@ const EmployeeDetail = () => {
       setEmployees(response.data.employees);
     } catch (error) {
       console.error("Error fetching data:", error);
+    }
+  };
+
+  useEffect(() => {
+    const storedToken = localStorage.getItem("token");
+    if (storedToken) {
+      fetchVisitors(storedToken, page, limit, filterMonthVisit, filterYear);
+    }
+  }, [page, filterMonthVisit, filterYear]);
+
+  const fetchVisitors = async (
+    token,
+    pageNumber = 1,
+    pageLimit = 10,
+    month = "",
+    year = ""
+  ) => {
+    try {
+      let url = `https://backend-eashwa.vercel.app/api/user/get-visitor/${id}?page=${pageNumber}&limit=${pageLimit}`;
+      if (month && year) {
+        url += `&month=${month}&year=${year}`;
+      }
+
+      const response = await axios.get(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.status === 200) {
+        setVisits(response.data.data);
+        setTotalPages(response.data.pagination.totalPages);
+        setPage(response.data.pagination.currentPage);
+        setLimit(response.data.pagination.itemsPerPage);
+      }
+    } catch (error) {
+      console.error("Error fetching visitors:", error);
+      alert("Failed to fetch visitors.");
     }
   };
 
@@ -484,6 +548,24 @@ const EmployeeDetail = () => {
       ),
     ];
     return [...new Set(allMonths)].sort();
+  };
+
+  const getPageNumbers = () => {
+    let start = Math.max(1, page - 1);
+    let end = Math.min(totalPages, page + 1);
+
+    if (page === 1) {
+      end = Math.min(totalPages, 3);
+    }
+    if (page === totalPages) {
+      start = Math.max(1, totalPages - 2);
+    }
+
+    const pages = [];
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    return pages;
   };
 
   if (!user) return <div>Loading...</div>;
@@ -1021,6 +1103,50 @@ const EmployeeDetail = () => {
           <h2 className="text-2xl font-bold text-[#d86331] mb-4">
             Monthly Visit Table
           </h2>
+          <div className="flex space-x-4 mb-4">
+            <div>
+              <label
+                className="block text-gray-700 font-medium mb-1"
+                htmlFor="filterMonthVisit"
+              >
+                Filter by Month
+              </label>
+              <select
+                id="filterMonthVisit"
+                value={filterMonthVisit}
+                onChange={(e) => setFilterMonthVisit(e.target.value)}
+                className="p-2 border border-gray-300 rounded focus:outline-none focus:ring focus:ring-indigo-200"
+              >
+                <option value="">All Months</option>
+                {months.map((month) => (
+                  <option key={month.value} value={month.value}>
+                    {month.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label
+                className="block text-gray-700 font-medium mb-1"
+                htmlFor="filterYear"
+              >
+                Filter by Year
+              </label>
+              <select
+                id="filterYear"
+                value={filterYear}
+                onChange={(e) => setFilterYear(e.target.value)}
+                className="p-2 border border-gray-300 rounded focus:outline-none focus:ring focus:ring-indigo-200"
+              >
+                <option value="">All Years</option>
+                {years.map((year) => (
+                  <option key={year.value} value={year.value}>
+                    {year.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
           <button
             onClick={handleDownload}
             className="bg-indigo-600 text-white px-4 py-2 rounded mb-4 hover:bg-indigo-700 transition"
@@ -1066,6 +1192,33 @@ const EmployeeDetail = () => {
                 ))}
               </tbody>
             </table>
+          </div>
+          <div className="flex justify-center space-x-2 my-4">
+            <button
+              onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+              disabled={page === 1}
+              className="px-2 py-1 bg-indigo-200 rounded disabled:opacity-50"
+            >
+              Prev
+            </button>
+            {getPageNumbers().map((num) => (
+              <button
+                key={num}
+                className={`px-2 py-1 rounded ${
+                  page === num ? "bg-[#d86331] text-white" : "bg-indigo-100"
+                }`}
+                onClick={() => setPage(num)}
+              >
+                {num}
+              </button>
+            ))}
+            <button
+              onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+              disabled={page === totalPages}
+              className="px-2 py-1 bg-indigo-200 rounded disabled:opacity-50"
+            >
+              Next
+            </button>
           </div>
         </div>
 
