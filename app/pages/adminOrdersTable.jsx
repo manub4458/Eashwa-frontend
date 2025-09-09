@@ -32,6 +32,9 @@ const AdminOrdersTable = () => {
   const [draggedOrder, setDraggedOrder] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
 
+  // Compute whether to show priority column and sorting (only for admin and when sortBy is 'latest')
+  const showPriority = isAdmin && sortBy === "latest";
+
   // Fetch orders API
   const fetchOrders = async () => {
     setIsLoading(true);
@@ -78,7 +81,7 @@ const AdminOrdersTable = () => {
       }
 
       let sortedOrders = data.orders;
-      if (username === "admin@eashwa.in") {
+      if (showPriority) {
         sortedOrders = [...data.orders].sort((a, b) => {
           const priorityA = a.priority || 999999;
           const priorityB = b.priority || 999999;
@@ -246,7 +249,7 @@ const AdminOrdersTable = () => {
 
   // Fixed drag and drop with consecutive priority reassignment
   const handleDragStart = (e, order) => {
-    if (!isAdmin) return;
+    if (!showPriority) return;
 
     setDraggedOrder(order);
     setIsDragging(true);
@@ -255,7 +258,7 @@ const AdminOrdersTable = () => {
   };
 
   const handleDragOver = (e, targetOrder) => {
-    if (!isAdmin || !draggedOrder || draggedOrder._id === targetOrder._id)
+    if (!showPriority || !draggedOrder || draggedOrder._id === targetOrder._id)
       return;
 
     e.preventDefault();
@@ -263,7 +266,7 @@ const AdminOrdersTable = () => {
   };
 
   const handleDrop = async (e, targetOrder) => {
-    if (!isAdmin || !draggedOrder || draggedOrder._id === targetOrder._id)
+    if (!showPriority || !draggedOrder || draggedOrder._id === targetOrder._id)
       return;
 
     e.preventDefault();
@@ -546,11 +549,10 @@ const AdminOrdersTable = () => {
               <table className="min-w-full divide-y divide-orange-200">
                 <thead className="bg-gradient-to-r from-orange-500 to-orange-600">
                   <tr>
-                    {isAdmin && (
-                      <th className="px-6 py-4 text-center text-sm font-semibold text-white uppercase tracking-wider">
-                        Priority
-                      </th>
-                    )}
+                    <th className="px-6 py-4 text-center text-sm font-semibold text-white uppercase tracking-wider">
+                      Priority
+                    </th>
+
                     <th className="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">
                       Sr No.
                     </th>
@@ -594,6 +596,9 @@ const AdminOrdersTable = () => {
                       Battery Type
                     </th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">
+                      Payment Received Date
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">
                       Deadline
                     </th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">
@@ -611,7 +616,7 @@ const AdminOrdersTable = () => {
                   {orders.length === 0 ? (
                     <tr>
                       <td
-                        colSpan={isAdmin ? 18 : 17}
+                        colSpan={showPriority ? 20 : 19}
                         className="px-6 py-8 text-center text-gray-500 bg-orange-50"
                       >
                         <div className="flex flex-col items-center justify-center">
@@ -641,7 +646,7 @@ const AdminOrdersTable = () => {
                     orders.map((order, index) => (
                       <tr
                         key={order._id || order.id || order.piNumber}
-                        draggable={isAdmin}
+                        draggable={showPriority}
                         onDragStart={(e) => handleDragStart(e, order)}
                         onDragOver={(e) => handleDragOver(e, order)}
                         onDrop={(e) => handleDrop(e, order)}
@@ -651,11 +656,9 @@ const AdminOrdersTable = () => {
                             : ""
                         }`}
                       >
-                        {isAdmin && (
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-center font-medium text-gray-900 cursor-move drag-handle">
-                            {displayPriority(order, index)}
-                          </td>
-                        )}
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-center font-medium text-gray-900 cursor-move drag-handle">
+                          {order.priority ?? "-"}
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                           {(currentPage - 1) * limit + index + 1}
                         </td>
@@ -697,6 +700,9 @@ const AdminOrdersTable = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {order.batteryType}
+                        </td>
+                        <td className="px-4 py-4 text-sm text-gray-900">
+                          {new Date(order.createdAt).toLocaleDateString()}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {order.deadline
