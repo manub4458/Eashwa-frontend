@@ -578,6 +578,9 @@ const AdminOrdersTable = () => {
                       Amount Received
                     </th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">
+                      Remark from account department
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">
                       Agent
                     </th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">
@@ -682,6 +685,9 @@ const AdminOrdersTable = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
                           ₹{order.amountReceived?.toFixed(2) || "0.00"}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {order.remark ?? "-"}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {order.agentName}

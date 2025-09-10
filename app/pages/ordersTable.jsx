@@ -158,6 +158,9 @@ const OrdersTable = () => {
                       Amount Received
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                      Remark from account department
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                       Agent
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
@@ -230,6 +233,9 @@ const OrdersTable = () => {
                         </td>
                         <td className="px-4 py-4 text-sm text-gray-900">
                           ₹{order.amountReceived.toFixed(2)}
+                        </td>
+                        <td className="px-4 py-4 text-sm text-gray-900">
+                          {order.remark ?? "-"}
                         </td>
                         <td className="px-4 py-4 text-sm text-gray-900">
                           {order.agentName}
