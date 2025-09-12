@@ -7,7 +7,9 @@ import axios from "axios";
 import HistoryTable from "../../components/ui/HistoryTable";
 import { FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
 import OrdersTable from "./ordersTable";
+import TicketTable from "./ticketTable";
 // import AdminOrdersTable from "./adminOrdersTable";
+
 const Employe = () => {
   const [user, setUser] = useState(null);
   const [uploadedLeads, setUploadedLeads] = useState([]);
@@ -21,6 +23,21 @@ const Employe = () => {
   const [selectedHistoryMonth, setSelectedHistoryMonth] = useState("");
   const fileInputRef = useRef(null);
   const router = useRouter();
+  const [isServiceEmployee, setIsServiceEmployee] = useState(false);
+
+  useEffect(() => {
+    const checkService = () => {
+      const rawData = localStorage.getItem("user");
+      if (!rawData) return;
+
+      const user = JSON.parse(rawData);
+
+      if (user.email === "sanya@eashwa.com" || user.employeeId === "EASWAA10") {
+        setIsServiceEmployee(true);
+      }
+    };
+    checkService();
+  }, []);
 
   function formatDateTime(isoString) {
     const date = new Date(isoString);
@@ -357,6 +374,30 @@ const Employe = () => {
             </div>
           </div>
         </section>
+        <div className="flex item-center gap-5">
+          <Link href="/detail-form">
+            <button
+              class="px-6 py-3 mt-6 rounded-2xl bg-gradient-to-r from-orange-400 to-orange-600 
+         text-white font-semibold tracking-wide shadow-lg 
+         hover:shadow-xl hover:scale-105 active:scale-95 
+         transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-orange-300"
+              onclick="window.location.href='#form'"
+            >
+              Place New Order
+            </button>
+          </Link>
+          <Link href="/raise-ticket">
+            <button
+              class="px-6 py-3 mt-6 rounded-2xl bg-gradient-to-r from-orange-400 to-orange-600 
+         text-white font-semibold tracking-wide shadow-lg 
+         hover:shadow-xl hover:scale-105 active:scale-95 
+         transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-orange-300"
+              onclick="window.location.href='#form'"
+            >
+              Raise a ticket
+            </button>
+          </Link>
+        </div>
 
         <section className="bg-white rounded-xl shadow-md p-8">
           <h2 className="text-2xl font-semibold text-[#d86331] mb-4">
@@ -487,19 +528,12 @@ const Employe = () => {
             </div>
           </div>
         </section>
+        {isServiceEmployee && (
+          <div>
+            <TicketTable />
+          </div>
+        )}
         {/* button section  */}
-
-        <Link href="/detail-form">
-          <button
-            class="px-6 py-3 mt-6 rounded-2xl bg-gradient-to-r from-orange-400 to-orange-600 
-         text-white font-semibold tracking-wide shadow-lg 
-         hover:shadow-xl hover:scale-105 active:scale-95 
-         transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-orange-300"
-            onclick="window.location.href='#form'"
-          >
-            Place New Order
-          </button>
-        </Link>
         {/* <AdminOrdersTable /> */}
         <OrdersTable />
         <section className="bg-white rounded-xl shadow-lg p-8 border-2">

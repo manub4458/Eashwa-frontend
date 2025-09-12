@@ -128,20 +128,35 @@ const HrDashboard = () => {
           </div>
         </section>
       )}
-
-      <Link href="/admin-table">
-        <div className="flex justify-center my-4">
-          <button
-            class="flex justify-center  px-6 py-3 mt-6 rounded-2xl bg-gradient-to-r from-orange-400 to-orange-600 
+      <div className="flex items-center gap-5 w-full mx-auto justify-center">
+        <Link href="/admin-table">
+          <div className="flex justify-center my-4">
+            <button
+              class="flex justify-center  px-6 py-3 mt-6 rounded-2xl bg-gradient-to-r from-orange-400 to-orange-600 
          text-white font-semibold tracking-wide shadow-lg 
          hover:shadow-xl hover:scale-105 active:scale-95 
          transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-orange-300"
-            onclick="window.location.href='#form'"
-          >
-            Go to All Orders Dashboard
-          </button>
-        </div>
-      </Link>
+              onclick="window.location.href='#form'"
+            >
+              Go to All Orders Dashboard
+            </button>
+          </div>
+        </Link>
+        <Link href="/tickets">
+          <div className="flex justify-center my-4">
+            <button
+              class="flex justify-center  px-6 py-3 mt-6 rounded-2xl bg-gradient-to-r from-orange-400 to-orange-600 
+         text-white font-semibold tracking-wide shadow-lg 
+         hover:shadow-xl hover:scale-105 active:scale-95 
+         transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-orange-300"
+              onclick="window.location.href='#form'"
+            >
+              All tickets
+            </button>
+          </div>
+        </Link>
+      </div>
+
       {/* Main Section */}
       <main className="container mx-auto px-6 py-12">
         <h2 className="text-2xl font-bold text-[#d86331] mb-8">
