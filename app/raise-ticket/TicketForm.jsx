@@ -141,7 +141,7 @@ const TicketForm = () => {
               </p>
             </div>
             <button
-              onClick={onClose}
+              // onClick={onClose}
               className="text-white hover:bg-white hover:bg-opacity-20 rounded-full p-2 transition-all duration-200"
             >
               <svg
@@ -415,7 +415,7 @@ const TicketForm = () => {
             <div className="flex justify-end space-x-4">
               <button
                 type="button"
-                onClick={onClose}
+                // onClick={onClose}
                 className="px-8 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-100 hover:border-gray-400 transition-all duration-200 font-semibold"
               >
                 Cancel
