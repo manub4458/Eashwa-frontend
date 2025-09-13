@@ -188,9 +188,9 @@ const TicketTable = ({ isAdmin = false, onRefresh }) => {
     <div className="space-y-8 p-6 bg-gray-50 min-h-screen">
       <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+          <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
             <svg
-              className="w-4 h-4 text-blue-600"
+              className="w-4 h-4 text-orange-600"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -289,52 +289,52 @@ const TicketTable = ({ isAdmin = false, onRefresh }) => {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[1400px]">
-              <thead>
-                <tr className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+              <thead className="bg-gradient-to-r from-orange-500 to-orange-600">
+                <tr>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
                     Ticket ID
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
                     Dealer Name
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
                     Dealer Phone
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
                     Location
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
                     Showroom
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
                     Agent Name
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
                     Agent Phone
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
                     Complaint
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
                     Purchase Date
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
                     Complaint Date
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
                     Warranty
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
                     Status Remark
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
                     Remark
                   </th>
                   {!isAdmin && (
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
                       Actions
                     </th>
                   )}
@@ -388,7 +388,7 @@ const TicketTable = ({ isAdmin = false, onRefresh }) => {
                         {ticket.complaintRegarding?.map((complaint, i) => (
                           <span
                             key={i}
-                            className="inline-block bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded-md border border-blue-200"
+                            className="inline-block bg-orange-50 text-orange-700 text-xs px-2 py-1 rounded-md border border-orange-200"
                           >
                             {complaint}
                           </span>
