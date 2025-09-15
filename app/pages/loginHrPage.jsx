@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import Cookies from "js-cookie";
+import { toast } from "react-toastify";
 
 const LoginHrPage = () => {
   const [userName, setUserName] = useState("");
@@ -18,22 +19,26 @@ const LoginHrPage = () => {
         "https://backend-eashwa.vercel.app/api/user/login",
         { userName, password }
       );
-      console.log("Response login",response);
+      console.log("Response login", response);
       if (response.data.ok) {
-        Cookies.set("authToken", response.data.authToken, { expires: 1 });
-        localStorage.setItem("token", response.data.authToken);
-        localStorage.setItem("user", JSON.stringify(response.data.user));
-
         if (response.data.user.role === "employee") {
+          toast.success("Login successful!");
+          Cookies.set("authToken", response.data.authToken, { expires: 1 });
+          localStorage.setItem("token", response.data.authToken);
+          localStorage.setItem("user", JSON.stringify(response.data.user));
           router.push("/employees");
         } else if (
-          response.data.user.role === "hr" || 
-          response.data.user.role === "admin" || 
-          response.data.user.role === "manager" 
+          response.data.user.role === "hr" ||
+          response.data.user.role === "admin" ||
+          response.data.user.role === "manager"
         ) {
+          toast.success("Login successful!");
+          Cookies.set("authToken", response.data.authToken, { expires: 1 });
+          localStorage.setItem("token", response.data.authToken);
+          localStorage.setItem("user", JSON.stringify(response.data.user));
           router.push("/hr-dash");
         } else {
-          router.push("/404");
+          toast.error("Wrong ID or Password");
         }
       }
     } catch (err) {

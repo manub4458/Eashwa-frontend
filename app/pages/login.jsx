@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 
 const Login = () => {
   const [userName, setUserName] = useState("");
@@ -28,15 +29,17 @@ const Login = () => {
         { userName, password }
       );
       if (response.data.ok) {
-        Cookies.set("authToken", response.data.authToken, { expires: 1 });
-        localStorage.setItem("token", response.data.authToken);
-        // Redirect based on the userName
-        const userNameToCheck = "admin@gmail.com"; // userName to check (case-insensitive)
+        const userNameToCheck = "plant@eashwa.com"; // userName to check (case-insensitive)
         if (isClient && router) {
           if (userName.toLowerCase() === userNameToCheck.toLowerCase()) {
-            router.push("/dashboard"); // Redirect to dashboard
+            Cookies.set("authToken", response.data.authToken, { expires: 1 });
+            localStorage.setItem("token", response.data.authToken);
+            router.push("/plant"); // Redirect to dashboard
+            toast.success("Login successful!");
           } else {
-            router.push("/plant"); // Redirect to home
+            toast.error("Wrong ID or Password");
+            setPassword("");
+            setUserName("");
           }
         }
       } else {
