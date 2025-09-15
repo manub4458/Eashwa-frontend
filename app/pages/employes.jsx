@@ -32,7 +32,10 @@ const Employe = () => {
 
       const user = JSON.parse(rawData);
 
-      if (user.email === "sanya@eashwa.com" || user.employeeId === "EASWAA10") {
+      if (
+        user.email === "shankey752@gmail.com" ||
+        user.employeeId === "EASAS01"
+      ) {
         setIsServiceEmployee(true);
       }
     };
