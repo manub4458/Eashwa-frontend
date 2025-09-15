@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "react-toastify";
 
 const TicketForm = () => {
   const [formData, setFormData] = useState({
@@ -108,13 +109,13 @@ const TicketForm = () => {
 
       if (response.ok) {
         const result = await response.json();
-        if (onSuccess) {
-          toast.success("✅ Ticket Raise Successfully!", {
-            position: "top-right",
-            autoClose: 3000,
-          });
-          router.push("/employees");
-        }
+        // if (onSuccess) {
+        toast.success("Ticket Raise Successfully!", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+        router.push("/employees");
+        // }
       } else {
         const errorData = await response.json();
         throw new Error(errorData.message || "Failed to submit ticket");
@@ -351,7 +352,7 @@ const TicketForm = () => {
                     <option value="">Select Warranty Status/Dispatch</option>
                     <option value="In Warranty">In Warranty</option>
                     <option value="Out of Warranty">Out of Warranty</option>
-                    <option value="Dispatch Problem">Out of Warranty</option>
+                    <option value="Dispatch Problem">Dispatch Problem</option>
                   </select>
                   {errors.warrantyStatus && (
                     <p className="mt-1 text-sm text-red-600">
