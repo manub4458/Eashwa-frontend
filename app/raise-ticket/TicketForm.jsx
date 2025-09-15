@@ -348,9 +348,10 @@ const TicketForm = () => {
                         : "border-gray-200 hover:border-gray-300"
                     }`}
                   >
-                    <option value="">Select Warranty Status</option>
+                    <option value="">Select Warranty Status/Dispatch</option>
                     <option value="In Warranty">In Warranty</option>
                     <option value="Out of Warranty">Out of Warranty</option>
+                    <option value="Dispatch Problem">Out of Warranty</option>
                   </select>
                   {errors.warrantyStatus && (
                     <p className="mt-1 text-sm text-red-600">
