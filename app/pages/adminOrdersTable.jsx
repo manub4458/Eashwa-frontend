@@ -45,7 +45,7 @@ const AdminOrdersTable = () => {
 
       const userData = JSON.parse(localStorage.getItem("user") || "{}");
       const username = userData.employeeId;
-      const authorizedUsers = ["admin@eashwa.in", "EASWS0A30"];
+      const authorizedUsers = ["salesadmin@eashwa.com", "EASWS0A30"];
 
       if (!authorizedUsers.includes(username)) {
         setIsAuthorized(false);
@@ -54,7 +54,7 @@ const AdminOrdersTable = () => {
       }
 
       setIsAuthorized(true);
-      setIsAdmin(username === "admin@eashwa.in");
+      setIsAdmin(username === "salesadmin@eashwa.com");
       setIsDispatchHead(username === "EASWS0A30");
 
       const queryParams = new URLSearchParams({
