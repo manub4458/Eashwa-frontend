@@ -1,5 +1,9 @@
 "use client";
+import { useRouter } from "next/navigation";
 import React, { useState, useEffect } from "react";
+import { MdDelete } from "react-icons/md";
+import { PiPencilSimpleLineFill } from "react-icons/pi";
+import { toast } from "react-toastify";
 
 const AdminOrdersTable = () => {
   const [orders, setOrders] = useState([]);
@@ -31,6 +35,7 @@ const AdminOrdersTable = () => {
   // Drag and drop states
   const [draggedOrder, setDraggedOrder] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
+  const router = useRouter();
 
   // Compute whether to show priority column and sorting (only for admin and when sortBy is 'latest')
   const showPriority = isAdmin && sortBy === "latest";
@@ -242,6 +247,40 @@ const AdminOrdersTable = () => {
       return data.order;
     } catch (err) {
       console.error(err);
+      setError(err.message);
+      throw err;
+    }
+  };
+
+  const deleteOrder = async (orderId) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("Unauthorized");
+      setIsLoading(true);
+
+      const response = await fetch(
+        `https://backend-eashwa.vercel.app/api/orders/${orderId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        toast.error(data.message);
+        setIsLoading(false);
+        throw new Error(data.message || "Failed to delete order");
+      }
+      toast.success("Order deleted sucessfully");
+      fetchOrders();
+    } catch (err) {
+      console.error(err);
+      setIsLoading(false);
+      toast.error(err);
       setError(err.message);
       throw err;
     }
@@ -613,6 +652,9 @@ const AdminOrdersTable = () => {
                     <th className="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">
                       PDF
                     </th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">
+                      Action
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-orange-200">
@@ -805,6 +847,24 @@ const AdminOrdersTable = () => {
                           ) : (
                             <span className="text-gray-400">N/A</span>
                           )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                          <div className="flex items-center gap-2">
+                            <button
+                              className="text-blue-800 text-lg"
+                              onClick={() =>
+                                router.push(`/detail-form/${order._id}`)
+                              }
+                            >
+                              <PiPencilSimpleLineFill />
+                            </button>
+                            <button
+                              className="text-red-600 text-lg"
+                              onClick={() => deleteOrder(order._id)}
+                            >
+                              <MdDelete />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))
