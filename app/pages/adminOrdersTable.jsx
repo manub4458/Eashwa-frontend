@@ -32,6 +32,10 @@ const AdminOrdersTable = () => {
   const [pendingOrderId, setPendingOrderId] = useState(null);
   const [pendingReason, setPendingReason] = useState("");
 
+  const [showCancelledPopup, setShowCancelledPopup] = useState(false);
+  const [cancelledOrderId, setCancelledOrderId] = useState(null);
+  const [cancelReason, setCancelReason] = useState("");
+
   // Drag and drop states
   const [draggedOrder, setDraggedOrder] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -122,6 +126,13 @@ const AdminOrdersTable = () => {
         setShowDropdown(null);
       }
 
+      if (newStatus === "cancelled") {
+        // Open pending popup
+        setCancelledOrderId(orderId);
+        setShowCancelledPopup(true);
+        setShowDropdown(null);
+      }
+
       if (newStatus === "deliver") {
         // Open delivery popup
         setDeliveryOrderId(orderId);
@@ -173,11 +184,55 @@ const AdminOrdersTable = () => {
     }
   };
 
+  const handleCancelConfirm = async () => {
+    if (!pendingReason.trim()) {
+      alert("Please enter a pending reason");
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("Unauthorized");
+
+      const response = await fetch(
+        `https://backend-eashwa.vercel.app/api/orders/cancel/${cancelledOrderId}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            cancelReason: cancelReason.trim(),
+          }),
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to mark as Cancel");
+
+      // Reset popup state
+      setShowCancelledPopup(false);
+      setCancelledOrderId(null);
+      setCancelReason("");
+      setShowDropdown(null);
+      fetchOrders();
+    } catch (err) {
+      console.error(err);
+      setError(err.message);
+    }
+  };
+
   // Close pending popup
   const closePendingPopup = () => {
     setShowPendingPopup(false);
     setPendingOrderId(null);
     setPendingReason("");
+  };
+
+  const closeCanclledPopup = () => {
+    setShowCancelledPopup(false);
+    setCancelledOrderId(null);
+    setCancelReason("");
   };
 
   // Handle delivery confirmation
@@ -400,6 +455,7 @@ const AdminOrdersTable = () => {
       case "ready_for_dispatch":
         return [
           { label: "Mark as Pending", value: "pending" },
+          { label: "Mark as Cancel", value: "cancelled" },
           { label: "Mark as Delivered", value: "deliver" },
         ];
       default:
@@ -512,6 +568,44 @@ const AdminOrdersTable = () => {
                 </button>
                 <button
                   onClick={closeDeliveryPopup}
+                  className="flex-1 bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition duration-200"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showCancelledPopup && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-96 max-w-90vw">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                Enter Cancel Reason
+              </h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Cancel Reason
+                  </label>
+                  <textarea
+                    value={cancelReason}
+                    onChange={(e) => setCancelReason(e.target.value)}
+                    placeholder="Enter reason for cancel order"
+                    className="w-full border border-gray-300 rounded-lg p-2 focus:border-orange-500 focus:ring-orange-500 resize-y"
+                    rows="4"
+                  />
+                </div>
+              </div>
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={handleCancelConfirm}
+                  className="flex-1 bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 transition duration-200"
+                >
+                  Confirm Cancel
+                </button>
+                <button
+                  onClick={closeCanclledPopup}
                   className="flex-1 bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition duration-200"
                 >
                   Cancel

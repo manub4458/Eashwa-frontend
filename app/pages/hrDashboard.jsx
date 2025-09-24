@@ -132,11 +132,11 @@ const HrDashboard = () => {
         <Link href="/admin-table">
           <div className="flex justify-center my-4">
             <button
-              class="flex justify-center  px-6 py-3 mt-6 rounded-2xl bg-gradient-to-r from-orange-400 to-orange-600 
+              className="flex justify-center  px-6 py-3 mt-6 rounded-2xl bg-gradient-to-r from-orange-400 to-orange-600 
          text-white font-semibold tracking-wide shadow-lg 
          hover:shadow-xl hover:scale-105 active:scale-95 
          transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-orange-300"
-              onclick="window.location.href='#form'"
+              onClick="window.location.href='#form'"
             >
               Go to All Orders Dashboard
             </button>
@@ -145,11 +145,11 @@ const HrDashboard = () => {
         <Link href="/tickets">
           <div className="flex justify-center my-4">
             <button
-              class="flex justify-center  px-6 py-3 mt-6 rounded-2xl bg-gradient-to-r from-orange-400 to-orange-600 
+              className="flex justify-center  px-6 py-3 mt-6 rounded-2xl bg-gradient-to-r from-orange-400 to-orange-600 
          text-white font-semibold tracking-wide shadow-lg 
          hover:shadow-xl hover:scale-105 active:scale-95 
          transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-orange-300"
-              onclick="window.location.href='#form'"
+              onClick="window.location.href='#form'"
             >
               All tickets
             </button>
