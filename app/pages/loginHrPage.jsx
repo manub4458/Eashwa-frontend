@@ -97,7 +97,7 @@ const LoginHrPage = () => {
 
           <button
             type="submit"
-            className="w-full bg-[#d86331] text-white py-2 px-4 rounded-md shadow hover:bg-[#df7f55] transition"
+            className="w-full bg-blue-800 text-white py-2 px-4 rounded-md shadow hover:bg-[#df7f55] transition"
           >
             Login
           </button>
