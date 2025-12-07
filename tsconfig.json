@@ -27,7 +27,7 @@
     ".next/types/**/*.ts",
     "**/*.ts",
     "**/*.tsx"
-, "app/raise-ticket/page.jsx", "app/tickets/page.jsx"  ],
+, "app/raise-ticket/page.jsx", "app/tickets/page.jsx", "app/add-employee/page.jsx"  ],
   "exclude": [
     "node_modules"
   ]
