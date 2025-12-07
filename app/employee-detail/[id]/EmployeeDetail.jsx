@@ -6,6 +6,7 @@ import * as XLSX from "xlsx";
 import HistoryTable from "../../../components/ui/HistoryTable";
 import Link from "next/link";
 import { FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
+import { toast } from "react-toastify";
 
 const EmployeeDetail = () => {
   const [user, setUser] = useState(null);
@@ -32,6 +33,7 @@ const EmployeeDetail = () => {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
+  const [targetUpdateMonth, setTargetUpdateMonth] = useState("");
   const router = useRouter();
 
   const months = [
@@ -412,17 +414,21 @@ const EmployeeDetail = () => {
 
   const handleTargetUpdate = async () => {
     try {
+      if (!targetUpdateMonth) {
+    toast.error("Please select a month to update targets for.");
+    return;
+  }
       setIsLoading(true);
       const token = localStorage.getItem("token");
-      const currentDate = new Date();
-      const currentMonth = `${currentDate.getFullYear()}-${String(
-        currentDate.getMonth() + 1
-      ).padStart(2, "0")}`;
+      // const currentDate = new Date();
+      // const currentMonth = `${currentDate.getFullYear()}-${String(
+      //   currentDate.getMonth() + 1
+      // ).padStart(2, "0")}`;
 
       await axios.put(
         `https://backend-eashwa.vercel.app/api/user/update-target/${id}`,
         {
-          month: currentMonth,
+          month: targetUpdateMonth,
           battery: {
             total: user.targetAchieved.battery.current.total,
             completed: user.targetAchieved.battery.current.completed,
@@ -445,6 +451,8 @@ const EmployeeDetail = () => {
       );
       await fetchUser();
       setIsEditing(false);
+      setTargetUpdateMonth("");
+      toast.success("Targets updated successfully!");
     } catch (error) {
       console.error("Error updating target:", error);
       alert("Failed to update targets. Please try again.");
@@ -728,42 +736,59 @@ const EmployeeDetail = () => {
               <h2 className="text-2xl font-bold text-[#d86331]">
                 Current Target Information
               </h2>
-              <div className="flex gap-2">
-                <button
-                  onClick={() =>
-                    isEditing ? handleTargetUpdate() : setIsEditing(true)
-                  }
-                  disabled={isLoading}
-                  className="bg-[#d86331] text-white px-6 py-2 rounded-lg hover:bg-[#c55a2d] transition-colors disabled:opacity-50"
-                >
-                  {isLoading
-                    ? "Updating..."
-                    : isEditing
-                    ? "Save Changes"
-                    : "Edit Targets"}
-                </button>
-                <button
-                  className="bg-[#d86331] text-white px-6 py-2 rounded-lg hover:bg-[#c55a2d] transition-colors"
-                  onClick={downloadTemplateFile}
-                >
-                  Download Lead Template
-                </button>
-                <div className="relative">
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleFileUpload}
-                    accept=".xlsx,.xls"
-                    className="hidden"
-                    disabled={isUploading}
-                  />
+              <div className="flex flex-wrap items-center gap-3">
+                {/* Month-Year Selector for Target Update */}
+                {isEditing && (
+                  <div className="flex items-center gap-2">
+                    <label className="text-sm font-medium text-gray-700">
+                      Select Month:
+                    </label>
+                    <input
+                      type="month"
+                      value={targetUpdateMonth}
+                      onChange={(e) => setTargetUpdateMonth(e.target.value)}
+                      className="border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#d86331]"
+                      required
+                    />
+                  </div>
+                )}
+                <div className="flex gap-2">
                   <button
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={isUploading}
+                    onClick={() =>
+                      isEditing ? handleTargetUpdate() : setIsEditing(true)
+                    }
+                    disabled={isLoading}
                     className="bg-[#d86331] text-white px-6 py-2 rounded-lg hover:bg-[#c55a2d] transition-colors disabled:opacity-50"
                   >
-                    {isUploading ? "Uploading..." : "Upload Lead"}
+                    {isLoading
+                      ? "Updating..."
+                      : isEditing
+                      ? "Save Changes"
+                      : "Edit Targets"}
                   </button>
+                  <button
+                    className="bg-[#d86331] text-white px-6 py-2 rounded-lg hover:bg-[#c55a2d] transition-colors"
+                    onClick={downloadTemplateFile}
+                  >
+                    Download Lead Template
+                  </button>
+                  <div className="relative">
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleFileUpload}
+                      accept=".xlsx,.xls"
+                      className="hidden"
+                      disabled={isUploading}
+                    />
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isUploading}
+                      className="bg-[#d86331] text-white px-6 py-2 rounded-lg hover:bg-[#c55a2d] transition-colors disabled:opacity-50"
+                    >
+                      {isUploading ? "Uploading..." : "Upload Lead"}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
