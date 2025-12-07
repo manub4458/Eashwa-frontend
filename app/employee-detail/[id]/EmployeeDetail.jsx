@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams, useRouter } from "next/navigation";
@@ -60,10 +61,13 @@ const EmployeeDetail = () => {
   // Format date and time consistently
   function formatDateTime(isoString) {
     const date = new Date(isoString);
-    return date.toLocaleDateString("en-US", {
+    return date.toLocaleString("en-US", {
       year: "numeric",
       month: "long",
       day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: "UTC", // 👈 keep it in UTC
     });
   }
 
@@ -415,9 +419,9 @@ const EmployeeDetail = () => {
   const handleTargetUpdate = async () => {
     try {
       if (!targetUpdateMonth) {
-    toast.error("Please select a month to update targets for.");
-    return;
-  }
+        toast.error("Please select a month to update targets for.");
+        return;
+      }
       setIsLoading(true);
       const token = localStorage.getItem("token");
       // const currentDate = new Date();

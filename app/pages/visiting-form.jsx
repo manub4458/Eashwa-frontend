@@ -312,22 +312,35 @@ const VisitingForm = () => {
     }
   };
 
+  // function formatDateTime(isoString) {
+  //   const date = new Date(isoString);
+
+  //   const formattedDate = date.toLocaleDateString("en-US", {
+  //     year: "numeric",
+  //     month: "long",
+  //     day: "numeric",
+  //   });
+
+  //   const formattedTime = date.toLocaleTimeString("en-US", {
+  //     hour: "2-digit",
+  //     minute: "2-digit",
+  //   });
+
+  //   return `${formattedDate} ${formattedTime}`;
+  // }
+
   function formatDateTime(isoString) {
-    const date = new Date(isoString);
+  const date = new Date(isoString);
+  return date.toLocaleString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "UTC",   // 👈 keep it in UTC
+  });
+}
 
-    const formattedDate = date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-
-    const formattedTime = date.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-
-    return `${formattedDate} ${formattedTime}`;
-  }
 
   return (
     <div className="container mx-auto p-4">
