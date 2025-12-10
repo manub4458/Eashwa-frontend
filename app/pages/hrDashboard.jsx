@@ -4,6 +4,9 @@ import axios from "axios";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import AdminOrdersTable from "./adminOrdersTable";
+import { PiPencilSimpleLineFill } from "react-icons/pi";
+import { BiSolidDetail } from "react-icons/bi";
+
 
 const HrDashboard = () => {
   const [employees, setEmployees] = useState([]);
@@ -194,9 +197,9 @@ const HrDashboard = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
           {employees.length > 0 ? (
             employees.map((employee) => (
-              <Link
+              <div
                 key={employee._id}
-                href={`/employee-detail/${employee._id}`}
+                // href={`/employee-detail/${employee._id}`}
               >
                 <div className="bg-white rounded-xl shadow-lg border-t-4 border-[#d86331] p-6 flex flex-col items-center transition-transform transform hover:scale-105">
                   <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-blue-400 shadow-lg mb-4">
@@ -214,6 +217,14 @@ const HrDashboard = () => {
                   <p className="text-gray-500 text-sm">
                     {employee.post || "N/A"}
                   </p>
+                  <div>
+                    <button onClick={()=>router.push(`/employee-detail/${employee._id}`)}>
+                      <BiSolidDetail size={20} className="mr-2" />
+                    </button>
+                    <button onClick={()=>router.push(`/update-employee/${employee._id}`)}>
+                      <PiPencilSimpleLineFill size={20} className="mr-2" />
+                    </button>
+                  </div>
                   <div className="mt-4 text-sm text-gray-600 space-y-1">
                     <p>
                       <strong>Email:</strong> {employee.email || "N/A"}
@@ -237,7 +248,7 @@ const HrDashboard = () => {
                     )}
                   </div>
                 </div>
-              </Link>
+              </div>
             ))
           ) : (
             <p className="text-center text-gray-500">No employees found.</p>
