@@ -1,19 +1,19 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { 
-  User, 
-  Mail, 
-  Lock, 
-  Phone, 
-  MapPin, 
+import {
+  User,
+  Mail,
+  Lock,
+  Phone,
+  MapPin,
   CreditCard,
   Briefcase,
   Calendar,
   Upload,
   UserPlus,
   Loader2,
-  Image
+  Image,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -34,7 +34,7 @@ export default function RegisterUserForm() {
     joiningDate: "",
     post: "",
     profilePicture: "",
-    managedBy: ""
+    managedBy: "",
   });
   const router = useRouter();
   const [previewImage, setPreviewImage] = useState("");
@@ -44,7 +44,9 @@ export default function RegisterUserForm() {
     { id: "6792a56b6b4c7a0c3d52890e", name: "Abhinav Badola" },
     { id: "67aa444eb198d893d8ba1f8a", name: "Deepak Lochan Agarwal" },
     { id: "67f827a58a535582d4e879cc", name: "Saurabh Verma" },
-    { id: "67fa3ea0d3f06c7ecf03cba5", name: "Ramesh Kumar Pandey" }
+    { id: "67fa3ea0d3f06c7ecf03cba5", name: "Ramesh Kumar Pandey" },
+    { id: "6937c43f607a13e3b3d00c26", name: "Ayush" },
+    { id: "6936a0b0e449db2f15d5ebff", name: "Amit Malik" },
   ];
 
   const roles = [
@@ -52,20 +54,20 @@ export default function RegisterUserForm() {
     { value: "hr", label: "HR" },
     { value: "manager", label: "Manager" },
     { value: "admin-plant", label: "Admin Plant" },
-    { value: "admin", label: "Admin" }
+    { value: "admin", label: "Admin" },
   ];
 
   const handleImageUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith('image/')) {
-      toast.error('Please upload an image file');
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload an image file");
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      toast.error('File size should be less than 5MB');
+      toast.error("File size should be less than 5MB");
       return;
     }
 
@@ -73,23 +75,26 @@ export default function RegisterUserForm() {
 
     try {
       const formData = new FormData();
-      formData.append('images', file);
+      formData.append("images", file);
 
-      const response = await fetch('https://backend-eashwa.vercel.app/api/images/upload-images', {
-        method: 'POST',
-        body: formData
-      });
+      const response = await fetch(
+        "https://backend-eashwa.vercel.app/api/images/upload-images",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
 
       if (!response.ok) {
-        toast.error('Image upload failed');
-        throw new Error('Image upload failed');
+        toast.error("Image upload failed");
+        throw new Error("Image upload failed");
       }
 
       const data = await response.json();
-      
-      setFormData(prev => ({
+
+      setFormData((prev) => ({
         ...prev,
-        profilePicture: data.images[0] || ""
+        profilePicture: data.images[0] || "",
       }));
 
       const reader = new FileReader();
@@ -97,10 +102,9 @@ export default function RegisterUserForm() {
         setPreviewImage(reader.result);
       };
       reader.readAsDataURL(file);
-
     } catch (error) {
-      console.error('Image upload error:', error);
-      toast.error('Failed to upload image. Please try again.');
+      console.error("Image upload error:", error);
+      toast.error("Failed to upload image. Please try again.");
     } finally {
       setImageUploading(false);
     }
@@ -129,7 +133,8 @@ export default function RegisterUserForm() {
       newErrors.aadhaarNumber = "Aadhaar must be 12 digits";
     }
     if (!formData.role) newErrors.role = "Role is required";
-    if (!formData.joiningDate) newErrors.joiningDate = "Joining date is required";
+    if (!formData.joiningDate)
+      newErrors.joiningDate = "Joining date is required";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -137,7 +142,7 @@ export default function RegisterUserForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -148,25 +153,30 @@ export default function RegisterUserForm() {
       const submitData = {
         ...formData,
         phone: formData.phone ? Number(formData.phone) : null,
-        aadhaarNumber: formData.aadhaarNumber ? Number(formData.aadhaarNumber) : null,
-        managedBy: formData.managedBy || null
+        aadhaarNumber: formData.aadhaarNumber
+          ? Number(formData.aadhaarNumber)
+          : null,
+        managedBy: formData.managedBy || null,
       };
 
-      const response = await fetch('https://backend-eashwa.vercel.app/api/user/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(submitData)
-      });
+      const response = await fetch(
+        "https://backend-eashwa.vercel.app/api/user/register",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(submitData),
+        }
+      );
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Registration failed');
+        throw new Error(data.message || "Registration failed");
       }
-      toast.success('User registered successfully!');
-      
+      toast.success("User registered successfully!");
+
       setFormData({
         name: "",
         email: "",
@@ -179,15 +189,16 @@ export default function RegisterUserForm() {
         joiningDate: "",
         post: "",
         profilePicture: "",
-        managedBy: ""
+        managedBy: "",
       });
       setPreviewImage("");
       setErrors({});
-      router.push('/hr-dash');
-
+      router.push("/hr-dash");
     } catch (error) {
-      console.error('Registration error:', error);
-      toast.error(error.message || 'Failed to register user. Please try again.');
+      console.error("Registration error:", error);
+      toast.error(
+        error.message || "Failed to register user. Please try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -195,14 +206,14 @@ export default function RegisterUserForm() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
     if (errors[name]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [name]: undefined
+        [name]: undefined,
       }));
     }
   };
@@ -222,7 +233,9 @@ export default function RegisterUserForm() {
               <UserPlus className="h-8 w-8" />
               <h1 className="text-3xl font-bold">Register New User</h1>
             </div>
-            <p className="text-orange-100 text-lg">Fill in the details to create a new user account</p>
+            <p className="text-orange-100 text-lg">
+              Fill in the details to create a new user account
+            </p>
           </div>
 
           {/* Content */}
@@ -233,7 +246,11 @@ export default function RegisterUserForm() {
                 <div className="relative">
                   <div className="w-32 h-32 rounded-full border-4 border-orange-100 overflow-hidden bg-gray-100 flex items-center justify-center shadow-lg">
                     {previewImage ? (
-                      <img src={previewImage} alt="Preview" className="w-full h-full object-cover" />
+                      <img
+                        src={previewImage}
+                        alt="Preview"
+                        className="w-full h-full object-cover"
+                      />
                     ) : (
                       <Image className="h-12 w-12 text-gray-400" />
                     )}
@@ -244,7 +261,7 @@ export default function RegisterUserForm() {
                     </div>
                   )}
                 </div>
-                
+
                 <label className="cursor-pointer">
                   <div className="px-6 py-2 bg-orange-50 text-orange-600 font-medium rounded-lg hover:bg-orange-100 transition-all flex items-center gap-2 shadow-sm">
                     <Upload className="h-4 w-4" />
@@ -258,7 +275,9 @@ export default function RegisterUserForm() {
                     disabled={imageUploading}
                   />
                 </label>
-                <p className="text-sm text-gray-500">Max size: 5MB (JPG, PNG)</p>
+                <p className="text-sm text-gray-500">
+                  Max size: 5MB (JPG, PNG)
+                </p>
               </div>
 
               {/* Form Fields */}
@@ -276,10 +295,16 @@ export default function RegisterUserForm() {
                     onChange={handleChange}
                     placeholder="Enter full name"
                     className={`w-full px-4 py-2.5 border-2 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all outline-none ${
-                      errors.name ? 'border-red-500 bg-red-50' : 'border-gray-200 hover:border-gray-300'
+                      errors.name
+                        ? "border-red-500 bg-red-50"
+                        : "border-gray-200 hover:border-gray-300"
                     }`}
                   />
-                  {errors.name && <p className="text-sm text-red-600 flex items-center gap-1">⚠️ {errors.name}</p>}
+                  {errors.name && (
+                    <p className="text-sm text-red-600 flex items-center gap-1">
+                      ⚠️ {errors.name}
+                    </p>
+                  )}
                 </div>
 
                 {/* Email */}
@@ -295,10 +320,16 @@ export default function RegisterUserForm() {
                     onChange={handleChange}
                     placeholder="john@example.com"
                     className={`w-full px-4 py-2.5 border-2 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all outline-none ${
-                      errors.email ? 'border-red-500 bg-red-50' : 'border-gray-200 hover:border-gray-300'
+                      errors.email
+                        ? "border-red-500 bg-red-50"
+                        : "border-gray-200 hover:border-gray-300"
                     }`}
                   />
-                  {errors.email && <p className="text-sm text-red-600 flex items-center gap-1">⚠️ {errors.email}</p>}
+                  {errors.email && (
+                    <p className="text-sm text-red-600 flex items-center gap-1">
+                      ⚠️ {errors.email}
+                    </p>
+                  )}
                 </div>
 
                 {/* Password */}
@@ -314,10 +345,16 @@ export default function RegisterUserForm() {
                     onChange={handleChange}
                     placeholder="Min 6 characters"
                     className={`w-full px-4 py-2.5 border-2 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all outline-none ${
-                      errors.password ? 'border-red-500 bg-red-50' : 'border-gray-200 hover:border-gray-300'
+                      errors.password
+                        ? "border-red-500 bg-red-50"
+                        : "border-gray-200 hover:border-gray-300"
                     }`}
                   />
-                  {errors.password && <p className="text-sm text-red-600 flex items-center gap-1">⚠️ {errors.password}</p>}
+                  {errors.password && (
+                    <p className="text-sm text-red-600 flex items-center gap-1">
+                      ⚠️ {errors.password}
+                    </p>
+                  )}
                 </div>
 
                 {/* Phone */}
@@ -334,10 +371,16 @@ export default function RegisterUserForm() {
                     placeholder="10 digit number"
                     maxLength="10"
                     className={`w-full px-4 py-2.5 border-2 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all outline-none ${
-                      errors.phone ? 'border-red-500 bg-red-50' : 'border-gray-200 hover:border-gray-300'
+                      errors.phone
+                        ? "border-red-500 bg-red-50"
+                        : "border-gray-200 hover:border-gray-300"
                     }`}
                   />
-                  {errors.phone && <p className="text-sm text-red-600 flex items-center gap-1">⚠️ {errors.phone}</p>}
+                  {errors.phone && (
+                    <p className="text-sm text-red-600 flex items-center gap-1">
+                      ⚠️ {errors.phone}
+                    </p>
+                  )}
                 </div>
 
                 {/* Address */}
@@ -370,10 +413,16 @@ export default function RegisterUserForm() {
                     placeholder="12 digit Aadhaar"
                     maxLength="12"
                     className={`w-full px-4 py-2.5 border-2 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all outline-none ${
-                      errors.aadhaarNumber ? 'border-red-500 bg-red-50' : 'border-gray-200 hover:border-gray-300'
+                      errors.aadhaarNumber
+                        ? "border-red-500 bg-red-50"
+                        : "border-gray-200 hover:border-gray-300"
                     }`}
                   />
-                  {errors.aadhaarNumber && <p className="text-sm text-red-600 flex items-center gap-1">⚠️ {errors.aadhaarNumber}</p>}
+                  {errors.aadhaarNumber && (
+                    <p className="text-sm text-red-600 flex items-center gap-1">
+                      ⚠️ {errors.aadhaarNumber}
+                    </p>
+                  )}
                 </div>
 
                 {/* Employee ID */}
@@ -403,16 +452,22 @@ export default function RegisterUserForm() {
                     value={formData.role}
                     onChange={handleChange}
                     className={`w-full px-4 py-2.5 border-2 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all outline-none ${
-                      errors.role ? 'border-red-500 bg-red-50' : 'border-gray-200 hover:border-gray-300'
+                      errors.role
+                        ? "border-red-500 bg-red-50"
+                        : "border-gray-200 hover:border-gray-300"
                     }`}
                   >
-                    {roles.map(role => (
+                    {roles.map((role) => (
                       <option key={role.value} value={role.value}>
                         {role.label}
                       </option>
                     ))}
                   </select>
-                  {errors.role && <p className="text-sm text-red-600 flex items-center gap-1">⚠️ {errors.role}</p>}
+                  {errors.role && (
+                    <p className="text-sm text-red-600 flex items-center gap-1">
+                      ⚠️ {errors.role}
+                    </p>
+                  )}
                 </div>
 
                 {/* Post */}
@@ -443,10 +498,16 @@ export default function RegisterUserForm() {
                     value={formData.joiningDate}
                     onChange={handleChange}
                     className={`w-full px-4 py-2.5 border-2 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all outline-none ${
-                      errors.joiningDate ? 'border-red-500 bg-red-50' : 'border-gray-200 hover:border-gray-300'
+                      errors.joiningDate
+                        ? "border-red-500 bg-red-50"
+                        : "border-gray-200 hover:border-gray-300"
                     }`}
                   />
-                  {errors.joiningDate && <p className="text-sm text-red-600 flex items-center gap-1">⚠️ {errors.joiningDate}</p>}
+                  {errors.joiningDate && (
+                    <p className="text-sm text-red-600 flex items-center gap-1">
+                      ⚠️ {errors.joiningDate}
+                    </p>
+                  )}
                 </div>
 
                 {/* Managed By */}
@@ -462,7 +523,7 @@ export default function RegisterUserForm() {
                     className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all outline-none hover:border-gray-300"
                   >
                     <option value="">Select Manager (Optional)</option>
-                    {managers.map(manager => (
+                    {managers.map((manager) => (
                       <option key={manager.id} value={manager.id}>
                         {manager.name}
                       </option>
