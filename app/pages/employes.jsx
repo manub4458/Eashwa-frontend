@@ -400,6 +400,17 @@ const Employe = () => {
               Raise a ticket
             </button>
           </Link>
+          <Link href="/my-ticket">
+            <button
+              class="px-6 py-3 mt-6 rounded-2xl bg-gradient-to-r from-orange-400 to-orange-600 
+         text-white font-semibold tracking-wide shadow-lg 
+         hover:shadow-xl hover:scale-105 active:scale-95 
+         transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-orange-300"
+              onclick="window.location.href='#form'"
+            >
+              My tickets
+            </button>
+          </Link>
         </div>
 
         <section className="bg-white rounded-xl shadow-md p-8">
