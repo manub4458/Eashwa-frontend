@@ -30,6 +30,10 @@ const Page = () => {
     "Velox",
     "Velox pro",
     "Velox plus",
+    "Nebo plus FH",
+    "Nebo X9",
+    "Dangus pro 3W",
+    "HC Single seat",
   ];
 
   const productType = ["Vehicle"];

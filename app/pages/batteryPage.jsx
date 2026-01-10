@@ -84,7 +84,8 @@ const BatteryPage = () => {
             {/* Lead Acid Battery */}
             <div className="relative bg-gradient-to-r from-orange-500 to-yellow-500 text-white shadow-lg rounded-lg p-6 hover:shadow-2xl transform hover:scale-105 transition duration-300">
               <FaBatteryFull className="absolute top-4 right-4 text-4xl opacity-30" />
-              <h2 className="text-2xl font-bold mb-4">Lead Acid Battery</h2>
+             
+              <h2 className="text-2xl font-bold mb-4">Lithium-Ion Battery</h2>
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <p className="text-xl font-semibold">Total Stock:</p>
@@ -104,7 +105,7 @@ const BatteryPage = () => {
             {/* Lithium Ion Battery */}
             <div className="relative bg-gradient-to-r from-teal-500 to-blue-500 text-white shadow-lg rounded-lg p-6 hover:shadow-2xl transform hover:scale-105 transition duration-300">
               <FaBatteryFull className="absolute top-4 right-4 text-4xl opacity-30" />
-              <h2 className="text-2xl font-bold mb-4">Lithium-Ion Battery</h2>
+             <h2 className="text-2xl font-bold mb-4">Lead Acid Battery</h2>
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <p className="text-xl font-semibold">Total Stock:</p>

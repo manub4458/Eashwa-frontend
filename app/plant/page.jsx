@@ -109,7 +109,7 @@ const Plant = () => {
               <div className="bg-white p-4 rounded-lg shadow">
                 <h2 className="text-lg font-semibold">Lead Acid Battery Stock</h2>
                 <p className="text-3xl font-bold text-green-600">
-                  {batteryData && batteryData[0] ? batteryData[0].remainingStock : 'N/A'}
+                  {batteryData && batteryData[1] ? batteryData[1].remainingStock : 'N/A'}
                 </p>
                 <p className="text-sm text-gray-500">Available</p>
               </div>
@@ -117,7 +117,7 @@ const Plant = () => {
               <div className="bg-white p-4 rounded-lg shadow">
                 <h2 className="text-lg font-semibold">Lithium Ion Battery Stock</h2>
                 <p className="text-3xl font-bold text-green-600">
-                  {batteryData && batteryData[1] ? batteryData[1].remainingStock : 'N/A'}
+                  {batteryData && batteryData[0] ? batteryData[0].remainingStock : 'N/A'}
                 </p>
                 <p className="text-sm text-gray-500">Available</p>
               </div>

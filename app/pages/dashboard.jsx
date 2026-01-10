@@ -112,6 +112,7 @@ const Dashboard = () => {
             <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               <div className="bg-white p-4 rounded-lg shadow">
                 <h2 className="text-lg font-semibold">Lead Acid Battery Stock</h2>
+                 <h2 className="text-lg font-semibold">Lithium Ion Battery Stock</h2>
                 <p className="text-3xl font-bold text-green-600">
                   {batteryData && batteryData[0] ? batteryData[0].remainingStock : 'N/A'}
                 </p>
