@@ -746,9 +746,10 @@ const AdminOrdersTable = () => {
                     <th className="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">
                       PDF
                     </th>
+                    {!isDispatchHead &&
                     <th className="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">
                       Action
-                    </th>
+                    </th>}
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-orange-200">
@@ -942,6 +943,7 @@ const AdminOrdersTable = () => {
                             <span className="text-gray-400">N/A</span>
                           )}
                         </td>
+                        {!isDispatchHead &&
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
                           <div className="flex items-center gap-2">
                             <button
@@ -960,6 +962,7 @@ const AdminOrdersTable = () => {
                             </button>
                           </div>
                         </td>
+}
                       </tr>
                     ))
                   )}
