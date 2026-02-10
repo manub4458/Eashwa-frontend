@@ -47,9 +47,11 @@ export default function EditEmployeeForm() {
     { id: "6792a56b6b4c7a0c3d52890e", name: "Abhinav Badola" },
     { id: "67aa444eb198d893d8ba1f8a", name: "Deepak Lochan Agarwal" },
     { id: "67f827a58a535582d4e879cc", name: "Nitin Sharma" },
-    { id: "67fa3ea0d3f06c7ecf03cba5", name: "Ramesh Kumar Pandey" },
+  //  { id: "67fa3ea0d3f06c7ecf03cba5", name: "Ramesh Kumar Pandey" },
    // { id: "6937c43f607a13e3b3d00c26", name: "Ayush" },
     { id: "6936a0b0e449db2f15d5ebff", name: "Amit Malik" },
+       { id: "6981cec91543ae2c5fe004f1", name: "Pooja Sharma" },
+      { id: "69809997c086012c831a3d39", name: "Abhishek Taneja" },
   ];
 
   const roles = [

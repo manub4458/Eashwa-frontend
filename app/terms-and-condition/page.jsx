@@ -22,7 +22,8 @@ const TermsAndConditions = () => {
         "Targets, achievements, and incentives will be calculated only on the basis of orders entered in the portal.",
         "All types of orders must be mentioned, including Dealership, Distributorship, and Single Scooty orders. For Single Scooty orders, upload the Bill instead of the PI.",
         "If you face any issue while filling the form, take a screenshot and share it with the IT Department within 24 hours. Issues reported after 24 hours will not be considered.",
-        "You are not allowed to place previous month orders in the next month, as this creates database issues and such orders will not be considered."
+        "You are not allowed to place previous month orders in the next month, as this creates database issues and such orders will not be considered.",
+        "Don't upload whole month order in just one day especailly at the last day of the month.",
       ]
     },
     {
@@ -39,7 +40,8 @@ const TermsAndConditions = () => {
         "Only members who upload their previous day feedback will receive new leads the next day. The last acceptable time to upload feedback is 10:15 AM; after this, it will be considered as feedback not uploaded.",
         "Saturday is a follow-up day. No new leads will be provided on Saturday. You must follow up on all leads of the week and upload weekly feedback. On the last Saturday of the month, you must upload feedback for the entire month.",
         "The data sheet must be maintained strictly as per the given sheet guidelines and instructions provided by the Reporting Manager.",
-        "If you face any issue while uploading the sheet, first check the format as per guidelines. If the issue still persists, contact the IT Department immediately. Issues reported after 10:15 AM the next day will not be considered."
+        "If you face any issue while uploading the sheet, first check the format as per guidelines. If the issue still persists, contact the IT Department immediately. Issues reported after 10:15 AM the next day will not be considered.",
+        "No leads will be assigned to any employee who reports after 10:30 AM, irrespective of whether it is a short leave or a half day."
       ]
     },
     {
