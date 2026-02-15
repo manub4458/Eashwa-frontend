@@ -62,6 +62,43 @@ const DetailForm = ({ orderId }: { orderId?: string }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [canSubmit, setCanSubmit] = useState(true);
+  const [cooldownMessage, setCooldownMessage] = useState("");
+
+  // Prefill agent details + 1.5 hour cooldown (ONLY for NEW orders)
+  useEffect(() => {
+    if (id) return; // skip in edit mode
+
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      const user = JSON.parse(userStr);
+      setFormData((prev) => ({
+        ...prev,
+        agentName: user.name || "",
+        agentPhone: user.phone ? user.phone.toString() : "",
+      }));
+    }
+
+    // Cooldown check
+    if (userStr) {
+      const user = JSON.parse(userStr);
+      const key = `lastOrderSubmission_${user.employeeId}`;
+      const lastTime = localStorage.getItem(key);
+
+      if (lastTime) {
+        const timeDiff = Date.now() - parseInt(lastTime);
+        const cooldownMs = 1.5 * 60 * 60 * 1000; // 90 minutes
+
+        if (timeDiff < cooldownMs) {
+          const remainingMin = Math.ceil((cooldownMs - timeDiff) / 60000);
+          setCanSubmit(false);
+          setCooldownMessage(
+            `You can submit the next order in ${remainingMin} minutes.`,
+          );
+        }
+      }
+    }
+  }, [id]);
 
   // Fetch order data if in edit mode
   useEffect(() => {
@@ -90,7 +127,7 @@ const DetailForm = ({ orderId }: { orderId?: string }) => {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
       if (!response.ok) {
@@ -142,7 +179,7 @@ const DetailForm = ({ orderId }: { orderId?: string }) => {
         {
           method: "POST",
           body: formDataUpload,
-        }
+        },
       );
 
       const uploadData = await uploadResponse.json();
@@ -175,6 +212,12 @@ const DetailForm = ({ orderId }: { orderId?: string }) => {
         throw new Error("Please log in to submit the order");
       }
 
+      // Cooldown check (only for new orders)
+      if (!isEditMode && !canSubmit) {
+        setError(cooldownMessage);
+        return;
+      }
+
       // Prepare data for submission
       const submitData = {
         ...formData,
@@ -190,7 +233,6 @@ const DetailForm = ({ orderId }: { orderId?: string }) => {
         : "https://backend-eashwa.vercel.app/api/orders/submit";
 
       if (isEditMode) {
-        // Update existing order
         response = await fetch(endpoint, {
           method: "PUT",
           headers: {
@@ -200,7 +242,6 @@ const DetailForm = ({ orderId }: { orderId?: string }) => {
           body: JSON.stringify(submitData),
         });
       } else {
-        // Create new order
         response = await fetch(endpoint, {
           method: "POST",
           headers: {
@@ -220,18 +261,28 @@ const DetailForm = ({ orderId }: { orderId?: string }) => {
 
       if (isEditMode) {
         setSuccess("Order updated successfully!");
-        router.push('/admin-table');
+        router.push("/admin-table");
       } else {
         setSuccess("Order submitted successfully!");
+
+        // Save submission timestamp (only for new orders)
+        const userStr = localStorage.getItem("user");
+        if (userStr) {
+          const user = JSON.parse(userStr);
+          const key = `lastOrderSubmission_${user.employeeId}`;
+          localStorage.setItem(key, Date.now().toString());
+        }
+
         setFormData(initialFormData);
         setFile(null);
         setOriginalPdfUrl("");
+        setCanSubmit(true);
+        setCooldownMessage("");
       }
 
-      // Redirect after successful submission (optional)
       if (!isEditMode) {
         setTimeout(() => {
-          router.push("/orders"); // Adjust route as needed
+          router.push("/orders");
         }, 2000);
       }
     } catch (err: any) {
@@ -288,6 +339,12 @@ const DetailForm = ({ orderId }: { orderId?: string }) => {
         {success && (
           <div className="text-green-500 mb-4 p-3 bg-green-50 rounded-lg text-center animate-pulse">
             {success}
+          </div>
+        )}
+
+        {cooldownMessage && !isEditMode && (
+          <div className="text-amber-600 mb-4 p-3 bg-amber-50 rounded-lg text-center border border-amber-200">
+            {cooldownMessage}
           </div>
         )}
 
@@ -417,7 +474,10 @@ const DetailForm = ({ orderId }: { orderId?: string }) => {
                 htmlFor="agentName"
                 className="block text-sm font-medium text-gray-700"
               >
-                Agent Name
+                Agent Name{" "}
+                {!isEditMode && (
+                  <span className="text-orange-600">(auto-filled)</span>
+                )}
               </label>
               <input
                 type="text"
@@ -425,7 +485,12 @@ const DetailForm = ({ orderId }: { orderId?: string }) => {
                 name="agentName"
                 value={formData.agentName}
                 onChange={handleInputChange}
-                className="mt-1 block w-full rounded-lg border-orange-200 shadow-sm focus:border-orange-500 focus:ring-orange-500 transition duration-200"
+                disabled={!isEditMode}
+                className={`mt-1 block w-full rounded-lg border shadow-sm transition duration-200 ${
+                  !isEditMode
+                    ? "bg-gray-100 border-gray-300 cursor-not-allowed"
+                    : "border-orange-200 focus:border-orange-500 focus:ring-orange-500"
+                }`}
                 required
               />
             </div>
@@ -526,7 +591,10 @@ const DetailForm = ({ orderId }: { orderId?: string }) => {
                 htmlFor="agentPhone"
                 className="block text-sm font-medium text-gray-700"
               >
-                Agent Phone
+                Agent Phone{" "}
+                {!isEditMode && (
+                  <span className="text-orange-600">(auto-filled)</span>
+                )}
               </label>
               <input
                 type="tel"
@@ -534,7 +602,12 @@ const DetailForm = ({ orderId }: { orderId?: string }) => {
                 name="agentPhone"
                 value={formData.agentPhone}
                 onChange={handleInputChange}
-                className="mt-1 block w-full rounded-lg border-orange-200 shadow-sm focus:border-orange-500 focus:ring-orange-500 transition duration-200"
+                disabled={!isEditMode}
+                className={`mt-1 block w-full rounded-lg border shadow-sm transition duration-200 ${
+                  !isEditMode
+                    ? "bg-gray-100 border-gray-300 cursor-not-allowed"
+                    : "border-orange-200 focus:border-orange-500 focus:ring-orange-500"
+                }`}
                 required
               />
             </div>
@@ -718,9 +791,17 @@ const DetailForm = ({ orderId }: { orderId?: string }) => {
             </button>
             <button
               type="submit"
-              disabled={isLoading || isUploading || isFetching}
+              disabled={
+                isLoading ||
+                isUploading ||
+                isFetching ||
+                (!isEditMode && !canSubmit)
+              }
               className={`flex-1 py-3 px-4 bg-orange-600 text-white rounded-lg hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 transition duration-200 font-semibold ${
-                isLoading || isUploading || isFetching
+                isLoading ||
+                isUploading ||
+                isFetching ||
+                (!isEditMode && !canSubmit)
                   ? "opacity-50 cursor-not-allowed"
                   : "hover:scale-105"
               }`}

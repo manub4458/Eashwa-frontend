@@ -1,31 +1,69 @@
-'use client'
-import React, { useState } from 'react'
+"use client";
+import React, { useState, useEffect } from "react";
 
 const DetailForm = () => {
   const initialFormData = {
-    piNumber: '',
-    partyName: '',
-    showroomName: '',
-    location: '',
-    quantity: '',
-    totalAmount: '',
-    agentName: '',
-    amountReceived: '',
-    orderModel: '',
-    colorVariants: '',
-    batteryType: '',
-    deadline: '',
-    agentPhone: '',
-    dealerPhone: '',
-    piPdf: '',
+    piNumber: "",
+    partyName: "",
+    showroomName: "",
+    location: "",
+    quantity: "",
+    totalAmount: "",
+    agentName: "",
+    amountReceived: "",
+    orderModel: "",
+    colorVariants: "",
+    batteryType: "",
+    deadline: "",
+    agentPhone: "",
+    dealerPhone: "",
+    piPdf: "",
   };
 
   const [formData, setFormData] = useState(initialFormData);
   const [file, setFile] = useState(null);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [canSubmit, setCanSubmit] = useState(true);
+  const [cooldownMessage, setCooldownMessage] = useState("");
+
+  // Prefill agent details + 1.5 hour cooldown check
+  useEffect(() => {
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      const user = JSON.parse(userStr);
+
+      // Prefill & disable agent fields
+      setFormData((prev) => ({
+        ...prev,
+        agentName: user.name || "",
+        agentPhone: user.phone ? user.phone.toString() : "",
+      }));
+    }
+
+    // Cooldown check (per user)
+    const userStr2 = localStorage.getItem("user");
+    if (userStr2) {
+      const user = JSON.parse(userStr2);
+      const key = `lastOrderSubmission_${user.employeeId}`;
+      const lastTime = localStorage.getItem(key);
+
+      if (lastTime) {
+        const timeDiff = Date.now() - parseInt(lastTime);
+        const cooldownMs = 1.5 * 60 * 60 * 1000; // 90 minutes
+
+        if (timeDiff < cooldownMs) {
+          const remainingMin = Math.ceil((cooldownMs - timeDiff) / 60000);
+          setCanSubmit(false);
+          setCooldownMessage(
+            `You can submit the next order in ${remainingMin} minutes.`,
+          );
+        }
+      }
+    }
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -35,38 +73,41 @@ const DetailForm = () => {
   const handleFileChange = async (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile && selectedFile.size > 10 * 1024 * 1024) {
-      setError('File size must be less than 10MB');
+      setError("File size must be less than 10MB");
       setFile(null);
-      setFormData({ ...formData, piPdf: '' });
+      setFormData({ ...formData, piPdf: "" });
       return;
     }
 
     setFile(selectedFile);
-    setError('');
+    setError("");
     setIsUploading(true);
 
     try {
       if (selectedFile) {
         const formDataUpload = new FormData();
-        formDataUpload.append('file', selectedFile);
+        formDataUpload.append("file", selectedFile);
 
-        const uploadResponse = await fetch('https://backend-eashwa.vercel.app/api/images/upload-pdf', {
-          method: 'POST',
-          body: formDataUpload,
-        });
+        const uploadResponse = await fetch(
+          "https://backend-eashwa.vercel.app/api/images/upload-pdf",
+          {
+            method: "POST",
+            body: formDataUpload,
+          },
+        );
 
         const uploadData = await uploadResponse.json();
 
         if (!uploadResponse.ok || !uploadData.success) {
-          throw new Error(uploadData.message || 'PDF upload failed');
+          throw new Error(uploadData.message || "PDF upload failed");
         }
 
         setFormData({ ...formData, piPdf: uploadData.fileUrl });
-        setSuccess('PDF uploaded successfully!');
+        setSuccess("PDF uploaded successfully!");
       }
     } catch (err) {
-      setError(err.message || 'Failed to upload PDF');
-      setFormData({ ...formData, piPdf: '' });
+      setError(err.message || "Failed to upload PDF");
+      setFormData({ ...formData, piPdf: "" });
       setFile(null);
     } finally {
       setIsUploading(false);
@@ -75,35 +116,53 @@ const DetailForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
+
+    if (!canSubmit) {
+      setError(cooldownMessage);
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      const token = localStorage.getItem('token'); // Retrieve token from localStorage
-      if (!token) {
-        throw new Error('Please log in to submit the order');
-      }
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("Please log in to submit the order");
 
-      const response = await fetch('https://backend-eashwa.vercel.app/api/orders/submit', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`, // Add Bearer token to headers
+      const response = await fetch(
+        "https://backend-eashwa.vercel.app/api/orders/submit",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(formData),
         },
-        body: JSON.stringify(formData),
-      });
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Form submission failed');
+        throw new Error(errorData.message || "Form submission failed");
       }
 
-      setSuccess('Order submitted successfully!');
+      setSuccess("Order submitted successfully!");
+
+      // Save submission timestamp (per user)
+      const userStr = localStorage.getItem("user");
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        const key = `lastOrderSubmission_${user.employeeId}`;
+        localStorage.setItem(key, Date.now().toString());
+      }
+
       setFormData(initialFormData);
       setFile(null);
+      setCanSubmit(true);
+      setCooldownMessage("");
     } catch (err) {
-      setError(err.message || 'Something went wrong');
+      setError(err.message || "Something went wrong");
     } finally {
       setIsLoading(false);
     }
@@ -112,7 +171,9 @@ const DetailForm = () => {
   return (
     <div className="min-h-screen bg-orange-50 flex items-center justify-center p-4 sm:p-6 lg:p-8">
       <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-xl w-full max-w-3xl transform transition-all duration-300 hover:shadow-2xl">
-        <h1 className="text-3xl font-extrabold mb-6 text-center text-orange-600">Order Submission</h1>
+        <h1 className="text-3xl font-extrabold mb-6 text-center text-orange-600">
+          Order Submission
+        </h1>
         {error && (
           <p className="text-red-500 mb-4 p-3 bg-red-50 rounded-lg text-center animate-pulse">
             {error}
@@ -123,10 +184,20 @@ const DetailForm = () => {
             {success}
           </p>
         )}
+        {cooldownMessage && (
+          <p className="text-amber-600 mb-4 p-3 bg-amber-50 rounded-lg text-center border border-amber-200">
+            {cooldownMessage}
+          </p>
+        )}
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             <div>
-              <label htmlFor="piNumber" className="block text-sm font-medium text-gray-700">PI Number</label>
+              <label
+                htmlFor="piNumber"
+                className="block text-sm font-medium text-gray-700"
+              >
+                PI Number
+              </label>
               <input
                 type="text"
                 id="piNumber"
@@ -138,7 +209,12 @@ const DetailForm = () => {
               />
             </div>
             <div>
-              <label htmlFor="partyName" className="block text-sm font-medium text-gray-700">Party Name</label>
+              <label
+                htmlFor="partyName"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Party Name
+              </label>
               <input
                 type="text"
                 id="partyName"
@@ -150,7 +226,12 @@ const DetailForm = () => {
               />
             </div>
             <div>
-              <label htmlFor="showroomName" className="block text-sm font-medium text-gray-700">Showroom Name</label>
+              <label
+                htmlFor="showroomName"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Showroom Name
+              </label>
               <input
                 type="text"
                 id="showroomName"
@@ -162,7 +243,12 @@ const DetailForm = () => {
               />
             </div>
             <div>
-              <label htmlFor="location" className="block text-sm font-medium text-gray-700">Location</label>
+              <label
+                htmlFor="location"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Location
+              </label>
               <input
                 type="text"
                 id="location"
@@ -174,7 +260,12 @@ const DetailForm = () => {
               />
             </div>
             <div>
-              <label htmlFor="quantity" className="block text-sm font-medium text-gray-700">Quantity</label>
+              <label
+                htmlFor="quantity"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Quantity
+              </label>
               <input
                 type="number"
                 id="quantity"
@@ -187,7 +278,12 @@ const DetailForm = () => {
               />
             </div>
             <div>
-              <label htmlFor="totalAmount" className="block text-sm font-medium text-gray-700">Total Amount</label>
+              <label
+                htmlFor="totalAmount"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Total Amount
+              </label>
               <input
                 type="number"
                 id="totalAmount"
@@ -200,19 +296,31 @@ const DetailForm = () => {
               />
             </div>
             <div>
-              <label htmlFor="agentName" className="block text-sm font-medium text-gray-700">Agent Name</label>
+              <label
+                htmlFor="agentName"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Agent Name{" "}
+                <span className="text-orange-600">(auto-filled)</span>
+              </label>
               <input
                 type="text"
                 id="agentName"
                 name="agentName"
                 value={formData.agentName}
                 onChange={handleInputChange}
-                className="mt-1 block w-full rounded-lg border-orange-200 shadow-sm focus:border-orange-500 focus:ring-orange-500 transition duration-200"
+                disabled
+                className="mt-1 block w-full rounded-lg border-orange-200 shadow-sm bg-gray-100 cursor-not-allowed"
                 required
               />
             </div>
             <div>
-              <label htmlFor="amountReceived" className="block text-sm font-medium text-gray-700">Amount Received</label>
+              <label
+                htmlFor="amountReceived"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Amount Received
+              </label>
               <input
                 type="number"
                 id="amountReceived"
@@ -225,7 +333,12 @@ const DetailForm = () => {
               />
             </div>
             <div>
-              <label htmlFor="orderModel" className="block text-sm font-medium text-gray-700">Order Model</label>
+              <label
+                htmlFor="orderModel"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Order Model
+              </label>
               <input
                 type="text"
                 id="orderModel"
@@ -237,7 +350,12 @@ const DetailForm = () => {
               />
             </div>
             <div>
-              <label htmlFor="colorVariants" className="block text-sm font-medium text-gray-700">Color Variants</label>
+              <label
+                htmlFor="colorVariants"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Color Variants
+              </label>
               <input
                 type="text"
                 id="colorVariants"
@@ -249,7 +367,12 @@ const DetailForm = () => {
               />
             </div>
             <div>
-              <label htmlFor="batteryType" className="block text-sm font-medium text-gray-700">Battery Type</label>
+              <label
+                htmlFor="batteryType"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Battery Type
+              </label>
               <input
                 type="text"
                 id="batteryType"
@@ -261,7 +384,12 @@ const DetailForm = () => {
               />
             </div>
             <div>
-              <label htmlFor="deadline" className="block text-sm font-medium text-gray-700">Deadline</label>
+              <label
+                htmlFor="deadline"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Deadline
+              </label>
               <input
                 type="datetime-local"
                 id="deadline"
@@ -273,19 +401,31 @@ const DetailForm = () => {
               />
             </div>
             <div>
-              <label htmlFor="agentPhone" className="block text-sm font-medium text-gray-700">Agent Phone</label>
+              <label
+                htmlFor="agentPhone"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Agent Phone{" "}
+                <span className="text-orange-600">(auto-filled)</span>
+              </label>
               <input
                 type="tel"
                 id="agentPhone"
                 name="agentPhone"
                 value={formData.agentPhone}
                 onChange={handleInputChange}
-                className="mt-1 block w-full rounded-lg border-orange-200 shadow-sm focus:border-orange-500 focus:ring-orange-500 transition duration-200"
+                disabled
+                className="mt-1 block w-full rounded-lg border-orange-200 shadow-sm bg-gray-100 cursor-not-allowed"
                 required
               />
             </div>
             <div>
-              <label htmlFor="dealerPhone" className="block text-sm font-medium text-gray-700">Dealer Phone</label>
+              <label
+                htmlFor="dealerPhone"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Dealer Phone
+              </label>
               <input
                 type="tel"
                 id="dealerPhone"
@@ -297,20 +437,39 @@ const DetailForm = () => {
               />
             </div>
             <div className="sm:col-span-2">
-              <label htmlFor="piPdf" className="block text-sm font-medium text-gray-700">Upload PI PDF (Max 10MB)</label>
+              <label
+                htmlFor="piPdf"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Upload PI PDF (Max 10MB)
+              </label>
               <input
                 type="file"
                 id="piPdf"
                 accept=".pdf"
                 onChange={handleFileChange}
                 disabled={isUploading}
-                className={`mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-orange-100 file:text-orange-700 hover:file:bg-orange-200 transition duration-200 ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-orange-100 file:text-orange-700 hover:file:bg-orange-200 transition duration-200 ${isUploading ? "opacity-50 cursor-not-allowed" : ""}`}
               />
               {isUploading && (
                 <p className="text-orange-600 mt-2 flex items-center">
-                  <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                  <svg
+                    className="animate-spin h-5 w-5 mr-2"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8v8H4z"
+                    />
                   </svg>
                   Uploading PDF...
                 </p>
@@ -319,25 +478,27 @@ const DetailForm = () => {
           </div>
           <button
             type="submit"
-            disabled={isLoading || isUploading}
-            className={`w-full py-3 px-4 bg-orange-600 text-white rounded-lg hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 transition duration-200 font-semibold ${isLoading || isUploading ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'}`}
+            disabled={isLoading || isUploading || !canSubmit}
+            className={`w-full py-3 px-4 bg-orange-600 text-white rounded-lg hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 transition duration-200 font-semibold ${isLoading || isUploading || !canSubmit ? "opacity-50 cursor-not-allowed" : "hover:scale-105"}`}
           >
             {isLoading ? (
               <span className="flex items-center justify-center">
-                <svg className="animate-spin h-5 w-5 mr-2 text-white" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                <svg
+                  className="animate-spin h-5 w-5 mr-2 text-white"
+                  viewBox="0 0 24 24"
+                >
+                  ...
                 </svg>
                 Submitting...
               </span>
             ) : (
-              'Submit Order'
+              "Submit Order"
             )}
           </button>
         </form>
       </div>
     </div>
   );
-}
+};
 
 export default DetailForm;

@@ -39,6 +39,10 @@ const AdminOrdersTable = () => {
   // Drag and drop states
   const [draggedOrder, setDraggedOrder] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
+  // Delivery popup error states
+  const [driverNumberError, setDriverNumberError] = useState("");
+  const [vehicleNumberError, setVehicleNumberError] = useState("");
+  const [transporterNameError, setTransporterNameError] = useState("");
   const router = useRouter();
 
   // Compute whether to show priority column and sorting (only for admin and when sortBy is 'latest')
@@ -72,6 +76,7 @@ const AdminOrdersTable = () => {
         ...(month && { month }),
         ...(orderId && { orderId }),
         ...(sortBy && { sortBy }),
+        username,
       }).toString();
 
       const response = await fetch(
@@ -81,7 +86,7 @@ const AdminOrdersTable = () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
       const data = await response.json();
@@ -167,7 +172,7 @@ const AdminOrdersTable = () => {
           body: JSON.stringify({
             pendingReason: pendingReason.trim(),
           }),
-        }
+        },
       );
 
       if (!response.ok) throw new Error("Failed to mark as pending");
@@ -205,7 +210,7 @@ const AdminOrdersTable = () => {
           body: JSON.stringify({
             cancelReason: cancelReason.trim(),
           }),
-        }
+        },
       );
 
       if (!response.ok) throw new Error("Failed to mark as Cancel");
@@ -236,11 +241,47 @@ const AdminOrdersTable = () => {
   };
 
   // Handle delivery confirmation
+  // Handle delivery confirmation
   const handleDeliveryConfirm = async () => {
-    if (!driverNumber || !vehicleNumber || !transporterName) {
-      alert("Please enter driver and vehicle number");
-      return;
+    // Reset errors
+    setDriverNumberError("");
+    setVehicleNumberError("");
+    setTransporterNameError("");
+
+    const trimmedDriver = driverNumber.trim();
+    const trimmedVehicle = vehicleNumber.trim();
+    const trimmedTransporter = transporterName.trim();
+
+    let hasError = false;
+
+    if (!trimmedTransporter) {
+      setTransporterNameError("Transporter name is required");
+      hasError = true;
     }
+
+    if (!trimmedDriver) {
+      setDriverNumberError("Driver number is required");
+      hasError = true;
+    } else if (!/^[6-9]\d{9}$/.test(trimmedDriver)) {
+      setDriverNumberError(
+        "Enter valid 10-digit Indian mobile number (starts with 6-9)",
+      );
+      hasError = true;
+    }
+
+    if (!trimmedVehicle) {
+      setVehicleNumberError("Vehicle number is required");
+      hasError = true;
+    } else if (
+      !/^[A-Z]{2}[ -]?\d{1,2}[ -]?[A-Z]{1,2}[ -]?\d{4}$/i.test(trimmedVehicle)
+    ) {
+      setVehicleNumberError(
+        "Enter valid Indian vehicle number (e.g. DL01AB1234 or DL 01 AB 1234)",
+      );
+      hasError = true;
+    }
+
+    if (hasError) return;
 
     try {
       const token = localStorage.getItem("token");
@@ -255,11 +296,11 @@ const AdminOrdersTable = () => {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            driverNumber: driverNumber.trim(),
-            vehicleNumber: vehicleNumber.trim(),
-            transporterName: transporterName.trim(),
+            driverNumber: trimmedDriver,
+            vehicleNumber: trimmedVehicle.toUpperCase(), // normalise case
+            transporterName: trimmedTransporter,
           }),
-        }
+        },
       );
 
       if (!response.ok) throw new Error("Failed to confirm delivery");
@@ -269,6 +310,9 @@ const AdminOrdersTable = () => {
       setDriverNumber("");
       setVehicleNumber("");
       setTransporterName("");
+      setDriverNumberError("");
+      setVehicleNumberError("");
+      setTransporterNameError("");
       fetchOrders();
     } catch (err) {
       console.error(err);
@@ -291,7 +335,7 @@ const AdminOrdersTable = () => {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({ priority: newPriority }),
-        }
+        },
       );
 
       const data = await response.json();
@@ -321,7 +365,7 @@ const AdminOrdersTable = () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
       const data = await response.json();
@@ -368,10 +412,10 @@ const AdminOrdersTable = () => {
 
     try {
       const draggedIndex = orders.findIndex(
-        (order) => order._id === draggedOrder._id
+        (order) => order._id === draggedOrder._id,
       );
       const targetIndex = orders.findIndex(
-        (order) => order._id === targetOrder._id
+        (order) => order._id === targetOrder._id,
       );
 
       const targetPriority = targetIndex + 1 + (currentPage - 1) * limit;
@@ -395,12 +439,16 @@ const AdminOrdersTable = () => {
   };
 
   // Close delivery popup
+  // Close delivery popup
   const closeDeliveryPopup = () => {
     setShowDeliveryPopup(false);
     setDeliveryOrderId(null);
     setDriverNumber("");
     setVehicleNumber("");
     setTransporterName("");
+    setDriverNumberError("");
+    setVehicleNumberError("");
+    setTransporterNameError("");
   };
 
   useEffect(() => {
@@ -529,23 +577,42 @@ const AdminOrdersTable = () => {
                   <input
                     type="text"
                     value={transporterName}
-                    onChange={(e) => setTransporterName(e.target.value)}
+                    onChange={(e) => {
+                      setTransporterName(e.target.value);
+                      setTransporterNameError("");
+                    }}
                     placeholder="Enter Transporter Name"
                     className="w-full border border-gray-300 rounded-lg p-2 focus:border-orange-500 focus:ring-orange-500"
                   />
+                  {transporterNameError && (
+                    <p className="text-red-600 text-xs mt-1">
+                      {transporterNameError}
+                    </p>
+                  )}
                 </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Driver Number
+                    Driver Number (Phone)
                   </label>
                   <input
                     type="text"
                     value={driverNumber}
-                    onChange={(e) => setDriverNumber(e.target.value)}
-                    placeholder="Enter driver number"
+                    onChange={(e) => {
+                      setDriverNumber(e.target.value);
+                      setDriverNumberError("");
+                    }}
+                    maxLength={10}
+                    placeholder="9876543210"
                     className="w-full border border-gray-300 rounded-lg p-2 focus:border-orange-500 focus:ring-orange-500"
                   />
+                  {driverNumberError && (
+                    <p className="text-red-600 text-xs mt-1">
+                      {driverNumberError}
+                    </p>
+                  )}
                 </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Vehicle Number
@@ -553,10 +620,18 @@ const AdminOrdersTable = () => {
                   <input
                     type="text"
                     value={vehicleNumber}
-                    onChange={(e) => setVehicleNumber(e.target.value)}
-                    placeholder="Enter vehicle number"
+                    onChange={(e) => {
+                      setVehicleNumber(e.target.value);
+                      setVehicleNumberError("");
+                    }}
+                    placeholder="DL01AB1234 or DL 01 AB 1234"
                     className="w-full border border-gray-300 rounded-lg p-2 focus:border-orange-500 focus:ring-orange-500"
                   />
+                  {vehicleNumberError && (
+                    <p className="text-red-600 text-xs mt-1">
+                      {vehicleNumberError}
+                    </p>
+                  )}
                 </div>
               </div>
               <div className="flex gap-3 mt-6">
@@ -746,10 +821,11 @@ const AdminOrdersTable = () => {
                     <th className="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">
                       PDF
                     </th>
-                    {!isDispatchHead &&
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">
-                      Action
-                    </th>}
+                    {!isDispatchHead && (
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">
+                        Action
+                      </th>
+                    )}
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-orange-200">
@@ -860,11 +936,11 @@ const AdminOrdersTable = () => {
                                   const uniqueId =
                                     order._id || order.id || order.piNumber;
                                   setShowDropdown(
-                                    showDropdown === uniqueId ? null : uniqueId
+                                    showDropdown === uniqueId ? null : uniqueId,
                                   );
                                 }}
                                 className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusGradient(
-                                  order.status
+                                  order.status,
                                 )} hover:opacity-90 transition duration-200`}
                               >
                                 {humanizeStatus(order.status)} ▼
@@ -882,7 +958,7 @@ const AdminOrdersTable = () => {
                                             order._id ||
                                               order.id ||
                                               order.piNumber,
-                                            option.value
+                                            option.value,
                                           )
                                         }
                                         className={`w-full text-left px-3 py-2 hover:bg-gray-50 transition duration-200 text-sm ${
@@ -897,7 +973,7 @@ const AdminOrdersTable = () => {
                                       >
                                         {option.label}
                                       </button>
-                                    )
+                                    ),
                                   )}
                                 </div>
                               )}
@@ -905,7 +981,7 @@ const AdminOrdersTable = () => {
                           ) : (
                             <span
                               className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusGradient(
-                                order.status
+                                order.status,
                               )}`}
                             >
                               {humanizeStatus(order.status)}
@@ -937,32 +1013,32 @@ const AdminOrdersTable = () => {
                                   d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                                 ></path>
                               </svg>
-                              View PDF
+                              - View PDF
                             </a>
                           ) : (
                             <span className="text-gray-400">N/A</span>
                           )}
                         </td>
-                        {!isDispatchHead &&
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                          <div className="flex items-center gap-2">
-                            <button
-                              className="text-blue-800 text-lg"
-                              onClick={() =>
-                                router.push(`/detail-form/${order._id}`)
-                              }
-                            >
-                              <PiPencilSimpleLineFill />
-                            </button>
-                            <button
-                              className="text-red-600 text-lg"
-                              onClick={() => deleteOrder(order._id)}
-                            >
-                              <MdDelete />
-                            </button>
-                          </div>
-                        </td>
-}
+                        {!isDispatchHead && (
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                            <div className="flex items-center gap-2">
+                              <button
+                                className="text-blue-800 text-lg"
+                                onClick={() =>
+                                  router.push(`/detail-form/${order._id}`)
+                                }
+                              >
+                                <PiPencilSimpleLineFill />
+                              </button>
+                              <button
+                                className="text-red-600 text-lg"
+                                onClick={() => deleteOrder(order._id)}
+                              >
+                                <MdDelete />
+                              </button>
+                            </div>
+                          </td>
+                        )}
                       </tr>
                     ))
                   )}
