@@ -127,6 +127,10 @@ const TicketForm = () => {
     }
   };
 
+  const onClose = () =>{
+    router.push("/employees");
+  }
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[95vh] overflow-hidden">
@@ -142,7 +146,7 @@ const TicketForm = () => {
               </p>
             </div>
             <button
-              // onClick={onClose}
+              onClick={onClose}
               className="text-white hover:bg-white hover:bg-opacity-20 rounded-full p-2 transition-all duration-200"
             >
               <svg
