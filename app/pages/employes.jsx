@@ -74,13 +74,13 @@ const Employe = () => {
       });
       const allMonths = [
         ...(parsedUser?.targetAchieved?.battery?.history || []).map(
-          (entry) => entry.month
+          (entry) => entry.month,
         ),
         ...(parsedUser?.targetAchieved?.eRickshaw?.history || []).map(
-          (entry) => entry.month
+          (entry) => entry.month,
         ),
         ...(parsedUser?.targetAchieved?.scooty?.history || []).map(
-          (entry) => entry.month
+          (entry) => entry.month,
         ),
       ];
       const uniqueMonths = [...new Set(allMonths)].sort();
@@ -104,7 +104,7 @@ const Employe = () => {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
       if (!response.ok) {
@@ -121,13 +121,13 @@ const Employe = () => {
       setUser(userData);
       const allMonths = [
         ...(data.user?.targetAchieved?.battery?.history || []).map(
-          (entry) => entry.month
+          (entry) => entry.month,
         ),
         ...(data.user?.targetAchieved?.eRickshaw?.history || []).map(
-          (entry) => entry.month
+          (entry) => entry.month,
         ),
         ...(data.user?.targetAchieved?.scooty?.history || []).map(
-          (entry) => entry.month
+          (entry) => entry.month,
         ),
       ];
       const uniqueMonths = [...new Set(allMonths)].sort();
@@ -146,7 +146,7 @@ const Employe = () => {
         {
           method: "GET",
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
 
       if (!response.ok) return;
@@ -164,7 +164,7 @@ const Employe = () => {
         `https://backend-eashwa.vercel.app/api/user/get-target-lead`,
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
       const data = response.data;
       setUploadedTargetLeads(data.files);
@@ -194,7 +194,7 @@ const Employe = () => {
             Authorization: `Bearer ${token}`,
             "Content-Type": "multipart/form-data",
           },
-        }
+        },
       );
 
       const fileUrl = uploadResponse.data.fileUrl;
@@ -210,7 +210,7 @@ const Employe = () => {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       alert("Lead file uploaded successfully!");
@@ -238,7 +238,7 @@ const Employe = () => {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
       console.log("File deleted successfully:", response.data);
@@ -246,7 +246,7 @@ const Employe = () => {
     } catch (error) {
       console.error(
         "Error deleting file:",
-        error.response?.data || error.message
+        error.response?.data || error.message,
       );
     }
   };
@@ -287,13 +287,13 @@ const Employe = () => {
   const getUniqueMonths = () => {
     const allMonths = [
       ...(user?.targetAchieved?.battery?.history || []).map(
-        (entry) => entry.month
+        (entry) => entry.month,
       ),
       ...(user?.targetAchieved?.eRickshaw?.history || []).map(
-        (entry) => entry.month
+        (entry) => entry.month,
       ),
       ...(user?.targetAchieved?.scooty?.history || []).map(
-        (entry) => entry.month
+        (entry) => entry.month,
       ),
     ];
     return [...new Set(allMonths)].sort();
@@ -389,6 +389,17 @@ const Employe = () => {
               Place New Order
             </button>
           </Link>
+          <Link href={`/daily-leads/${user?._id}`}>
+            <button
+              class="px-6 py-3 mt-6 rounded-2xl bg-gradient-to-r from-orange-400 to-orange-600 
+         text-white font-semibold tracking-wide shadow-lg 
+         hover:shadow-xl hover:scale-105 active:scale-95 
+         transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-orange-300"
+              onclick="window.location.href='#form'"
+            >
+              Daily Lead Table
+            </button>
+          </Link>
           <Link href="/raise-ticket">
             <button
               class="px-6 py-3 mt-6 rounded-2xl bg-gradient-to-r from-orange-400 to-orange-600 
@@ -411,7 +422,7 @@ const Employe = () => {
               My tickets
             </button>
           </Link>
-           <Link href="/terms-and-condition">
+          <Link href="/terms-and-condition">
             <button
               class="px-6 py-3 mt-6 rounded-2xl bg-gradient-to-r from-orange-400 to-orange-600 
          text-white font-semibold tracking-wide shadow-lg 

@@ -726,12 +726,25 @@ const EmployeeDetail = () => {
                 <span className="font-medium">Aadhaar:</span>{" "}
                 {user.aadhaarNumber}
               </p>
+              <div className="flex flex-col gap-3 items-start justify-start">
+              <button
+                onClick={() => router.push(`/add-daily-lead/${id}`)}
+                className="bg-orange-500 rounded-2xl text-white p-3"
+              >
+                Add Daily Leads 
+              </button>  <button
+                onClick={() => router.push(`/admin-daily-leads/${id}`)}
+                className="bg-orange-500 rounded-2xl text-white p-3"
+              >
+                Daily Leads Table
+              </button>
               <button
                 onClick={() => router.push(`/last-working-day/${id}`)}
-                className="bg-orange-500 rounded-2xl text-white p-3 mx-auto"
+                className="bg-orange-500 rounded-2xl text-white p-3"
               >
                 Update Last working day
               </button>
+              </div>
             </div>
           </div>
 
