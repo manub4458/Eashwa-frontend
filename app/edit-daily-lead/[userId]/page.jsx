@@ -9,15 +9,15 @@ import { toast } from "react-toastify";
 const DailyLeadsForm = () => {
   const params = useParams();
   const searchParams = useSearchParams();
+  const router = useRouter();                    // ← Moved up
 
-  const leadId = params.userId;
-  const userId = searchParams.get("userId"); 
+  const leadId = params.userId;                  // or params.leadId depending on your route
+  const userId = searchParams.get("userId");
 
   const onClose = () => {
     router.push(`/admin-daily-leads/${userId}`);
   };
 
-  const router = useRouter();
   const [formData, setFormData] = useState({
     user: userId || "",
     date: new Date().toISOString().split("T")[0],
@@ -25,9 +25,10 @@ const DailyLeadsForm = () => {
     interestedLeads: 0,
     notInterestedFake: 0,
     nextMonthConnect: 0,
-    totalDealer: 0,
+    dealerType: "",
+    dealerCount: 0,
   });
-  const [loading, setLoading] = useState(!!leadId); // Load if editing
+  const [loading, setLoading] = useState(!!leadId);
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
@@ -41,22 +42,35 @@ const DailyLeadsForm = () => {
       const token = localStorage.getItem("token");
       const response = await fetch(
         `https://backend-eashwa.vercel.app/api/daily-leads/${leadId}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       if (!response.ok) throw new Error("Failed to fetch lead data");
 
       const lead = await response.json();
+
+      // Prefill dealer type & count from existing data
+      let dealerType = "";
+      let dealerCount = 0;
+
+      if (lead.newDealers && lead.newDealers > 0) {
+        dealerType = "new";
+        dealerCount = lead.newDealers;
+      } else if (lead.oldDealers && lead.oldDealers > 0) {
+        dealerType = "old";
+        dealerCount = lead.oldDealers;
+      }
+      // If both exist, we prioritize "new" (you can change logic if needed)
+
       setFormData({
-        user: lead.user,
+        user: lead.user?._id || lead.user,
         date: new Date(lead.date).toISOString().split("T")[0],
-        numberOfLeads: lead.numberOfLeads,
-        interestedLeads: lead.interestedLeads,
-        notInterestedFake: lead.notInterestedFake,
-        nextMonthConnect: lead.nextMonthConnect,
-        totalDealer: lead.totalDealer,
+        numberOfLeads: lead.numberOfLeads || 0,
+        interestedLeads: lead.interestedLeads || 0,
+        notInterestedFake: lead.notInterestedFake || 0,
+        nextMonthConnect: lead.nextMonthConnect || 0,
+        dealerType,
+        dealerCount,
       });
     } catch (error) {
       toast.error(error.message || "Error loading data");
@@ -69,9 +83,17 @@ const DailyLeadsForm = () => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === "date" ? value : Number(value) || 0,
+      [name]:
+        name === "date"
+          ? value
+          : name === "dealerType"
+          ? value
+          : Number(value) || 0,
     }));
-    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
+
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: "" }));
+    }
   };
 
   const validateForm = () => {
@@ -79,6 +101,9 @@ const DailyLeadsForm = () => {
     if (!formData.date) newErrors.date = "Date is required";
     if (formData.numberOfLeads < 0)
       newErrors.numberOfLeads = "Cannot be negative";
+    if (formData.dealerType && formData.dealerCount < 0)
+      newErrors.dealerCount = "Cannot be negative";
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -118,6 +143,7 @@ const DailyLeadsForm = () => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-scroll">
+        {/* Header */}
         <div className="bg-gradient-to-r from-orange-500 to-orange-600 p-6 text-white">
           <div className="flex justify-between items-center">
             <h2 className="text-2xl font-bold">
@@ -125,28 +151,20 @@ const DailyLeadsForm = () => {
             </h2>
             <button
               onClick={onClose}
-              className="text-white hover:bg-opacity-20 rounded-full p-2"
+              className="text-white hover:bg-white hover:bg-opacity-20 rounded-full p-2 transition-all"
             >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
         </div>
+
         <div className="p-6 space-y-6">
           <form onSubmit={handleSubmit}>
+            {/* Date */}
             <div>
-              <label className="block text-sm font-semibold mb-2">Date *</label>
+              <label className="block text-sm font-semibold mb-2">Date <span className="text-red-500">*</span></label>
               <input
                 type="date"
                 name="date"
@@ -154,10 +172,10 @@ const DailyLeadsForm = () => {
                 onChange={handleInputChange}
                 className={`w-full p-4 border-2 rounded-xl ${errors.date ? "border-red-300" : "border-gray-200"}`}
               />
-              {errors.date && (
-                <p className="mt-1 text-sm text-red-600">{errors.date}</p>
-              )}
+              {errors.date && <p className="mt-1 text-sm text-red-600">{errors.date}</p>}
             </div>
+
+            {/* Number of Leads */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Number of Leads <span className="text-red-500">*</span>
@@ -169,24 +187,18 @@ const DailyLeadsForm = () => {
                 onChange={handleInputChange}
                 min="0"
                 className={`w-full p-4 border-2 rounded-xl focus:ring-4 focus:ring-orange-200 focus:border-orange-500 transition-all duration-200 ${
-                  errors.numberOfLeads
-                    ? "border-red-300 bg-red-50"
-                    : "border-gray-200 hover:border-gray-300"
+                  errors.numberOfLeads ? "border-red-300 bg-red-50" : "border-gray-200 hover:border-gray-300"
                 }`}
                 placeholder="Enter number of leads"
               />
               {errors.numberOfLeads && (
-                <p className="mt-1 text-sm text-red-600">
-                  {errors.numberOfLeads}
-                </p>
+                <p className="mt-1 text-sm text-red-600">{errors.numberOfLeads}</p>
               )}
             </div>
 
             {/* Interested Leads */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Interested Leads
-              </label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Interested Leads</label>
               <input
                 type="number"
                 name="interestedLeads"
@@ -200,9 +212,7 @@ const DailyLeadsForm = () => {
 
             {/* Not Interested / Fake */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Not Interested / Fake
-              </label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Not Interested / Fake</label>
               <input
                 type="number"
                 name="notInterestedFake"
@@ -216,9 +226,7 @@ const DailyLeadsForm = () => {
 
             {/* Next Month Connect */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Next Month Connect
-              </label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Next Month Connect</label>
               <input
                 type="number"
                 name="nextMonthConnect"
@@ -230,24 +238,44 @@ const DailyLeadsForm = () => {
               />
             </div>
 
-            {/* Total Dealer (Optional) */}
+            {/* Dealer Type */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Total Dealers (Optional)
-              </label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Dealer Type (Optional)</label>
+              <select
+                name="dealerType"
+                value={formData.dealerType}
+                onChange={handleInputChange}
+                className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-orange-200 focus:border-orange-500 hover:border-gray-300 transition-all duration-200"
+              >
+                <option value="">Select Dealer Type</option>
+                <option value="new">New Dealer</option>
+                <option value="old">Old Dealer</option>
+              </select>
+            </div>
+
+            {/* Dealer Count */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Dealer Count (Optional)</label>
               <input
                 type="number"
-                name="totalDealer"
-                value={formData.totalDealer}
+                name="dealerCount"
+                value={formData.dealerCount}
                 onChange={handleInputChange}
                 min="0"
-                className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-orange-200 focus:border-orange-500 hover:border-gray-300 transition-all duration-200"
-                placeholder="Enter total dealers"
+                disabled={!formData.dealerType}
+                className={`w-full p-4 border-2 rounded-xl focus:ring-4 focus:ring-orange-200 focus:border-orange-500 transition-all duration-200 ${
+                  errors.dealerCount ? "border-red-300 bg-red-50" : "border-gray-200 hover:border-gray-300"
+                } ${!formData.dealerType ? "bg-gray-100 cursor-not-allowed" : ""}`}
+                placeholder="Enter dealer count"
               />
+              {errors.dealerCount && (
+                <p className="mt-1 text-sm text-red-600">{errors.dealerCount}</p>
+              )}
             </div>
-            {/* ... other inputs similar ... */}
           </form>
         </div>
+
+        {/* Footer */}
         <div className="border-t p-6 bg-gray-50 flex justify-end space-x-4">
           <button
             onClick={onClose}

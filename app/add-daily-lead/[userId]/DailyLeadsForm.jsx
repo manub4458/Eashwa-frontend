@@ -13,7 +13,8 @@ const DailyLeadsForm = ({ userId }) => {
     interestedLeads: 0,
     notInterestedFake: 0,
     nextMonthConnect: 0,
-    totalDealer: 0, // Optional
+    dealerType: "",
+    dealerCount: 0,
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
@@ -34,7 +35,7 @@ const DailyLeadsForm = ({ userId }) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === "date" ? value : Number(value) || 0,
+      [name]: name === "date" ? value : name === "dealerType" ? value : Number(value) || 0,
     }));
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: "" }));
@@ -47,6 +48,8 @@ const DailyLeadsForm = ({ userId }) => {
     if (!formData.date) newErrors.date = "Date is required";
     if (formData.numberOfLeads < 0)
       newErrors.numberOfLeads = "Number of leads cannot be negative";
+    if (formData.dealerType && formData.dealerCount < 0)
+      newErrors.dealerCount = "Dealer count cannot be negative";
 
     console.log("Validation Errors:", newErrors);
 
@@ -223,20 +226,45 @@ const DailyLeadsForm = ({ userId }) => {
               />
             </div>
 
-            {/* Total Dealer (Optional) */}
+            {/* Dealer Type (Optional) */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Total Dealers (Optional)
+                Dealer Type (Optional)
+              </label>
+              <select
+                name="dealerType"
+                value={formData.dealerType}
+                onChange={handleInputChange}
+                className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-orange-200 focus:border-orange-500 hover:border-gray-300 transition-all duration-200"
+              >
+                <option value="">Select Dealer Type</option>
+                <option value="new">New Dealer</option>
+                <option value="old">Old Dealer</option>
+              </select>
+            </div>
+
+            {/* Dealer Count (Optional) */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Dealer Count (Optional)
               </label>
               <input
                 type="number"
-                name="totalDealer"
-                value={formData.totalDealer}
+                name="dealerCount"
+                value={formData.dealerCount}
                 onChange={handleInputChange}
                 min="0"
-                className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-orange-200 focus:border-orange-500 hover:border-gray-300 transition-all duration-200"
-                placeholder="Enter total dealers"
+                disabled={!formData.dealerType}
+                className={`w-full p-4 border-2 rounded-xl focus:ring-4 focus:ring-orange-200 focus:border-orange-500 transition-all duration-200 ${
+                  errors.dealerCount
+                    ? "border-red-300 bg-red-50"
+                    : "border-gray-200 hover:border-gray-300"
+                } ${!formData.dealerType ? "bg-gray-100 cursor-not-allowed" : ""}`}
+                placeholder="Enter dealer count"
               />
+              {errors.dealerCount && (
+                <p className="mt-1 text-sm text-red-600">{errors.dealerCount}</p>
+              )}
             </div>
           </form>
         </div>

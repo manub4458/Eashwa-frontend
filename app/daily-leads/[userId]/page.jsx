@@ -98,13 +98,11 @@ const DailyLeadsDashboard = () => {
   // Derived values from current month summary
   const monthlySummary = data.monthlyTotals?.[0] || {};
   const totalLeads = monthlySummary.totalLeads || 0;
-  const interestedLeads = monthlySummary.totalInterestedLeads || 0;
+  const interestedLeads = monthlySummary.totalInterested || 0;
   const notInterestedFake = monthlySummary.totalNotInterestedFake || 0;
   const nextMonthConnect = monthlySummary.totalNextMonthConnect || 0;
-  const totalDealer = monthlySummary.totalDealer || 0;
-
-  const newDealersThisMonth = totalDealer;
-  const conversionsFromOldMonth = 0;
+  const newDealersThisMonth = monthlySummary.totalNewDealers || 0;
+  const conversionsFromOldMonth = monthlySummary.totalOldDealers || 0;
 
   if (loading) {
     return (
@@ -210,7 +208,6 @@ const DailyLeadsDashboard = () => {
           <div className="bg-white rounded-2xl p-6 shadow border border-gray-200">
             <h3 className="text-lg font-semibold text-gray-800 mb-1">Pending Next Month</h3>
             <p className="text-4xl font-bold text-yellow-600">{nextMonthConnect}</p>
-            <p className="text-sm text-gray-500 mt-2">Fake leads included: 0</p>
           </div>
         </div>
 
@@ -252,7 +249,7 @@ const DailyLeadsDashboard = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{lead.interestedLeads}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{lead.notInterestedFake}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{lead.nextMonthConnect}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{lead.totalDealer}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{lead.newDealers + lead.oldDealers}</td>
                     </tr>
                   ))
                 )}
@@ -265,7 +262,7 @@ const DailyLeadsDashboard = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-orange-800">{notInterestedFake}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-orange-800">{nextMonthConnect}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-orange-800">
-                      New Dealers: {newDealersThisMonth}
+                      Total Dealers: {newDealersThisMonth + conversionsFromOldMonth}
                     </td>
                   </tr>
                 )}
