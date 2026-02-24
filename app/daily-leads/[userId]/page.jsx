@@ -186,7 +186,7 @@ const DailyLeadsDashboard = () => {
           <div className="bg-white rounded-2xl p-6 shadow border border-gray-200">
             <h3 className="text-lg font-semibold text-gray-800 mb-1">Total Leads</h3>
             <p className="text-4xl font-bold text-orange-600">{totalLeads}</p>
-            <p className="text-sm text-gray-500 mt-2">Fake / Next Month: {notInterestedFake}</p>
+            <p className="text-sm text-gray-500 mt-2">Fake / Not Interested: {notInterestedFake}</p>
           </div>
 
           <div className="bg-white rounded-2xl p-6 shadow border border-gray-200">
@@ -196,17 +196,17 @@ const DailyLeadsDashboard = () => {
           </div>
 
           <div className="bg-white rounded-2xl p-6 shadow border border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-800 mb-1">Conversions</h3>
+            <h3 className="text-lg font-semibold text-gray-800 mb-1">Lead Conversions</h3>
             <p className="text-3xl font-bold text-blue-600">
               {newDealersThisMonth} new + {conversionsFromOldMonth} old
             </p>
             <p className="text-sm text-gray-500 mt-2">
-              This month: {totalLeads} | Old: {conversionsFromOldMonth}
+              This month: {newDealersThisMonth} | Old: {conversionsFromOldMonth}
             </p>
           </div>
 
           <div className="bg-white rounded-2xl p-6 shadow border border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-800 mb-1">Pending Next Month</h3>
+            <h3 className="text-lg font-semibold text-gray-800 mb-1">Next Month Connect</h3>
             <p className="text-4xl font-bold text-yellow-600">{nextMonthConnect}</p>
           </div>
         </div>

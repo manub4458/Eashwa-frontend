@@ -237,9 +237,9 @@ const DailyLeadsForm = ({ userId }) => {
                 onChange={handleInputChange}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-orange-200 focus:border-orange-500 hover:border-gray-300 transition-all duration-200"
               >
-                <option value="">Select Dealer Type</option>
-                <option value="new">New Dealer</option>
-                <option value="old">Old Dealer</option>
+                <option value="">Select Lead Type</option>
+                <option value="new">This Month Lead</option>
+                <option value="old">Old Month Lead</option>
               </select>
             </div>
 

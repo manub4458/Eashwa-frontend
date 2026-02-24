@@ -1,12 +1,10 @@
-// app/admin/daily-leads/[userId]/page.tsx or similar
-
 "use client";
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "react-toastify";
-// import DailyLeadsForm from "@/components/DailyLeadsForm"; // Adjust path
-import { FiEdit, FiTrash2 } from "react-icons/fi"; // Install @heroicons/react if needed
+import { FiEdit, FiTrash2, FiDownload} from "react-icons/fi";
+import * as XLSX from "xlsx";
 
 const AdminDailyLeadsDashboard = () => {
   const params = useParams();
@@ -74,6 +72,60 @@ const AdminDailyLeadsDashboard = () => {
     }
   };
 
+  const handleExportToExcel = () => {
+    try {
+      // Prepare row data
+      const excelData = data.dailyLeads.map((lead, index) => ({
+        "Sr. No.": index + 1,
+        "Date": new Date(lead.date).toLocaleDateString("en-GB"),
+        "# Leads": lead.numberOfLeads,
+        "Interested": lead.interestedLeads,
+        "Not Interested / Fake": lead.notInterestedFake,
+        "Next Month Connect": lead.nextMonthConnect,
+        "Dealers": lead.newDealers + lead.oldDealers,
+      }));
+
+      // Add Month Total row at the bottom
+      if (data.dailyLeads.length > 0) {
+        excelData.push({
+          "Sr. No.": "",
+          "Date": "MONTH TOTAL",
+          "# Leads": totalLeads,
+          "Interested": interestedLeads,
+          "Not Interested / Fake": notInterestedFake,
+          "Next Month Connect": nextMonthConnect,
+          "Dealers": newDealersThisMonth + conversionsFromOldMonth,
+        });
+      }
+
+      const worksheet = XLSX.utils.json_to_sheet(excelData);
+
+      // Auto-fit column widths
+      worksheet["!cols"] = [
+        { wch: 8 },   // Sr. No.
+        { wch: 14 },  // Date
+        { wch: 10 },  // # Leads
+        { wch: 12 },  // Interested
+        { wch: 22 },  // Not Interested / Fake
+        { wch: 18 },  // Next Month Connect
+        { wch: 12 },  // Dealers
+      ];
+
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Daily Leads");
+
+      // Filename: Daily_Leads_UserID_Month_Year.xlsx
+      const fileName = `Daily_Leads_${userId}_${currentMonth}_${currentYear}_${new Date().toISOString().slice(0,10)}.xlsx`;
+
+      XLSX.writeFile(workbook, fileName);
+
+      toast.success("✅ Excel file downloaded successfully!");
+    } catch (error) {
+      console.error("Export error:", error);
+      toast.error("Failed to export Excel. Please try again.");
+    }
+  };
+
   const handleEdit = (leadId) => {
     router.push(`/edit-daily-lead/${leadId}?userId=${userId}`);
   };
@@ -120,7 +172,7 @@ const AdminDailyLeadsDashboard = () => {
         </div>
 
         {/* Filter */}
-        <div className="mb-8 flex gap-4">
+        <div className="mb-8 flex gap-4 flex-wrap">
           <select
             value={currentMonth}
             onChange={(e) => setCurrentMonth(Number(e.target.value))}
@@ -140,6 +192,14 @@ const AdminDailyLeadsDashboard = () => {
             max={new Date().getFullYear() + 1}
             className="p-3 border rounded-lg w-24"
           />
+             <button
+              onClick={handleExportToExcel}
+              disabled={data.dailyLeads.length === 0}
+              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white px-6 py-2.5 rounded-xl font-medium transition-all shadow-sm"
+            >
+              <FiDownload size={20} />
+              Export to Excel
+            </button>
         </div>
 
         {/* Summary Cards */}
@@ -147,7 +207,7 @@ const AdminDailyLeadsDashboard = () => {
           <div className="bg-white rounded-2xl p-6 shadow border border-gray-200">
             <h3 className="text-lg font-semibold text-gray-800 mb-1">Total Leads</h3>
             <p className="text-4xl font-bold text-orange-600">{totalLeads}</p>
-            <p className="text-sm text-gray-500 mt-2">Fake / Next Month: {notInterestedFake}</p>
+            <p className="text-sm text-gray-500 mt-2">Fake / Not Interested: {notInterestedFake}</p>
           </div>
 
           <div className="bg-white rounded-2xl p-6 shadow border border-gray-200">
@@ -157,17 +217,17 @@ const AdminDailyLeadsDashboard = () => {
           </div>
 
           <div className="bg-white rounded-2xl p-6 shadow border border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-800 mb-1">Conversions</h3>
+            <h3 className="text-lg font-semibold text-gray-800 mb-1">Lead Conversions</h3>
             <p className="text-3xl font-bold text-blue-600">
               {newDealersThisMonth} new + {conversionsFromOldMonth} old
             </p>
             <p className="text-sm text-gray-500 mt-2">
-              This month: {totalLeads} | Old: {conversionsFromOldMonth}
+              This month: {newDealersThisMonth} | Old: {conversionsFromOldMonth}
             </p>
           </div>
 
           <div className="bg-white rounded-2xl p-6 shadow border border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-800 mb-1">Pending Next Month</h3>
+            <h3 className="text-lg font-semibold text-gray-800 mb-1">Next Month Connect</h3>
             <p className="text-4xl font-bold text-yellow-600">{nextMonthConnect}</p>
           </div>
         </div>
