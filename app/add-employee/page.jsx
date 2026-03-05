@@ -45,10 +45,10 @@ export default function RegisterUserForm() {
     { id: "67aa444eb198d893d8ba1f8a", name: "Deepak Lochan Agarwal" },
     { id: "67f827a58a535582d4e879cc", name: "Nitin Sharma" },
     // { id: "67fa3ea0d3f06c7ecf03cba5", name: "Ramesh Kumar Pandey" },
-   // { id: "6937c43f607a13e3b3d00c26", name: "Ayush" },
+    // { id: "6937c43f607a13e3b3d00c26", name: "Ayush" },
     { id: "6936a0b0e449db2f15d5ebff", name: "Amit Malik" },
-     { id: "6981cec91543ae2c5fe004f1", name: "Pooja Sharma" },
-      { id: "69809997c086012c831a3d39", name: "Abhishek Taneja" },
+    { id: "6981cec91543ae2c5fe004f1", name: "Pooja Sharma" },
+    { id: "69809997c086012c831a3d39", name: "Abhishek Taneja" },
   ];
 
   const roles = [
@@ -80,11 +80,11 @@ export default function RegisterUserForm() {
       formData.append("images", file);
 
       const response = await fetch(
-        "https://backend-eashwa.vercel.app/api/images/upload-images",
+        "https://eashwa-backend.vercel.app/api/images/upload-images",
         {
           method: "POST",
           body: formData,
-        }
+        },
       );
 
       if (!response.ok) {
@@ -162,14 +162,14 @@ export default function RegisterUserForm() {
       };
 
       const response = await fetch(
-        "https://backend-eashwa.vercel.app/api/user/register",
+        "https://eashwa-backend.vercel.app/api/user/register",
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(submitData),
-        }
+        },
       );
 
       const data = await response.json();
@@ -199,7 +199,7 @@ export default function RegisterUserForm() {
     } catch (error) {
       console.error("Registration error:", error);
       toast.error(
-        error.message || "Failed to register user. Please try again."
+        error.message || "Failed to register user. Please try again.",
       );
     } finally {
       setLoading(false);

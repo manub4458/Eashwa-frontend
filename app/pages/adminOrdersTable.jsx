@@ -80,7 +80,7 @@ const AdminOrdersTable = () => {
       }).toString();
 
       const response = await fetch(
-        `https://backend-eashwa.vercel.app/api/orders/all-orders?${queryParams}`,
+        `https://eashwa-backend.vercel.app/api/orders/all-orders?${queryParams}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -162,7 +162,7 @@ const AdminOrdersTable = () => {
       if (!token) throw new Error("Unauthorized");
 
       const response = await fetch(
-        `https://backend-eashwa.vercel.app/api/orders/pending/${pendingOrderId}`,
+        `https://eashwa-backend.vercel.app/api/orders/pending/${pendingOrderId}`,
         {
           method: "POST",
           headers: {
@@ -200,7 +200,7 @@ const AdminOrdersTable = () => {
       if (!token) throw new Error("Unauthorized");
 
       const response = await fetch(
-        `https://backend-eashwa.vercel.app/api/orders/cancel/${cancelledOrderId}`,
+        `https://eashwa-backend.vercel.app/api/orders/cancel/${cancelledOrderId}`,
         {
           method: "POST",
           headers: {
@@ -288,7 +288,7 @@ const AdminOrdersTable = () => {
       if (!token) throw new Error("Unauthorized");
 
       const response = await fetch(
-        `https://backend-eashwa.vercel.app/api/orders/deliver/${deliveryOrderId}`,
+        `https://eashwa-backend.vercel.app/api/orders/deliver/${deliveryOrderId}`,
         {
           method: "POST",
           headers: {
@@ -327,7 +327,7 @@ const AdminOrdersTable = () => {
       if (!token) throw new Error("Unauthorized");
 
       const response = await fetch(
-        `https://backend-eashwa.vercel.app/api/orders/priority/${orderId}`,
+        `https://eashwa-backend.vercel.app/api/orders/priority/${orderId}`,
         {
           method: "PATCH",
           headers: {
@@ -358,7 +358,7 @@ const AdminOrdersTable = () => {
       setIsLoading(true);
 
       const response = await fetch(
-        `https://backend-eashwa.vercel.app/api/orders/${orderId}`,
+        `https://eashwa-backend.vercel.app/api/orders/${orderId}`,
         {
           method: "DELETE",
           headers: {

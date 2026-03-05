@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "react-toastify";
-import { FiEdit, FiTrash2, FiDownload} from "react-icons/fi";
+import { FiEdit, FiTrash2, FiDownload } from "react-icons/fi";
 import * as XLSX from "xlsx";
 
 const AdminDailyLeadsDashboard = () => {
@@ -33,7 +33,7 @@ const AdminDailyLeadsDashboard = () => {
         return;
       }
 
-      const url = `https://backend-eashwa.vercel.app/api/daily-leads/user/${userId}?month=${currentMonth}&year=${currentYear}`;
+      const url = `https://eashwa-backend.vercel.app/api/daily-leads/user/${userId}?month=${currentMonth}&year=${currentYear}`;
       const response = await fetch(url, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -58,10 +58,13 @@ const AdminDailyLeadsDashboard = () => {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`https://backend-eashwa.vercel.app/api/daily-leads/${leadId}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await fetch(
+        `https://eashwa-backend.vercel.app/api/daily-leads/${leadId}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
 
       if (!response.ok) throw new Error("Failed to delete");
 
@@ -77,24 +80,24 @@ const AdminDailyLeadsDashboard = () => {
       // Prepare row data
       const excelData = data.dailyLeads.map((lead, index) => ({
         "Sr. No.": index + 1,
-        "Date": new Date(lead.date).toLocaleDateString("en-GB"),
+        Date: new Date(lead.date).toLocaleDateString("en-GB"),
         "# Leads": lead.numberOfLeads,
-        "Interested": lead.interestedLeads,
+        Interested: lead.interestedLeads,
         "Not Interested / Fake": lead.notInterestedFake,
         "Next Month Connect": lead.nextMonthConnect,
-        "Dealers": lead.newDealers + lead.oldDealers,
+        Dealers: lead.newDealers + lead.oldDealers,
       }));
 
       // Add Month Total row at the bottom
       if (data.dailyLeads.length > 0) {
         excelData.push({
           "Sr. No.": "",
-          "Date": "MONTH TOTAL",
+          Date: "MONTH TOTAL",
           "# Leads": totalLeads,
-          "Interested": interestedLeads,
+          Interested: interestedLeads,
           "Not Interested / Fake": notInterestedFake,
           "Next Month Connect": nextMonthConnect,
-          "Dealers": newDealersThisMonth + conversionsFromOldMonth,
+          Dealers: newDealersThisMonth + conversionsFromOldMonth,
         });
       }
 
@@ -102,20 +105,20 @@ const AdminDailyLeadsDashboard = () => {
 
       // Auto-fit column widths
       worksheet["!cols"] = [
-        { wch: 8 },   // Sr. No.
-        { wch: 14 },  // Date
-        { wch: 10 },  // # Leads
-        { wch: 12 },  // Interested
-        { wch: 22 },  // Not Interested / Fake
-        { wch: 18 },  // Next Month Connect
-        { wch: 12 },  // Dealers
+        { wch: 8 }, // Sr. No.
+        { wch: 14 }, // Date
+        { wch: 10 }, // # Leads
+        { wch: 12 }, // Interested
+        { wch: 22 }, // Not Interested / Fake
+        { wch: 18 }, // Next Month Connect
+        { wch: 12 }, // Dealers
       ];
 
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Daily Leads");
 
       // Filename: Daily_Leads_UserID_Month_Year.xlsx
-      const fileName = `Daily_Leads_${userId}_${currentMonth}_${currentYear}_${new Date().toISOString().slice(0,10)}.xlsx`;
+      const fileName = `Daily_Leads_${userId}_${currentMonth}_${currentYear}_${new Date().toISOString().slice(0, 10)}.xlsx`;
 
       XLSX.writeFile(workbook, fileName);
 
@@ -152,7 +155,9 @@ const AdminDailyLeadsDashboard = () => {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-4">
-          <h1 className="text-3xl font-bold text-gray-900">Daily Leads – User Dashboard</h1>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Daily Leads – User Dashboard
+          </h1>
           <div className="flex items-center gap-4">
             <button
               onClick={() => router.back()}
@@ -192,32 +197,44 @@ const AdminDailyLeadsDashboard = () => {
             max={new Date().getFullYear() + 1}
             className="p-3 border rounded-lg w-24"
           />
-             <button
-              onClick={handleExportToExcel}
-              disabled={data.dailyLeads.length === 0}
-              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white px-6 py-2.5 rounded-xl font-medium transition-all shadow-sm"
-            >
-              <FiDownload size={20} />
-              Export to Excel
-            </button>
+          <button
+            onClick={handleExportToExcel}
+            disabled={data.dailyLeads.length === 0}
+            className="flex items-center gap-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white px-6 py-2.5 rounded-xl font-medium transition-all shadow-sm"
+          >
+            <FiDownload size={20} />
+            Export to Excel
+          </button>
         </div>
 
         {/* Summary Cards */}
-           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
           <div className="bg-white rounded-2xl p-6 shadow border border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-800 mb-1">Total Leads</h3>
+            <h3 className="text-lg font-semibold text-gray-800 mb-1">
+              Total Leads
+            </h3>
             <p className="text-4xl font-bold text-orange-600">{totalLeads}</p>
-            <p className="text-sm text-gray-500 mt-2">Fake / Not Interested: {notInterestedFake}</p>
+            <p className="text-sm text-gray-500 mt-2">
+              Fake / Not Interested: {notInterestedFake}
+            </p>
           </div>
 
           <div className="bg-white rounded-2xl p-6 shadow border border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-800 mb-1">Interested Leads</h3>
-            <p className="text-4xl font-bold text-green-600">{interestedLeads}</p>
-            <p className="text-sm text-gray-500 mt-2">New Dealers: {newDealersThisMonth}</p>
+            <h3 className="text-lg font-semibold text-gray-800 mb-1">
+              Interested Leads
+            </h3>
+            <p className="text-4xl font-bold text-green-600">
+              {interestedLeads}
+            </p>
+            <p className="text-sm text-gray-500 mt-2">
+              New Dealers: {newDealersThisMonth}
+            </p>
           </div>
 
           <div className="bg-white rounded-2xl p-6 shadow border border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-800 mb-1">Lead Conversions</h3>
+            <h3 className="text-lg font-semibold text-gray-800 mb-1">
+              Lead Conversions
+            </h3>
             <p className="text-3xl font-bold text-blue-600">
               {newDealersThisMonth} new + {conversionsFromOldMonth} old
             </p>
@@ -227,8 +244,12 @@ const AdminDailyLeadsDashboard = () => {
           </div>
 
           <div className="bg-white rounded-2xl p-6 shadow border border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-800 mb-1">Next Month Connect</h3>
-            <p className="text-4xl font-bold text-yellow-600">{nextMonthConnect}</p>
+            <h3 className="text-lg font-semibold text-gray-800 mb-1">
+              Next Month Connect
+            </h3>
+            <p className="text-4xl font-bold text-yellow-600">
+              {nextMonthConnect}
+            </p>
           </div>
         </div>
 
@@ -243,30 +264,60 @@ const AdminDailyLeadsDashboard = () => {
             <table className="min-w-full divide-y">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase"># Leads</th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Interested</th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Not Interested / Fake</th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Next Month Connect</th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Dealers</th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">
+                    Date
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">
+                    # Leads
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">
+                    Interested
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">
+                    Not Interested / Fake
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">
+                    Next Month Connect
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">
+                    Dealers
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y">
                 {data.dailyLeads.map((lead) => (
                   <tr key={lead._id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 text-sm">{new Date(lead.date).toLocaleDateString("en-GB")}</td>
+                    <td className="px-6 py-4 text-sm">
+                      {new Date(lead.date).toLocaleDateString("en-GB")}
+                    </td>
                     <td className="px-6 py-4 text-sm">{lead.numberOfLeads}</td>
-                    <td className="px-6 py-4 text-sm">{lead.interestedLeads}</td>
-                    <td className="px-6 py-4 text-sm">{lead.notInterestedFake}</td>
-                    <td className="px-6 py-4 text-sm">{lead.nextMonthConnect}</td>
-                    <td className="px-6 py-4 text-sm">{lead.newDealers + lead.oldDealers}</td>
+                    <td className="px-6 py-4 text-sm">
+                      {lead.interestedLeads}
+                    </td>
+                    <td className="px-6 py-4 text-sm">
+                      {lead.notInterestedFake}
+                    </td>
+                    <td className="px-6 py-4 text-sm">
+                      {lead.nextMonthConnect}
+                    </td>
+                    <td className="px-6 py-4 text-sm">
+                      {lead.newDealers + lead.oldDealers}
+                    </td>
                     <td className="px-6 py-4 text-sm flex gap-2">
-                      <button onClick={() => handleEdit(lead._id)} className="text-blue-600 hover:text-blue-800">
-                      <FiEdit size={20} />
+                      <button
+                        onClick={() => handleEdit(lead._id)}
+                        className="text-blue-600 hover:text-blue-800"
+                      >
+                        <FiEdit size={20} />
                       </button>
-                      <button onClick={() => handleDelete(lead._id)} className="text-red-600 hover:text-red-800">
-                       <FiTrash2 size={20} />
+                      <button
+                        onClick={() => handleDelete(lead._id)}
+                        className="text-red-600 hover:text-red-800"
+                      >
+                        <FiTrash2 size={20} />
                       </button>
                     </td>
                   </tr>
@@ -274,12 +325,25 @@ const AdminDailyLeadsDashboard = () => {
                 {/* Month Total Row */}
                 {data.dailyLeads.length > 0 && (
                   <tr className="bg-orange-50 font-semibold">
-                    <td className="px-6 py-4 text-sm text-orange-800">Month Total</td>
-                    <td className="px-6 py-4 text-sm text-orange-800">{totalLeads}</td>
-                    <td className="px-6 py-4 text-sm text-orange-800">{interestedLeads}</td>
-                    <td className="px-6 py-4 text-sm text-orange-800">{notInterestedFake}</td>
-                    <td className="px-6 py-4 text-sm text-orange-800">{nextMonthConnect}</td>
-                    <td className="px-6 py-4 text-sm text-orange-800">Total Dealers: {newDealersThisMonth + conversionsFromOldMonth}</td>
+                    <td className="px-6 py-4 text-sm text-orange-800">
+                      Month Total
+                    </td>
+                    <td className="px-6 py-4 text-sm text-orange-800">
+                      {totalLeads}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-orange-800">
+                      {interestedLeads}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-orange-800">
+                      {notInterestedFake}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-orange-800">
+                      {nextMonthConnect}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-orange-800">
+                      Total Dealers:{" "}
+                      {newDealersThisMonth + conversionsFromOldMonth}
+                    </td>
                     <td></td>
                   </tr>
                 )}

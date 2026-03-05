@@ -22,13 +22,13 @@ const UpdateTargetForm = () => {
     try {
       const token = localStorage.getItem("token"); // Fetch token from localStorage
       const response = await axios.put(
-        `https://backend-eashwa.vercel.app/api/user/update-target/${id}`,
+        `https://eashwa-backend.vercel.app/api/user/update-target/${id}`,
         data,
         {
           headers: {
             Authorization: `Bearer ${token}`, // Attach token for authorization
           },
-        }
+        },
       );
 
       toast.success("Target updated successfully!", {
@@ -42,7 +42,7 @@ const UpdateTargetForm = () => {
         error.response?.data?.message || "Failed to update target. Try again!",
         {
           position: toast.POSITION.TOP_RIGHT,
-        }
+        },
       );
     }
   };

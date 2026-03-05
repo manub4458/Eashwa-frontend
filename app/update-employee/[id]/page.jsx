@@ -47,11 +47,11 @@ export default function EditEmployeeForm() {
     { id: "6792a56b6b4c7a0c3d52890e", name: "Abhinav Badola" },
     { id: "67aa444eb198d893d8ba1f8a", name: "Deepak Lochan Agarwal" },
     { id: "67f827a58a535582d4e879cc", name: "Nitin Sharma" },
-  //  { id: "67fa3ea0d3f06c7ecf03cba5", name: "Ramesh Kumar Pandey" },
-   // { id: "6937c43f607a13e3b3d00c26", name: "Ayush" },
+    //  { id: "67fa3ea0d3f06c7ecf03cba5", name: "Ramesh Kumar Pandey" },
+    // { id: "6937c43f607a13e3b3d00c26", name: "Ayush" },
     { id: "6936a0b0e449db2f15d5ebff", name: "Amit Malik" },
-       { id: "6981cec91543ae2c5fe004f1", name: "Pooja Sharma" },
-      { id: "69809997c086012c831a3d39", name: "Abhishek Taneja" },
+    { id: "6981cec91543ae2c5fe004f1", name: "Pooja Sharma" },
+    { id: "69809997c086012c831a3d39", name: "Abhishek Taneja" },
   ];
 
   const roles = [
@@ -69,13 +69,13 @@ export default function EditEmployeeForm() {
       try {
         setFetching(true);
         const res = await fetch(
-          `https://backend-eashwa.vercel.app/api/user/employee-detail/${id}`,
+          `https://eashwa-backend.vercel.app/api/user/employee-detail/${id}`,
           {
             method: "GET",
             headers: {
               Authorization: `Bearer ${token}`,
             },
-          }
+          },
         );
 
         console.log("res", res);
@@ -141,11 +141,11 @@ export default function EditEmployeeForm() {
       fd.append("images", file);
 
       const response = await fetch(
-        "https://backend-eashwa.vercel.app/api/images/upload-images",
+        "https://eashwa-backend.vercel.app/api/images/upload-images",
         {
           method: "POST",
           body: fd,
-        }
+        },
       );
 
       if (!response.ok) throw new Error("Upload failed");
@@ -217,7 +217,7 @@ export default function EditEmployeeForm() {
       };
 
       const response = await fetch(
-        `https://backend-eashwa.vercel.app/api/user/update-employee/${id}`,
+        `https://eashwa-backend.vercel.app/api/user/update-employee/${id}`,
         {
           method: "PATCH",
           headers: {
@@ -225,7 +225,7 @@ export default function EditEmployeeForm() {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify(submitData),
-        }
+        },
       );
 
       const result = await response.json();

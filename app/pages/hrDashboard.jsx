@@ -7,7 +7,6 @@ import AdminOrdersTable from "./adminOrdersTable";
 import { PiPencilSimpleLineFill } from "react-icons/pi";
 import { BiSolidDetail } from "react-icons/bi";
 
-
 const HrDashboard = () => {
   const [employees, setEmployees] = useState([]);
   const [hrInfo, setHrInfo] = useState(null);
@@ -19,12 +18,12 @@ const HrDashboard = () => {
       try {
         const token = localStorage.getItem("token"); // Assuming the token is stored in localStorage
         const response = await axios.get(
-          "https://backend-eashwa.vercel.app/api/user/employees/",
+          "https://eashwa-backend.vercel.app/api/user/employees/",
           {
             headers: {
               Authorization: `Bearer ${token}`, // Include token for authentication
             },
-          }
+          },
         );
         console.log("response", response);
         // setEmployees(response.data.employees);
@@ -38,12 +37,12 @@ const HrDashboard = () => {
       try {
         const token = localStorage.getItem("token"); // Assuming the token is stored in localStorage
         const response = await axios.get(
-          "https://backend-eashwa.vercel.app/api/user/managed-employees",
+          "https://eashwa-backend.vercel.app/api/user/managed-employees",
           {
             headers: {
               Authorization: `Bearer ${token}`, // Include token for authentication
             },
-          }
+          },
         );
         console.log("response", response);
         setEmployees(response.data.employees);
@@ -231,10 +230,18 @@ const HrDashboard = () => {
                     {employee.post || "N/A"}
                   </p>
                   <div>
-                    <button onClick={()=>router.push(`/employee-detail/${employee._id}`)}>
+                    <button
+                      onClick={() =>
+                        router.push(`/employee-detail/${employee._id}`)
+                      }
+                    >
                       <BiSolidDetail size={20} className="mr-2" />
                     </button>
-                    <button onClick={()=>router.push(`/update-employee/${employee._id}`)}>
+                    <button
+                      onClick={() =>
+                        router.push(`/update-employee/${employee._id}`)
+                      }
+                    >
                       <PiPencilSimpleLineFill size={20} className="mr-2" />
                     </button>
                   </div>

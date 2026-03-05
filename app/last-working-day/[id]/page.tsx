@@ -31,13 +31,13 @@ const LastWorkingDateForm: React.FC = () => {
 
     try {
       const response = await axios.patch(
-        "https://backend-eashwa.vercel.app/api/user/update-last-working-date",
+        "https://eashwa-backend.vercel.app/api/user/update-last-working-date",
         { userId: id, lastWorkingDate },
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
       if (response.status === 200) {

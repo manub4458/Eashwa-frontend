@@ -96,7 +96,7 @@ const TicketForm = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        "https://backend-eashwa.vercel.app/api/tickets/create",
+        "https://eashwa-backend.vercel.app/api/tickets/create",
         {
           method: "POST",
           headers: {
@@ -104,7 +104,7 @@ const TicketForm = () => {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify(formData),
-        }
+        },
       );
 
       if (response.ok) {
@@ -127,9 +127,9 @@ const TicketForm = () => {
     }
   };
 
-  const onClose = () =>{
+  const onClose = () => {
     router.push("/employees");
-  }
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">

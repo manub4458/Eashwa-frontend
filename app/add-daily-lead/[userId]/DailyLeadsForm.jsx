@@ -35,7 +35,12 @@ const DailyLeadsForm = ({ userId }) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === "date" ? value : name === "dealerType" ? value : Number(value) || 0,
+      [name]:
+        name === "date"
+          ? value
+          : name === "dealerType"
+            ? value
+            : Number(value) || 0,
     }));
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: "" }));
@@ -67,7 +72,7 @@ const DailyLeadsForm = ({ userId }) => {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        "https://backend-eashwa.vercel.app/api/daily-leads",
+        "https://eashwa-backend.vercel.app/api/daily-leads",
         {
           method: "POST",
           headers: {
@@ -263,7 +268,9 @@ const DailyLeadsForm = ({ userId }) => {
                 placeholder="Enter dealer count"
               />
               {errors.dealerCount && (
-                <p className="mt-1 text-sm text-red-600">{errors.dealerCount}</p>
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.dealerCount}
+                </p>
               )}
             </div>
           </form>

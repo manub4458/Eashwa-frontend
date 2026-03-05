@@ -121,7 +121,7 @@ const DetailForm = ({ orderId }: { orderId?: string }) => {
       }
 
       const response = await fetch(
-        `https://backend-eashwa.vercel.app/api/orders/${id}`,
+        `https://eashwa-backend.vercel.app/api/orders/${id}`,
         {
           method: "GET",
           headers: {
@@ -175,7 +175,7 @@ const DetailForm = ({ orderId }: { orderId?: string }) => {
       formDataUpload.append("file", selectedFile);
 
       const uploadResponse = await fetch(
-        "https://backend-eashwa.vercel.app/api/images/upload-pdf",
+        "https://eashwa-backend.vercel.app/api/images/upload-pdf",
         {
           method: "POST",
           body: formDataUpload,
@@ -229,8 +229,8 @@ const DetailForm = ({ orderId }: { orderId?: string }) => {
 
       let response;
       let endpoint = isEditMode
-        ? `https://backend-eashwa.vercel.app/api/orders/${id}`
-        : "https://backend-eashwa.vercel.app/api/orders/submit";
+        ? `https://eashwa-backend.vercel.app/api/orders/${id}`
+        : "https://eashwa-backend.vercel.app/api/orders/submit";
 
       if (isEditMode) {
         response = await fetch(endpoint, {

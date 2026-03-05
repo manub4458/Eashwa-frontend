@@ -9,9 +9,9 @@ import { toast } from "react-toastify";
 const DailyLeadsForm = () => {
   const params = useParams();
   const searchParams = useSearchParams();
-  const router = useRouter();                    // ← Moved up
+  const router = useRouter(); // ← Moved up
 
-  const leadId = params.userId;                  // or params.leadId depending on your route
+  const leadId = params.userId; // or params.leadId depending on your route
   const userId = searchParams.get("userId");
 
   const onClose = () => {
@@ -41,8 +41,8 @@ const DailyLeadsForm = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `https://backend-eashwa.vercel.app/api/daily-leads/${leadId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
+        `https://eashwa-backend.vercel.app/api/daily-leads/${leadId}`,
+        { headers: { Authorization: `Bearer ${token}` } },
       );
 
       if (!response.ok) throw new Error("Failed to fetch lead data");
@@ -87,8 +87,8 @@ const DailyLeadsForm = () => {
         name === "date"
           ? value
           : name === "dealerType"
-          ? value
-          : Number(value) || 0,
+            ? value
+            : Number(value) || 0,
     }));
 
     if (errors[name]) {
@@ -117,8 +117,8 @@ const DailyLeadsForm = () => {
       const token = localStorage.getItem("token");
       const method = leadId ? "PUT" : "POST";
       const url = leadId
-        ? `https://backend-eashwa.vercel.app/api/daily-leads/${leadId}`
-        : "https://backend-eashwa.vercel.app/api/daily-leads";
+        ? `https://eashwa-backend.vercel.app/api/daily-leads/${leadId}`
+        : "https://eashwa-backend.vercel.app/api/daily-leads";
 
       const response = await fetch(url, {
         method,
@@ -153,8 +153,18 @@ const DailyLeadsForm = () => {
               onClick={onClose}
               className="text-white hover:bg-white hover:bg-opacity-20 rounded-full p-2 transition-all"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>
@@ -164,7 +174,9 @@ const DailyLeadsForm = () => {
           <form onSubmit={handleSubmit}>
             {/* Date */}
             <div>
-              <label className="block text-sm font-semibold mb-2">Date <span className="text-red-500">*</span></label>
+              <label className="block text-sm font-semibold mb-2">
+                Date <span className="text-red-500">*</span>
+              </label>
               <input
                 type="date"
                 name="date"
@@ -172,7 +184,9 @@ const DailyLeadsForm = () => {
                 onChange={handleInputChange}
                 className={`w-full p-4 border-2 rounded-xl ${errors.date ? "border-red-300" : "border-gray-200"}`}
               />
-              {errors.date && <p className="mt-1 text-sm text-red-600">{errors.date}</p>}
+              {errors.date && (
+                <p className="mt-1 text-sm text-red-600">{errors.date}</p>
+              )}
             </div>
 
             {/* Number of Leads */}
@@ -187,18 +201,24 @@ const DailyLeadsForm = () => {
                 onChange={handleInputChange}
                 min="0"
                 className={`w-full p-4 border-2 rounded-xl focus:ring-4 focus:ring-orange-200 focus:border-orange-500 transition-all duration-200 ${
-                  errors.numberOfLeads ? "border-red-300 bg-red-50" : "border-gray-200 hover:border-gray-300"
+                  errors.numberOfLeads
+                    ? "border-red-300 bg-red-50"
+                    : "border-gray-200 hover:border-gray-300"
                 }`}
                 placeholder="Enter number of leads"
               />
               {errors.numberOfLeads && (
-                <p className="mt-1 text-sm text-red-600">{errors.numberOfLeads}</p>
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.numberOfLeads}
+                </p>
               )}
             </div>
 
             {/* Interested Leads */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Interested Leads</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Interested Leads
+              </label>
               <input
                 type="number"
                 name="interestedLeads"
@@ -212,7 +232,9 @@ const DailyLeadsForm = () => {
 
             {/* Not Interested / Fake */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Not Interested / Fake</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Not Interested / Fake
+              </label>
               <input
                 type="number"
                 name="notInterestedFake"
@@ -226,7 +248,9 @@ const DailyLeadsForm = () => {
 
             {/* Next Month Connect */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Next Month Connect</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Next Month Connect
+              </label>
               <input
                 type="number"
                 name="nextMonthConnect"
@@ -240,7 +264,9 @@ const DailyLeadsForm = () => {
 
             {/* Dealer Type */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Dealer Type (Optional)</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Dealer Type (Optional)
+              </label>
               <select
                 name="dealerType"
                 value={formData.dealerType}
@@ -255,7 +281,9 @@ const DailyLeadsForm = () => {
 
             {/* Dealer Count */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Dealer Count (Optional)</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Dealer Count (Optional)
+              </label>
               <input
                 type="number"
                 name="dealerCount"
@@ -264,12 +292,16 @@ const DailyLeadsForm = () => {
                 min="0"
                 disabled={!formData.dealerType}
                 className={`w-full p-4 border-2 rounded-xl focus:ring-4 focus:ring-orange-200 focus:border-orange-500 transition-all duration-200 ${
-                  errors.dealerCount ? "border-red-300 bg-red-50" : "border-gray-200 hover:border-gray-300"
+                  errors.dealerCount
+                    ? "border-red-300 bg-red-50"
+                    : "border-gray-200 hover:border-gray-300"
                 } ${!formData.dealerType ? "bg-gray-100 cursor-not-allowed" : ""}`}
                 placeholder="Enter dealer count"
               />
               {errors.dealerCount && (
-                <p className="mt-1 text-sm text-red-600">{errors.dealerCount}</p>
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.dealerCount}
+                </p>
               )}
             </div>
           </form>

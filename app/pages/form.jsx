@@ -1,11 +1,16 @@
-"use client"
+"use client";
 import React, { useState, useEffect } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 // import { Card, CardHeader, CardTitle, CardContent, Button, Input, Textarea, FormLabel, FormItem, FormControl, FormMessage } from "../../components";
 import { Input } from "../../components/ui/input";
 import { Textarea } from "../../components/ui/textarea";
 import { Button } from "../../components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "../../components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+} from "../../components/ui/card";
 import {
   FormItem,
   FormLabel,
@@ -73,8 +78,18 @@ const BatteryForm = () => {
     const date = new Date();
     const day = date.getDate();
     const monthNames = [
-      "January", "February", "March", "April", "May", "June",
-      "July", "August", "September", "October", "November", "December",
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
     ];
     const month = monthNames[date.getMonth()];
     const year = date.getFullYear();
@@ -85,10 +100,14 @@ const BatteryForm = () => {
     const daySuffix = (day) => {
       if (day > 3 && day < 21) return "th";
       switch (day % 10) {
-        case 1: return "st";
-        case 2: return "nd";
-        case 3: return "rd";
-        default: return "th";
+        case 1:
+          return "st";
+        case 2:
+          return "nd";
+        case 3:
+          return "rd";
+        default:
+          return "th";
       }
     };
 
@@ -112,14 +131,14 @@ const BatteryForm = () => {
 
     try {
       const response = await fetch(
-        'https://backend-eashwa.vercel.app/api/request/submit-request',
+        "https://eashwa-backend.vercel.app/api/request-order/submit-request",
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(responseData),
-        }
+        },
       );
 
       if (response.ok) {
@@ -187,7 +206,9 @@ const BatteryForm = () => {
                   </FormControl>
                 </FormItem>
 
-                {loginError && <p className="text-red-500 text-center">{loginError}</p>}
+                {loginError && (
+                  <p className="text-red-500 text-center">{loginError}</p>
+                )}
 
                 <div className="flex justify-center mt-8">
                   <Button
@@ -214,16 +235,23 @@ const BatteryForm = () => {
               </CardHeader>
               <CardContent>
                 <FormProvider {...methods}>
-                  <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-6 sm:space-y-8">
+                  <form
+                    onSubmit={methods.handleSubmit(onSubmit)}
+                    className="space-y-6 sm:space-y-8"
+                  >
                     <FormItem>
                       <FormLabel>Your Name</FormLabel>
                       <FormControl>
                         <Input
-                          {...methods.register("name", { required: "Name is required." })}
+                          {...methods.register("name", {
+                            required: "Name is required.",
+                          })}
                           placeholder="Enter your name"
                         />
                       </FormControl>
-                      <FormMessage>{methods.formState.errors.name?.message}</FormMessage>
+                      <FormMessage>
+                        {methods.formState.errors.name?.message}
+                      </FormMessage>
                     </FormItem>
 
                     {/* <FormItem>
@@ -246,7 +274,9 @@ const BatteryForm = () => {
                             required: "Battery description is required.",
                             validate: (value) => {
                               if (value.includes("\n")) {
-                                setDescriptionError("New lines are not allowed in the description.");
+                                setDescriptionError(
+                                  "New lines are not allowed in the description.",
+                                );
                                 return false;
                               }
                               setDescriptionError(""); // Clear the error when valid
@@ -257,13 +287,16 @@ const BatteryForm = () => {
                           onKeyDown={(e) => {
                             if (e.key === "Enter") {
                               e.preventDefault();
-                              setDescriptionError("New lines are not allowed in the description.");
+                              setDescriptionError(
+                                "New lines are not allowed in the description.",
+                              );
                             }
                           }}
                         />
                       </FormControl>
                       <FormMessage>
-                        {methods.formState.errors.batteryDescription?.message || descriptionError}
+                        {methods.formState.errors.batteryDescription?.message ||
+                          descriptionError}
                       </FormMessage>
                     </FormItem>
 
@@ -271,11 +304,15 @@ const BatteryForm = () => {
                       <FormLabel>Vendor Name</FormLabel>
                       <FormControl>
                         <Input
-                          {...methods.register("vendorName", { required: "Vendor name is required." })}
+                          {...methods.register("vendorName", {
+                            required: "Vendor name is required.",
+                          })}
                           placeholder="Enter vendor name"
                         />
                       </FormControl>
-                      <FormMessage>{methods.formState.errors.vendorName?.message}</FormMessage>
+                      <FormMessage>
+                        {methods.formState.errors.vendorName?.message}
+                      </FormMessage>
                     </FormItem>
 
                     <FormItem>
@@ -283,11 +320,15 @@ const BatteryForm = () => {
                       <FormControl>
                         <Input
                           type="number"
-                          {...methods.register("whatsappNumber", { required: "Whatsapp number is required." })}
+                          {...methods.register("whatsappNumber", {
+                            required: "Whatsapp number is required.",
+                          })}
                           placeholder="Enter your Whatsapp Number"
                         />
                       </FormControl>
-                      <FormMessage>{methods.formState.errors.whatsappNumber?.message}</FormMessage>
+                      <FormMessage>
+                        {methods.formState.errors.whatsappNumber?.message}
+                      </FormMessage>
                     </FormItem>
 
                     <FormItem>
@@ -295,11 +336,15 @@ const BatteryForm = () => {
                       <FormControl>
                         <Input
                           type="number"
-                          {...methods.register("amount", { required: "Amount is required." })}
+                          {...methods.register("amount", {
+                            required: "Amount is required.",
+                          })}
                           placeholder="Enter the amount"
                         />
                       </FormControl>
-                      <FormMessage>{methods.formState.errors.amount?.message}</FormMessage>
+                      <FormMessage>
+                        {methods.formState.errors.amount?.message}
+                      </FormMessage>
                     </FormItem>
 
                     <div className="flex justify-center mt-8">
@@ -308,7 +353,9 @@ const BatteryForm = () => {
                         className="w-full bg-[#d86331] hover:bg-[#a84e24] text-white"
                         disabled={isSubmitting}
                       >
-                        {isSubmitting ? `Please wait ${timer} seconds` : "Submit"}
+                        {isSubmitting
+                          ? `Please wait ${timer} seconds`
+                          : "Submit"}
                       </Button>
                     </div>
                   </form>

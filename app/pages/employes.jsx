@@ -98,7 +98,7 @@ const Employe = () => {
   const fetchUserData = async (token) => {
     try {
       const response = await fetch(
-        "https://backend-eashwa.vercel.app/api/user/profile",
+        "https://eashwa-backend.vercel.app/api/user/profile",
         {
           method: "GET",
           headers: {
@@ -142,7 +142,7 @@ const Employe = () => {
   const fetchLeadsHistory = async (token) => {
     try {
       const response = await fetch(
-        "https://backend-eashwa.vercel.app/api/user/get-file-lead",
+        "https://eashwa-backend.vercel.app/api/user/get-file-lead",
         {
           method: "GET",
           headers: { Authorization: `Bearer ${token}` },
@@ -161,7 +161,7 @@ const Employe = () => {
   const fetchTargetLeadsHistory = async (token) => {
     try {
       const response = await axios.get(
-        `https://backend-eashwa.vercel.app/api/user/get-target-lead`,
+        `https://eashwa-backend.vercel.app/api/user/get-target-lead`,
         {
           headers: { Authorization: `Bearer ${token}` },
         },
@@ -187,7 +187,7 @@ const Employe = () => {
       formData.append("file", selectedFile);
 
       const uploadResponse = await axios.post(
-        "https://backend-eashwa.vercel.app/api/images/upload-excel",
+        "https://eashwa-backend.vercel.app/api/images/upload-excel",
         formData,
         {
           headers: {
@@ -200,7 +200,7 @@ const Employe = () => {
       const fileUrl = uploadResponse.data.fileUrl;
 
       await axios.post(
-        "https://backend-eashwa.vercel.app/api/user/upload-file-leads",
+        "https://eashwa-backend.vercel.app/api/user/upload-file-leads",
         {
           fileUrl: fileUrl,
           employeeId: user?.employeeId,
@@ -233,7 +233,7 @@ const Employe = () => {
       const token = localStorage.getItem("token");
 
       const response = await axios.delete(
-        `https://backend-eashwa.vercel.app/api/user/leads/regular-file/${fileId}`,
+        `https://eashwa-backend.vercel.app/api/user/leads/regular-file/${fileId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

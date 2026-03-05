@@ -75,12 +75,12 @@ const EmployeeDetail = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        `https://backend-eashwa.vercel.app/api/user/admin-managed-employees/${id}`,
+        `https://eashwa-backend.vercel.app/api/user/admin-managed-employees/${id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
       setEmployees(response.data.employees);
     } catch (error) {
@@ -100,10 +100,10 @@ const EmployeeDetail = () => {
     pageNumber = 1,
     pageLimit = 10,
     month = "",
-    year = ""
+    year = "",
   ) => {
     try {
-      let url = `https://backend-eashwa.vercel.app/api/user/get-visitor/${id}?page=${pageNumber}&limit=${pageLimit}`;
+      let url = `https://eashwa-backend.vercel.app/api/user/get-visitor/${id}?page=${pageNumber}&limit=${pageLimit}`;
       if (month && year) {
         url += `&month=${month}&year=${year}`;
       }
@@ -137,20 +137,20 @@ const EmployeeDetail = () => {
       formData.append("file", file);
 
       const uploadResponse = await axios.post(
-        "https://backend-eashwa.vercel.app/api/images/upload-excel",
+        "https://eashwa-backend.vercel.app/api/images/upload-excel",
         formData,
         {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "multipart/form-data",
           },
-        }
+        },
       );
 
       const fileUrl = uploadResponse.data.fileUrl;
 
       await axios.post(
-        "https://backend-eashwa.vercel.app/api/user/process-leads",
+        "https://eashwa-backend.vercel.app/api/user/process-leads",
         {
           fileUrl: fileUrl,
           employeeId: id,
@@ -160,7 +160,7 @@ const EmployeeDetail = () => {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       alert("Lead file uploaded successfully!");
@@ -181,10 +181,10 @@ const EmployeeDetail = () => {
   const fetchLeadsHistory = async (token) => {
     try {
       const response = await axios.get(
-        `https://backend-eashwa.vercel.app/api/user/get-file-lead/${id}`,
+        `https://eashwa-backend.vercel.app/api/user/get-file-lead/${id}`,
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
       const data = response.data;
       setUploadedLeads(data.files);
@@ -196,10 +196,10 @@ const EmployeeDetail = () => {
   const fetchTargetLeadsHistory = async (token) => {
     try {
       const response = await axios.get(
-        `https://backend-eashwa.vercel.app/api/user/get-target-lead/${id}`,
+        `https://eashwa-backend.vercel.app/api/user/get-target-lead/${id}`,
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
       const data = response.data;
       setUploadedTargetLeads(data.files);
@@ -213,7 +213,7 @@ const EmployeeDetail = () => {
       const token = localStorage.getItem("token");
 
       const response = await axios.delete(
-        `https://backend-eashwa.vercel.app/api/user/leads/regular-file/${fileId}`,
+        `https://eashwa-backend.vercel.app/api/user/leads/regular-file/${fileId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -222,7 +222,7 @@ const EmployeeDetail = () => {
           data: {
             requestId: id,
           },
-        }
+        },
       );
 
       console.log("File deleted successfully:", response.data);
@@ -230,7 +230,7 @@ const EmployeeDetail = () => {
     } catch (error) {
       console.error(
         "Error deleting file:",
-        error.response?.data || error.message
+        error.response?.data || error.message,
       );
     }
   };
@@ -240,7 +240,7 @@ const EmployeeDetail = () => {
       const token = localStorage.getItem("token");
 
       const response = await axios.delete(
-        `https://backend-eashwa.vercel.app/api/user/leads/target-file/${fileId}`,
+        `https://eashwa-backend.vercel.app/api/user/leads/target-file/${fileId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -249,7 +249,7 @@ const EmployeeDetail = () => {
           data: {
             requestId: id,
           },
-        }
+        },
       );
 
       console.log("File deleted successfully:", response.data);
@@ -257,7 +257,7 @@ const EmployeeDetail = () => {
     } catch (error) {
       console.error(
         "Error deleting file:",
-        error.response?.data || error.message
+        error.response?.data || error.message,
       );
     }
   };
@@ -319,10 +319,10 @@ const EmployeeDetail = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        `https://backend-eashwa.vercel.app/api/user/employee-detail/${id}`,
+        `https://eashwa-backend.vercel.app/api/user/employee-detail/${id}`,
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
       const userData = response.data.user;
       setUser({
@@ -334,13 +334,13 @@ const EmployeeDetail = () => {
 
       const allMonths = [
         ...(userData?.targetAchieved?.battery?.history || []).map(
-          (entry) => entry.month
+          (entry) => entry.month,
         ),
         ...(userData?.targetAchieved?.eRickshaw?.history || []).map(
-          (entry) => entry.month
+          (entry) => entry.month,
         ),
         ...(userData?.targetAchieved?.scooty?.history || []).map(
-          (entry) => entry.month
+          (entry) => entry.month,
         ),
       ];
       const uniqueMonths = [...new Set(allMonths)].sort();
@@ -361,7 +361,7 @@ const EmployeeDetail = () => {
       const formattedMonth =
         ratingMonth ||
         `${currentDate.getFullYear()}-${String(
-          currentDate.getMonth() + 1
+          currentDate.getMonth() + 1,
         ).padStart(2, "0")}`;
 
       const ratingData = {
@@ -379,14 +379,14 @@ const EmployeeDetail = () => {
       };
 
       await axios.patch(
-        `https://backend-eashwa.vercel.app/api/user/update-employee/${id}`,
+        `https://eashwa-backend.vercel.app/api/user/update-employee/${id}`,
         ratingData,
         {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       alert("Rating submitted successfully!");
@@ -430,7 +430,7 @@ const EmployeeDetail = () => {
       // ).padStart(2, "0")}`;
 
       await axios.put(
-        `https://backend-eashwa.vercel.app/api/user/update-target/${id}`,
+        `https://eashwa-backend.vercel.app/api/user/update-target/${id}`,
         {
           month: targetUpdateMonth,
           battery: {
@@ -451,7 +451,7 @@ const EmployeeDetail = () => {
         },
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
       await fetchUser();
       setIsEditing(false);
@@ -551,13 +551,13 @@ const EmployeeDetail = () => {
   const getUniqueMonths = () => {
     const allMonths = [
       ...(user?.targetAchieved?.battery?.history || []).map(
-        (entry) => entry.month
+        (entry) => entry.month,
       ),
       ...(user?.targetAchieved?.eRickshaw?.history || []).map(
-        (entry) => entry.month
+        (entry) => entry.month,
       ),
       ...(user?.targetAchieved?.scooty?.history || []).map(
-        (entry) => entry.month
+        (entry) => entry.month,
       ),
     ];
     return [...new Set(allMonths)].sort();
@@ -667,7 +667,7 @@ const EmployeeDetail = () => {
           </div>
         )}
       </div>
-    )
+    ),
   );
 
   TargetCard.displayName = "TargetCard";
@@ -727,23 +727,24 @@ const EmployeeDetail = () => {
                 {user.aadhaarNumber}
               </p>
               <div className="flex flex-col gap-3 items-start justify-start">
-              <button
-                onClick={() => router.push(`/add-daily-lead/${id}`)}
-                className="bg-orange-500 rounded-2xl text-white p-3"
-              >
-                Add Daily Leads 
-              </button>  <button
-                onClick={() => router.push(`/admin-daily-leads/${id}`)}
-                className="bg-orange-500 rounded-2xl text-white p-3"
-              >
-                Daily Leads Table
-              </button>
-              <button
-                onClick={() => router.push(`/last-working-day/${id}`)}
-                className="bg-orange-500 rounded-2xl text-white p-3"
-              >
-                Update Last working day
-              </button>
+                <button
+                  onClick={() => router.push(`/add-daily-lead/${id}`)}
+                  className="bg-orange-500 rounded-2xl text-white p-3"
+                >
+                  Add Daily Leads
+                </button>{" "}
+                <button
+                  onClick={() => router.push(`/admin-daily-leads/${id}`)}
+                  className="bg-orange-500 rounded-2xl text-white p-3"
+                >
+                  Daily Leads Table
+                </button>
+                <button
+                  onClick={() => router.push(`/last-working-day/${id}`)}
+                  className="bg-orange-500 rounded-2xl text-white p-3"
+                >
+                  Update Last working day
+                </button>
               </div>
             </div>
           </div>
@@ -780,8 +781,8 @@ const EmployeeDetail = () => {
                     {isLoading
                       ? "Updating..."
                       : isEditing
-                      ? "Save Changes"
-                      : "Edit Targets"}
+                        ? "Save Changes"
+                        : "Edit Targets"}
                   </button>
                   <button
                     className="bg-[#d86331] text-white px-6 py-2 rounded-lg hover:bg-[#c55a2d] transition-colors"
@@ -881,28 +882,28 @@ const EmployeeDetail = () => {
                             {[...user.targetAchieved.battery.history]
                               .reverse()
                               .find(
-                                (entry) => entry.month === selectedHistoryMonth
+                                (entry) => entry.month === selectedHistoryMonth,
                               )?.total || 0}
                           </td>
                           <td className="border border-gray-200 px-4 py-2">
                             {[...user.targetAchieved.battery.history]
                               .reverse()
                               .find(
-                                (entry) => entry.month === selectedHistoryMonth
+                                (entry) => entry.month === selectedHistoryMonth,
                               )?.completed || 0}
                           </td>
                           <td className="border border-gray-200 px-4 py-2">
                             {[...user.targetAchieved.battery.history]
                               .reverse()
                               .find(
-                                (entry) => entry.month === selectedHistoryMonth
+                                (entry) => entry.month === selectedHistoryMonth,
                               )?.pending || 0}
                           </td>
                           <td className="border border-gray-200 px-4 py-2">
                             {[...user.targetAchieved.battery.history]
                               .reverse()
                               .find(
-                                (entry) => entry.month === selectedHistoryMonth
+                                (entry) => entry.month === selectedHistoryMonth,
                               )?.extra || 0}
                           </td>
                         </tr>
@@ -914,28 +915,28 @@ const EmployeeDetail = () => {
                             {[...user.targetAchieved.eRickshaw.history]
                               .reverse()
                               .find(
-                                (entry) => entry.month === selectedHistoryMonth
+                                (entry) => entry.month === selectedHistoryMonth,
                               )?.total || 0}
                           </td>
                           <td className="border border-gray-200 px-4 py-2">
                             {[...user.targetAchieved.eRickshaw.history]
                               .reverse()
                               .find(
-                                (entry) => entry.month === selectedHistoryMonth
+                                (entry) => entry.month === selectedHistoryMonth,
                               )?.completed || 0}
                           </td>
                           <td className="border border-gray-200 px-4 py-2">
                             {[...user.targetAchieved.eRickshaw.history]
                               .reverse()
                               .find(
-                                (entry) => entry.month === selectedHistoryMonth
+                                (entry) => entry.month === selectedHistoryMonth,
                               )?.pending || 0}
                           </td>
                           <td className="border border-gray-200 px-4 py-2">
                             {[...user.targetAchieved.eRickshaw.history]
                               .reverse()
                               .find(
-                                (entry) => entry.month === selectedHistoryMonth
+                                (entry) => entry.month === selectedHistoryMonth,
                               )?.extra || 0}
                           </td>
                         </tr>
@@ -947,28 +948,28 @@ const EmployeeDetail = () => {
                             {[...user.targetAchieved.scooty.history]
                               .reverse()
                               .find(
-                                (entry) => entry.month === selectedHistoryMonth
+                                (entry) => entry.month === selectedHistoryMonth,
                               )?.total || 0}
                           </td>
                           <td className="border border-gray-200 px-4 py-2">
                             {[...user.targetAchieved.scooty.history]
                               .reverse()
                               .find(
-                                (entry) => entry.month === selectedHistoryMonth
+                                (entry) => entry.month === selectedHistoryMonth,
                               )?.completed || 0}
                           </td>
                           <td className="border border-gray-200 px-4 py-2">
                             {[...user.targetAchieved.scooty.history]
                               .reverse()
                               .find(
-                                (entry) => entry.month === selectedHistoryMonth
+                                (entry) => entry.month === selectedHistoryMonth,
                               )?.pending || 0}
                           </td>
                           <td className="border border-gray-200 px-4 py-2">
                             {[...user.targetAchieved.scooty.history]
                               .reverse()
                               .find(
-                                (entry) => entry.month === selectedHistoryMonth
+                                (entry) => entry.month === selectedHistoryMonth,
                               )?.extra || 0}
                           </td>
                         </tr>

@@ -31,14 +31,14 @@ const OrdersTable = () => {
       console.log(`Fetching orders with params: ${queryParams}`); // Debug log
 
       const response = await fetch(
-        `https://backend-eashwa.vercel.app/api/orders/my-orders?${queryParams}`,
+        `https://eashwa-backend.vercel.app/api/orders/my-orders?${queryParams}`,
         {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
       const data = await response.json();

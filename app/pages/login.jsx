@@ -25,8 +25,8 @@ const Login = () => {
 
     try {
       const response = await axios.post(
-        "https://backend-eashwa.vercel.app/api/user/login",
-        { userName, password }
+        "https://eashwa-backend.vercel.app/api/user/login",
+        { userName, password },
       );
       if (response.data.ok) {
         const userNameToCheck = "plant@eashwa.com"; // userName to check (case-insensitive)

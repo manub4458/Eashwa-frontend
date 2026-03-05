@@ -16,8 +16,8 @@ const LoginHrPage = () => {
     setError("");
     try {
       const response = await axios.post(
-        "https://backend-eashwa.vercel.app/api/user/login",
-        { userName, password }
+        "https://eashwa-backend.vercel.app/api/user/login",
+        { userName, password },
       );
       console.log("Response login", response);
       if (response.data.ok) {

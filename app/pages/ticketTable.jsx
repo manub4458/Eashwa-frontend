@@ -107,12 +107,12 @@ const TicketTable = ({ isAdmin = false, onRefresh }) => {
       if (filters.month) queryParams.append("month", filters.month);
 
       const response = await fetch(
-        `https://backend-eashwa.vercel.app/api/tickets?${queryParams}`,
+        `https://eashwa-backend.vercel.app/api/tickets?${queryParams}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
       if (response.ok) {
@@ -137,7 +137,7 @@ const TicketTable = ({ isAdmin = false, onRefresh }) => {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `https://backend-eashwa.vercel.app/api/tickets/${ticketId}/status`,
+        `https://eashwa-backend.vercel.app/api/tickets/${ticketId}/status`,
         {
           method: "PATCH",
           headers: {
@@ -145,7 +145,7 @@ const TicketTable = ({ isAdmin = false, onRefresh }) => {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({ status, statusRemark }),
-        }
+        },
       );
 
       if (response.ok) {
@@ -180,7 +180,7 @@ const TicketTable = ({ isAdmin = false, onRefresh }) => {
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(
       2,
-      "0"
+      "0",
     )}`;
   };
 

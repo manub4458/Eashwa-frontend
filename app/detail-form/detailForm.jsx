@@ -89,7 +89,7 @@ const DetailForm = () => {
         formDataUpload.append("file", selectedFile);
 
         const uploadResponse = await fetch(
-          "https://backend-eashwa.vercel.app/api/images/upload-pdf",
+          "https://eashwa-backend.vercel.app/api/images/upload-pdf",
           {
             method: "POST",
             body: formDataUpload,
@@ -131,7 +131,7 @@ const DetailForm = () => {
       if (!token) throw new Error("Please log in to submit the order");
 
       const response = await fetch(
-        "https://backend-eashwa.vercel.app/api/orders/submit",
+        "https://eashwa-backend.vercel.app/api/orders/submit",
         {
           method: "POST",
           headers: {

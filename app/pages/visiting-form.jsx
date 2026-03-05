@@ -86,10 +86,10 @@ const VisitingForm = () => {
     pageNumber = 1,
     pageLimit = 10,
     month = "",
-    year = ""
+    year = "",
   ) => {
     try {
-      let url = `https://backend-eashwa.vercel.app/api/user/get-visitor?page=${pageNumber}&limit=${pageLimit}`;
+      let url = `https://eashwa-backend.vercel.app/api/user/get-visitor?page=${pageNumber}&limit=${pageLimit}`;
       if (month && year) {
         url += `&month=${month}&year=${year}`;
       }
@@ -114,7 +114,7 @@ const VisitingForm = () => {
 
   const fetchExcelVisitors = async (token) => {
     try {
-      let url = `https://backend-eashwa.vercel.app/api/user/get-visitor?page=1&limit=1000`;
+      let url = `https://eashwa-backend.vercel.app/api/user/get-visitor?page=1&limit=1000`;
 
       const response = await axios.get(url, {
         headers: {
@@ -134,12 +134,12 @@ const VisitingForm = () => {
   const fetchLeads = async (token) => {
     try {
       const response = await axios.get(
-        "https://backend-eashwa.vercel.app/api/user/leads",
+        "https://eashwa-backend.vercel.app/api/user/leads",
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
       if (response.status === 200) {
@@ -229,13 +229,13 @@ const VisitingForm = () => {
       } else {
         // API call to add a visitor
         const response = await axios.post(
-          "https://backend-eashwa.vercel.app/api/user/add-visitor",
+          "https://eashwa-backend.vercel.app/api/user/add-visitor",
           newVisit,
           {
             headers: {
               Authorization: `Bearer ${authToken}`,
             },
-          }
+          },
         );
 
         if (response.status === 201 || response.status === 200) {
@@ -283,12 +283,12 @@ const VisitingForm = () => {
   const handleDelete = async (id) => {
     try {
       const response = await axios.delete(
-        `https://backend-eashwa.vercel.app/api/user/delete-visitor/${id}`,
+        `https://eashwa-backend.vercel.app/api/user/delete-visitor/${id}`,
         {
           headers: {
             Authorization: `Bearer ${authToken}`,
           },
-        }
+        },
       );
 
       if (response.status === 200) {
@@ -330,17 +330,16 @@ const VisitingForm = () => {
   // }
 
   function formatDateTime(isoString) {
-  const date = new Date(isoString);
-  return date.toLocaleString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: "UTC",   // 👈 keep it in UTC
-  });
-}
-
+    const date = new Date(isoString);
+    return date.toLocaleString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: "UTC", // 👈 keep it in UTC
+    });
+  }
 
   return (
     <div className="container mx-auto p-4">
