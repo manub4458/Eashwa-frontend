@@ -15,6 +15,7 @@ const DailyLeadsForm = ({ userId }) => {
     nextMonthConnect: 0,
     dealerType: "",
     dealerCount: 0,
+    callNotPick: 0,
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
@@ -40,7 +41,9 @@ const DailyLeadsForm = ({ userId }) => {
           ? value
           : name === "dealerType"
             ? value
-            : Number(value) || 0,
+            : name === "callNotPick"
+              ? Number(value) || 0
+              : Number(value) || 0,
     }));
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: "" }));
@@ -55,6 +58,8 @@ const DailyLeadsForm = ({ userId }) => {
       newErrors.numberOfLeads = "Number of leads cannot be negative";
     if (formData.dealerType && formData.dealerCount < 0)
       newErrors.dealerCount = "Dealer count cannot be negative";
+    if (formData.callNotPick < 0)
+      newErrors.callNotPick = "Call not pick cannot be negative";
 
     console.log("Validation Errors:", newErrors);
 
@@ -270,6 +275,31 @@ const DailyLeadsForm = ({ userId }) => {
               {errors.dealerCount && (
                 <p className="mt-1 text-sm text-red-600">
                   {errors.dealerCount}
+                </p>
+              )}
+            </div>
+
+            {/* Call Not Pick (Optional) */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Call Not Pick (Optional)
+              </label>
+              <input
+                type="number"
+                name="callNotPick"
+                value={formData.callNotPick}
+                onChange={handleInputChange}
+                min="0"
+                className={`w-full p-4 border-2 rounded-xl focus:ring-4 focus:ring-orange-200 focus:border-orange-500 transition-all duration-200 ${
+                  errors.callNotPick
+                    ? "border-red-300 bg-red-50"
+                    : "border-gray-200 hover:border-gray-300"
+                }`}
+                placeholder="Enter call not pick"
+              />
+              {errors.callNotPick && (
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.callNotPick}
                 </p>
               )}
             </div>

@@ -103,6 +103,7 @@ const DailyLeadsDashboard = () => {
   const nextMonthConnect = monthlySummary.totalNextMonthConnect || 0;
   const newDealersThisMonth = monthlySummary.totalNewDealers || 0;
   const conversionsFromOldMonth = monthlySummary.totalOldDealers || 0;
+  const totalCallNotPick = monthlySummary.totalCallNotPick || 0;
 
   if (loading) {
     return (
@@ -190,50 +191,57 @@ const DailyLeadsDashboard = () => {
         </div>
 
         {/* Monthly Summary Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-          <div className="bg-white rounded-2xl p-6 shadow border border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-800 mb-1">
-              Total Leads
-            </h3>
-            <p className="text-4xl font-bold text-orange-600">{totalLeads}</p>
-            <p className="text-sm text-gray-500 mt-2">
-              Fake / Not Interested: {notInterestedFake}
-            </p>
-          </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-10">
+  <div className="bg-white rounded-2xl p-6 shadow border border-gray-200">
+    <h3 className="text-lg font-semibold text-gray-800 mb-1">
+      Total Leads
+    </h3>
+    <p className="text-4xl font-bold text-orange-600">{totalLeads}</p>
+    <p className="text-sm text-gray-500 mt-2">
+      Fake / Not Interested: {notInterestedFake}
+    </p>
+  </div>
 
-          <div className="bg-white rounded-2xl p-6 shadow border border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-800 mb-1">
-              Interested Leads
-            </h3>
-            <p className="text-4xl font-bold text-green-600">
-              {interestedLeads}
-            </p>
-            <p className="text-sm text-gray-500 mt-2">
-              New Dealers: {newDealersThisMonth}
-            </p>
-          </div>
+  <div className="bg-white rounded-2xl p-6 shadow border border-gray-200">
+    <h3 className="text-lg font-semibold text-gray-800 mb-1">
+      Interested Leads
+    </h3>
+    <p className="text-4xl font-bold text-green-600">
+      {interestedLeads}
+    </p>
+    <p className="text-sm text-gray-500 mt-2">
+      New Dealers: {newDealersThisMonth}
+    </p>
+  </div>
 
-          <div className="bg-white rounded-2xl p-6 shadow border border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-800 mb-1">
-              Lead Conversions
-            </h3>
-            <p className="text-3xl font-bold text-blue-600">
-              {newDealersThisMonth} new + {conversionsFromOldMonth} old
-            </p>
-            <p className="text-sm text-gray-500 mt-2">
-              This month: {newDealersThisMonth} | Old: {conversionsFromOldMonth}
-            </p>
-          </div>
+  <div className="bg-white rounded-2xl p-6 shadow border border-gray-200">
+    <h3 className="text-lg font-semibold text-gray-800 mb-1">
+      Lead Conversions
+    </h3>
+    <p className="text-3xl font-bold text-blue-600">
+      {newDealersThisMonth} new + {conversionsFromOldMonth} old
+    </p>
+    <p className="text-sm text-gray-500 mt-2">
+      This month: {newDealersThisMonth} | Old: {conversionsFromOldMonth}
+    </p>
+  </div>
 
-          <div className="bg-white rounded-2xl p-6 shadow border border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-800 mb-1">
-              Next Month Connect
-            </h3>
-            <p className="text-4xl font-bold text-yellow-600">
-              {nextMonthConnect}
-            </p>
-          </div>
-        </div>
+  <div className="bg-white rounded-2xl p-6 shadow border border-gray-200">
+    <h3 className="text-lg font-semibold text-gray-800 mb-1">
+      Next Month Connect
+    </h3>
+    <p className="text-4xl font-bold text-yellow-600">
+      {nextMonthConnect}
+    </p>
+  </div>
+
+  <div className="bg-white rounded-2xl p-6 shadow border border-gray-200">
+    <h3 className="text-lg font-semibold text-gray-800 mb-1">
+      Total Call Not Pick
+    </h3>
+    <p className="text-4xl font-bold text-red-600">{totalCallNotPick}</p>
+  </div>
+</div>
 
         {/* Daily History Table */}
         <div className="bg-white rounded-2xl shadow border border-gray-200 overflow-hidden">
@@ -266,6 +274,9 @@ const DailyLeadsDashboard = () => {
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Dealers
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Call Not Pick
                   </th>
                 </tr>
               </thead>
@@ -303,6 +314,9 @@ const DailyLeadsDashboard = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {lead.newDealers + lead.oldDealers}
                       </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {lead.callNotPick}
+                      </td>
                     </tr>
                   ))
                 )}
@@ -325,8 +339,10 @@ const DailyLeadsDashboard = () => {
                       {nextMonthConnect}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-orange-800">
-                      Total Dealers:{" "}
                       {newDealersThisMonth + conversionsFromOldMonth}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-orange-800">
+                      {totalCallNotPick}
                     </td>
                   </tr>
                 )}

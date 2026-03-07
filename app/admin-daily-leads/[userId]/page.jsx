@@ -86,6 +86,7 @@ const AdminDailyLeadsDashboard = () => {
         "Not Interested / Fake": lead.notInterestedFake,
         "Next Month Connect": lead.nextMonthConnect,
         Dealers: lead.newDealers + lead.oldDealers,
+        "Call Not Pick": lead.callNotPick,
       }));
 
       // Add Month Total row at the bottom
@@ -98,6 +99,7 @@ const AdminDailyLeadsDashboard = () => {
           "Not Interested / Fake": notInterestedFake,
           "Next Month Connect": nextMonthConnect,
           Dealers: newDealersThisMonth + conversionsFromOldMonth,
+          "Call Not Pick": totalCallNotPick,
         });
       }
 
@@ -140,6 +142,7 @@ const AdminDailyLeadsDashboard = () => {
   const notInterestedFake = monthlySummary.totalNotInterestedFake || 0;
   const nextMonthConnect = monthlySummary.totalNextMonthConnect || 0;
   const newDealersThisMonth = monthlySummary.totalNewDealers || 0;
+  const totalCallNotPick = monthlySummary.totalCallNotPick || 0;
   const conversionsFromOldMonth = monthlySummary.totalOldDealers || 0;
 
   if (loading) {
@@ -208,7 +211,7 @@ const AdminDailyLeadsDashboard = () => {
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-10">
           <div className="bg-white rounded-2xl p-6 shadow border border-gray-200">
             <h3 className="text-lg font-semibold text-gray-800 mb-1">
               Total Leads
@@ -251,6 +254,13 @@ const AdminDailyLeadsDashboard = () => {
               {nextMonthConnect}
             </p>
           </div>
+
+          <div className="bg-white rounded-2xl p-6 shadow border border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-800 mb-1">
+              Total Call Not Pick
+            </h3>
+            <p className="text-4xl font-bold text-red-600">{totalCallNotPick}</p>
+          </div>
         </div>
 
         {/* Table */}
@@ -283,6 +293,9 @@ const AdminDailyLeadsDashboard = () => {
                     Dealers
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">
+                    Call Not Pick
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">
                     Actions
                   </th>
                 </tr>
@@ -305,6 +318,9 @@ const AdminDailyLeadsDashboard = () => {
                     </td>
                     <td className="px-6 py-4 text-sm">
                       {lead.newDealers + lead.oldDealers}
+                    </td>
+                    <td className="px-6 py-4 text-sm">
+                      {lead.callNotPick}
                     </td>
                     <td className="px-6 py-4 text-sm flex gap-2">
                       <button
@@ -341,10 +357,11 @@ const AdminDailyLeadsDashboard = () => {
                       {nextMonthConnect}
                     </td>
                     <td className="px-6 py-4 text-sm text-orange-800">
-                      Total Dealers:{" "}
                       {newDealersThisMonth + conversionsFromOldMonth}
                     </td>
-                    <td></td>
+                    <td className="px-6 py-4 text-sm text-orange-800">
+                      {totalCallNotPick}
+                    </td>
                   </tr>
                 )}
               </tbody>

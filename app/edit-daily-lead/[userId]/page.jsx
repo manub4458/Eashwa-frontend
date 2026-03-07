@@ -27,6 +27,7 @@ const DailyLeadsForm = () => {
     nextMonthConnect: 0,
     dealerType: "",
     dealerCount: 0,
+    callNotPick: 0,
   });
   const [loading, setLoading] = useState(!!leadId);
   const [errors, setErrors] = useState({});
@@ -71,6 +72,7 @@ const DailyLeadsForm = () => {
         nextMonthConnect: lead.nextMonthConnect || 0,
         dealerType,
         dealerCount,
+        callNotPick: lead.callNotPick || 0,
       });
     } catch (error) {
       toast.error(error.message || "Error loading data");
@@ -301,6 +303,31 @@ const DailyLeadsForm = () => {
               {errors.dealerCount && (
                 <p className="mt-1 text-sm text-red-600">
                   {errors.dealerCount}
+                </p>
+              )}
+            </div>
+
+            {/* Call Not Pick */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Call Not Pick (Optional)
+              </label>
+              <input
+                type="number"
+                name="callNotPick"
+                value={formData.callNotPick}
+                onChange={handleInputChange}
+                min="0"
+                className={`w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-orange-200 focus:border-orange-500 hover:border-gray-300 transition-all duration-200 ${
+                  errors.callNotPick
+                    ? "border-red-300 bg-red-50"
+                    : "border-gray-200 hover:border-gray-300"
+                }`}
+                placeholder="Enter call not pick count"
+              />
+              {errors.callNotPick && (
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.callNotPick}
                 </p>
               )}
             </div>
