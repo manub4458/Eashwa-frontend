@@ -144,6 +144,17 @@ const HrDashboard = () => {
         </section>
       )}
       <div className="flex items-center gap-5 w-full mx-auto justify-center">
+        <Link href="/detail-form">
+          <button
+            class="px-6 py-3 mt-6 rounded-2xl bg-gradient-to-r from-orange-400 to-orange-600 
+                 text-white font-semibold tracking-wide shadow-lg 
+                 hover:shadow-xl hover:scale-105 active:scale-95 
+                 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-orange-300"
+            onclick="window.location.href='#form'"
+          >
+            Place New Order
+          </button>
+        </Link>
         <Link href="/admin-table">
           <div className="flex justify-center my-4">
             <button
@@ -211,7 +222,7 @@ const HrDashboard = () => {
             employees.map((employee) => (
               <div
                 key={employee._id}
-                // href={`/employee-detail/${employee._id}`}
+              // href={`/employee-detail/${employee._id}`}
               >
                 <div className="bg-white rounded-xl shadow-lg border-t-4 border-[#d86331] p-6 flex flex-col items-center transition-transform transform hover:scale-105">
                   <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-blue-400 shadow-lg mb-4">
