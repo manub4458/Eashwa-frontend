@@ -20,10 +20,17 @@ const AdminDailyLeadsDashboard = () => {
   const [editLeadId, setEditLeadId] = useState(null);
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth() + 1);
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+  const [page, setPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const LIMIT = 10;
 
+  useEffect(() => {
+    setPage(1);
+  }, [currentMonth, currentYear]);
+
+  // 3. Update fetchData to pass page & limit, and store total
   const fetchData = async () => {
     if (!userId) return toast.error("Invalid user ID");
-
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
@@ -33,7 +40,7 @@ const AdminDailyLeadsDashboard = () => {
         return;
       }
 
-      const url = `https://eashwa-backend.vercel.app/api/daily-leads/user/${userId}?month=${currentMonth}&year=${currentYear}`;
+      const url = `https://eashwa-backend.vercel.app/api/daily-leads/user/${userId}?month=${currentMonth}&year=${currentYear}&page=${page}&limit=${LIMIT}`;
       const response = await fetch(url, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -42,6 +49,7 @@ const AdminDailyLeadsDashboard = () => {
 
       const result = await response.json();
       setData(result);
+      setTotalCount(result.total || 0); // store total
     } catch (error) {
       toast.error(error.message || "Error fetching data");
     } finally {
@@ -49,9 +57,10 @@ const AdminDailyLeadsDashboard = () => {
     }
   };
 
+  // 4. Add page to the useEffect dependency array
   useEffect(() => {
     fetchData();
-  }, [userId, currentMonth, currentYear]);
+  }, [userId, currentMonth, currentYear, page]);
 
   const handleDelete = async (leadId) => {
     if (!confirm("Are you sure you want to delete this entry?")) return;
@@ -367,6 +376,33 @@ const AdminDailyLeadsDashboard = () => {
               </tbody>
             </table>
           </div>
+          {/* Pagination Controls */}
+          {totalCount > LIMIT && (
+            <div className="px-6 py-4 border-t flex items-center justify-between">
+              <p className="text-sm text-gray-600">
+                Showing {(page - 1) * LIMIT + 1}–{Math.min(page * LIMIT, totalCount)} of {totalCount} entries
+              </p>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setPage((p) => Math.max(p - 1, 1))}
+                  disabled={page === 1}
+                  className="px-4 py-2 border rounded-lg text-sm disabled:opacity-40 hover:bg-gray-50"
+                >
+                  ← Prev
+                </button>
+                <span className="text-sm text-gray-700">
+                  Page {page} of {Math.ceil(totalCount / LIMIT)}
+                </span>
+                <button
+                  onClick={() => setPage((p) => Math.min(p + 1, Math.ceil(totalCount / LIMIT)))}
+                  disabled={page >= Math.ceil(totalCount / LIMIT)}
+                  className="px-4 py-2 border rounded-lg text-sm disabled:opacity-40 hover:bg-gray-50"
+                >
+                  Next →
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
