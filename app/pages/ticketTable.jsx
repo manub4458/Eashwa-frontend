@@ -87,6 +87,14 @@ const TicketTable = ({ isAdmin = false, onRefresh }) => {
     status: "",
     month: "",
   });
+  const [pagination, setPagination] = useState({
+    total: 0,
+    page: 1,
+    limit: 10,
+    totalPages: 1,
+    hasNextPage: false,
+    hasPrevPage: false,
+  });
   const [showStatusDialog, setShowStatusDialog] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
@@ -97,7 +105,7 @@ const TicketTable = ({ isAdmin = false, onRefresh }) => {
     "Out of Warranty": "bg-red-50 text-red-700 border-red-200",
   };
 
-  const fetchTickets = async () => {
+  const fetchTickets = async (page = pagination.page) => {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
@@ -105,6 +113,8 @@ const TicketTable = ({ isAdmin = false, onRefresh }) => {
 
       if (filters.status) queryParams.append("status", filters.status);
       if (filters.month) queryParams.append("month", filters.month);
+      queryParams.append("page", page);
+      queryParams.append("limit", pagination.limit);
 
       const response = await fetch(
         `https://eashwa-backend.vercel.app/api/tickets?${queryParams}`,
@@ -117,7 +127,8 @@ const TicketTable = ({ isAdmin = false, onRefresh }) => {
 
       if (response.ok) {
         const data = await response.json();
-        setTickets(data);
+        setTickets(data.tickets);
+        setPagination(data.pagination);
       } else {
         throw new Error("Failed to fetch tickets");
       }
@@ -129,7 +140,8 @@ const TicketTable = ({ isAdmin = false, onRefresh }) => {
   };
 
   useEffect(() => {
-    fetchTickets();
+    setPagination((prev) => ({ ...prev, page: 1 }));
+    fetchTickets(1);
   }, [filters]);
 
   const handleStatusUpdate = async (ticketId, status, statusRemark = "") => {
@@ -526,6 +538,76 @@ const TicketTable = ({ isAdmin = false, onRefresh }) => {
           </div>
         )}
       </div>
+
+      {/* Pagination */}
+      {!loading && tickets.length > 0 && (
+        <div className="bg-white px-6 py-4 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+          <p className="text-sm text-gray-600">
+            Showing{" "}
+            <span className="font-medium text-gray-900">
+              {(pagination.page - 1) * pagination.limit + 1}
+            </span>{" "}
+            to{" "}
+            <span className="font-medium text-gray-900">
+              {Math.min(pagination.page * pagination.limit, pagination.total)}
+            </span>{" "}
+            of{" "}
+            <span className="font-medium text-gray-900">{pagination.total}</span>{" "}
+            tickets
+          </p>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => fetchTickets(pagination.page - 1)}
+              disabled={!pagination.hasPrevPage || loading}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              Previous
+            </button>
+            <div className="flex items-center gap-1">
+              {Array.from({ length: pagination.totalPages }, (_, i) => i + 1)
+                .filter(
+                  (p) =>
+                    p === 1 ||
+                    p === pagination.totalPages ||
+                    Math.abs(p - pagination.page) <= 1,
+                )
+                .reduce((acc, p, idx, arr) => {
+                  if (idx > 0 && p - arr[idx - 1] > 1) {
+                    acc.push("...");
+                  }
+                  acc.push(p);
+                  return acc;
+                }, [])
+                .map((item, idx) =>
+                  item === "..." ? (
+                    <span key={`ellipsis-${idx}`} className="px-2 text-gray-400">
+                      ...
+                    </span>
+                  ) : (
+                    <button
+                      key={item}
+                      onClick={() => fetchTickets(item)}
+                      className={`w-9 h-9 text-sm font-medium rounded-xl transition-colors ${
+                        item === pagination.page
+                          ? "bg-orange-500 text-white"
+                          : "text-gray-700 hover:bg-gray-100"
+                      }`}
+                    >
+                      {item}
+                    </button>
+                  ),
+                )}
+            </div>
+            <button
+              onClick={() => fetchTickets(pagination.page + 1)}
+              disabled={!pagination.hasNextPage || loading}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Status Dialog */}
       <StatusDialog
