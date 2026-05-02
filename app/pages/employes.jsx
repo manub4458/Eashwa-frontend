@@ -34,7 +34,7 @@ const Employe = () => {
 
       if (
         user.email === "shankey752@gmail.com" ||
-        user.employeeId === "EASAS01"
+        user.employeeId === "EASAS02"
       ) {
         setIsServiceEmployee(true);
       }

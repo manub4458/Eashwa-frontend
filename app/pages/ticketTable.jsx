@@ -441,12 +441,12 @@ const TicketTable = ({ isAdmin = false, onRefresh }) => {
                             <button onClick={() => handleActionClick(ticket, "Complete")} disabled={actionLoading} className="px-3 py-1.5 bg-emerald-500 text-white text-xs rounded-lg hover:bg-emerald-600 transition-colors disabled:opacity-50 font-medium shadow-sm">
                               Complete
                             </button>
-                            <button onClick={() => handleActionClick(ticket, "Pending")} disabled={actionLoading} className="px-3 py-1.5 bg-amber-500 text-white text-xs rounded-lg hover:bg-amber-600 transition-colors disabled:opacity-50 font-medium shadow-sm">
+                            {/* <button onClick={() => handleActionClick(ticket, "Pending")} disabled={actionLoading} className="px-3 py-1.5 bg-amber-500 text-white text-xs rounded-lg hover:bg-amber-600 transition-colors disabled:opacity-50 font-medium shadow-sm">
                               Pending
                             </button>
                             <button onClick={() => handleActionClick(ticket, "Out of Warranty")} disabled={actionLoading} className="px-3 py-1.5 bg-red-500 text-white text-xs rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50 font-medium shadow-sm whitespace-nowrap">
                               Out of Warranty
-                            </button>
+                            </button> */}
                           </div>
                         ) : <span className="text-gray-300">—</span>}
                       </td>
