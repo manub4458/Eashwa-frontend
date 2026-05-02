@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import * as XLSX from "xlsx";
 
 /* ─── Pending reason dialog ─── */
 const PendingDialog = ({ isOpen, onClose, onSubmit, loading }) => {
@@ -172,6 +173,7 @@ const TicketTable = ({ isAdmin = false, onRefresh }) => {
   const [showCompleteDialog, setShowCompleteDialog] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   const warrantyColors = {
     "In Warranty": "bg-emerald-50 text-emerald-700 border-emerald-200",
@@ -268,6 +270,92 @@ const TicketTable = ({ isAdmin = false, onRefresh }) => {
   const formatDate = (dateString) =>
     dateString ? new Date(dateString).toLocaleDateString("en-IN") : "—";
 
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const token = localStorage.getItem("token");
+      const hasMonth = !!filters.month;
+      let query = "";
+      let label = "All Time";
+      if (hasMonth) {
+        // filters.month is "YYYY-MM"
+        const [year, month] = filters.month.split("-");
+        query = `?month=${parseInt(month)}&year=${year}`;
+        label = new Date(`${filters.month}-01`).toLocaleString("en-IN", { month: "long", year: "numeric" });
+      }
+
+      const response = await fetch(
+        `https://eashwa-backend.vercel.app/api/tickets/export-by-month${query}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (!response.ok) throw new Error("Failed to fetch export data");
+      const res = await response.json();
+
+      if (!res.success || !res.data?.length) {
+        alert(`No tickets found for ${label}.`);
+        return;
+      }
+
+      const wsData = [
+        ["Ticket Report", "", "", "", "", "", "", "", ""],
+        [`Period: ${label}`, "", "", `Total Tickets: ${res.count}`, "", "", "", "", ""],
+        [],
+        [
+          "Ticket ID", "Dealer Name", "Location",
+          "Agent Name", "Type", "Complaint Regarding",
+          "Battery Code", "Battery S/N", "Charger Code", "Charger S/N",
+          "Motor Code", "Motor S/N", "Controller Code", "Controller S/N",
+          "Purchase Date", "Complaint Date", "Problem Description",
+          "Warranty Status", "Status", "Status Remark", "Submitted By",
+        ],
+        ...res.data.map((t) => [
+          t.ticketId,
+          t.dealerName,
+          t.location,
+          t.agentName,
+          t.type ?? "",
+          (t.complaintRegarding ?? []).join(", "),
+          t.battery?.code ?? "",
+          t.battery?.serialNumber ?? "",
+          t.charger?.code ?? "",
+          t.charger?.serialNumber ?? "",
+          t.motor?.code ?? "",
+          t.motor?.serialNumber ?? "",
+          t.controller?.code ?? "",
+          t.controller?.serialNumber ?? "",
+          t.purchaseDate ? new Date(t.purchaseDate).toLocaleDateString("en-IN") : "",
+          t.complainDate ? new Date(t.complainDate).toLocaleDateString("en-IN") : "",
+          t.problemDescription ?? "",
+          t.warrantyStatus ?? "",
+          t.status,
+          t.statusRemark ?? "",
+          t.submittedBy?.name ?? "",
+        ]),
+      ];
+
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.aoa_to_sheet(wsData);
+      ws["!cols"] = [
+        { wch: 10 }, { wch: 22 }, { wch: 25 },
+        { wch: 20 }, { wch: 14 }, { wch: 30 },
+        { wch: 14 }, { wch: 18 }, { wch: 14 }, { wch: 18 },
+        { wch: 14 }, { wch: 18 }, { wch: 14 }, { wch: 18 },
+        { wch: 14 }, { wch: 14 }, { wch: 30 },
+        { wch: 14 }, { wch: 14 }, { wch: 30 }, { wch: 20 },
+      ];
+      XLSX.utils.book_append_sheet(wb, ws, "Tickets");
+
+      const fileName = `Tickets_${hasMonth ? filters.month : "All"}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+      XLSX.writeFile(wb, fileName);
+    } catch (err) {
+      console.error("Export error:", err);
+      alert("Export failed: " + err.message);
+    } finally {
+      setExporting(false);
+    }
+  };
+
   return (
     <div className="space-y-8 p-6 bg-gray-50 min-h-screen">
       {/* Filters */}
@@ -280,7 +368,7 @@ const TicketTable = ({ isAdmin = false, onRefresh }) => {
           </div>
           <h3 className="text-lg font-semibold text-gray-900">Filters</h3>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div className="space-y-2">
             <label className="block text-sm font-medium text-gray-700">Filter by Status</label>
             <select
@@ -309,6 +397,27 @@ const TicketTable = ({ isAdmin = false, onRefresh }) => {
               className="w-full px-4 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors font-medium"
             >
               Clear Filters
+            </button>
+          </div>
+          <div className="flex items-end">
+            <button
+              onClick={handleExport}
+              disabled={exporting}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white rounded-xl font-medium transition-all shadow-sm"
+            >
+              {exporting ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Exporting...
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                  Export Excel
+                </>
+              )}
             </button>
           </div>
         </div>

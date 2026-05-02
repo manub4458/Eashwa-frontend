@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import { MdDelete } from "react-icons/md";
 import { PiPencilSimpleLineFill } from "react-icons/pi";
 import { toast } from "react-toastify";
+import { FiDownload } from "react-icons/fi";
+import * as XLSX from "xlsx";
 
 const AdminOrdersTable = () => {
   const [orders, setOrders] = useState([]);
@@ -18,6 +20,7 @@ const AdminOrdersTable = () => {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isDispatchHead, setIsDispatchHead] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   // Row-specific states
   const [selectedOrderId, setSelectedOrderId] = useState(null);
@@ -461,6 +464,99 @@ const AdminOrdersTable = () => {
     }
   };
 
+  const handleExportToExcel = async () => {
+    setExporting(true);
+    try {
+      const token = localStorage.getItem("token");
+      const hasMonth = !!month;
+      let query = "";
+      let label = "All Time";
+
+      if (hasMonth) {
+        // month state is "YYYY-MM"
+        const [year, mon] = month.split("-");
+        query = `?month=${parseInt(mon)}&year=${year}`;
+        label = new Date(`${month}-01`).toLocaleString("en-IN", { month: "long", year: "numeric" });
+      }
+
+      const response = await fetch(
+        `https://eashwa-backend.vercel.app/api/orders/export-by-month${query}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (!response.ok) throw new Error("Failed to fetch export data");
+      const res = await response.json();
+
+      if (!res.success || !res.data?.length) {
+        toast.warn(`No orders found for ${label}.`);
+        return;
+      }
+
+      const humanize = (s) =>
+        s ? s.split("_").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ") : "-";
+
+      const wsData = [
+        ["Orders Report", "", "", "", "", "", "", "", ""],
+        [`Period: ${label}`, "", "", `Total Orders: ${res.count}`, "", "", "", "", ""],
+        [],
+        [
+          "Sr. No.", "PI Number", "Party Name", "Showroom", "Location",
+          "Quantity", "Total Amount", "Amount Received", "Account Remark",
+          "Agent", "Agent Phone", "Dealer Phone",
+          "Model", "Color Variants", "Battery Type",
+          "Order Date", "Deadline", "Status", "Pending / Cancel Reason",
+          "Transporter", "Driver No.", "Vehicle No.", "Submitted By",
+        ],
+        ...res.data.map((order, index) => [
+          index + 1,
+          order.piNumber || "-",
+          order.partyName || "-",
+          order.showroomName || "-",
+          order.location || "-",
+          order.quantity ?? "-",
+          order.totalAmount != null ? order.totalAmount.toFixed(2) : "0.00",
+          order.amountReceived != null ? order.amountReceived.toFixed(2) : "0.00",
+          order.remark || "-",
+          order.agentName || "-",
+          order.agentPhone || "-",
+          order.dealerPhone || "-",
+          order.orderModel || "-",
+          order.colorVariants || "-",
+          order.batteryType || "-",
+          order.createdAt ? new Date(order.createdAt).toLocaleDateString("en-IN") : "-",
+          order.deadline ? new Date(order.deadline).toLocaleDateString("en-IN") : "N/A",
+          humanize(order.status),
+          order.pendingReason || order.cancelReason || "-",
+          order.transporterName || "-",
+          order.driverNumber || "-",
+          order.vehicleNumber || "-",
+          order.submittedBy?.name || "-",
+        ]),
+      ];
+
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.aoa_to_sheet(wsData);
+      ws["!cols"] = [
+        { wch: 8 }, { wch: 16 }, { wch: 22 }, { wch: 22 }, { wch: 18 },
+        { wch: 10 }, { wch: 14 }, { wch: 16 }, { wch: 24 },
+        { wch: 18 }, { wch: 14 }, { wch: 14 },
+        { wch: 16 }, { wch: 16 }, { wch: 14 },
+        { wch: 14 }, { wch: 14 }, { wch: 20 }, { wch: 24 },
+        { wch: 18 }, { wch: 14 }, { wch: 14 }, { wch: 20 },
+      ];
+      XLSX.utils.book_append_sheet(wb, ws, "Orders");
+
+      const fileName = `Orders_${hasMonth ? month : "All"}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+      XLSX.writeFile(wb, fileName);
+      toast.success("✅ Excel file downloaded successfully!");
+    } catch (error) {
+      console.error("Export error:", error);
+      toast.error("Failed to export Excel. Please try again.");
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const getStatusGradient = (status) => {
     switch (status?.toLowerCase()) {
       case "pending":
@@ -559,6 +655,26 @@ const AdminOrdersTable = () => {
                 <option value="delivered_first">Delivered First</option>
               </select>
             </div>
+            <button
+              onClick={handleExportToExcel}
+              disabled={exporting}
+              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white px-5 py-2 rounded-lg font-medium transition-all shadow-sm whitespace-nowrap"
+            >
+              {exporting ? (
+                <>
+                  <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                  </svg>
+                  Exporting...
+                </>
+              ) : (
+                <>
+                  <FiDownload size={18} />
+                  Export Excel
+                </>
+              )}
+            </button>
           </div>
         </div>
 
