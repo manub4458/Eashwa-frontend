@@ -33,8 +33,8 @@ const Employe = () => {
       const user = JSON.parse(rawData);
 
       if (
-        user.email === "shankey752@gmail.com" ||
-        user.employeeId === "EASAS02"
+        user.employeeId === "EASAS099" 
+        // user.post === "Service Executive"
       ) {
         setIsServiceEmployee(true);
       }

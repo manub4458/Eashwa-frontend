@@ -144,6 +144,17 @@ const HrDashboard = () => {
         </section>
       )}
       <div className="flex items-center gap-5 w-full mx-auto justify-center">
+        <Link href="/raise-ticket">
+          <button
+            class="px-6 py-3 mt-6 rounded-2xl bg-gradient-to-r from-orange-400 to-orange-600 
+         text-white font-semibold tracking-wide shadow-lg 
+         hover:shadow-xl hover:scale-105 active:scale-95 
+         transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-orange-300"
+            onclick="window.location.href='#form'"
+          >
+            Raise a ticket
+          </button>
+        </Link>
         <Link href="/detail-form">
           <button
             class="px-6 py-3 mt-6 rounded-2xl bg-gradient-to-r from-orange-400 to-orange-600 
