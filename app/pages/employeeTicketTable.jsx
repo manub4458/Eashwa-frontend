@@ -322,9 +322,7 @@ const MyTicketTable = () => {
                           {ticket.problemDescription && (
                             <div className="bg-gray-50 border border-gray-200 p-2.5 rounded-lg text-xs text-gray-900">
                               <div className="font-semibold text-gray-700 mb-1">Problem:</div>
-                              {ticket.problemDescription.length > 80
-                                ? `${ticket.problemDescription.substring(0, 80)}...`
-                                : ticket.problemDescription}
+                              {ticket.problemDescription}
                             </div>
                           )}
                           {!ticket.statusRemark && !ticket.problemDescription && (

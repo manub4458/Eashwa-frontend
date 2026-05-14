@@ -148,6 +148,229 @@ const CompleteDialog = ({ isOpen, onClose, onSubmit, loading }) => {
   );
 };
 
+/* ─── Edit ticket dialog (admin only) ─── */
+const COMPLAINT_OPTIONS = ["Battery", "Charger", "Motor", "Controller", "Other"];
+const STATUS_OPTIONS = ["Pending", "Complete", "Out of Warranty"];
+const WARRANTY_OPTIONS = ["", "In Warranty", "Out of Warranty"];
+const TYPE_OPTIONS = ["Replacement", "Short", "Bill"];
+
+const ComponentFields = ({ label, value, onChange }) => (
+  <div className="space-y-2">
+    <p className="text-sm font-medium text-gray-700">{label}</p>
+    <div className="grid grid-cols-2 gap-2">
+      <input
+        type="text"
+        placeholder="Code"
+        value={value.code}
+        onChange={(e) => onChange({ ...value, code: e.target.value })}
+        className="p-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-orange-400"
+      />
+      <input
+        type="text"
+        placeholder="Serial Number"
+        value={value.serialNumber}
+        onChange={(e) => onChange({ ...value, serialNumber: e.target.value })}
+        className="p-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-orange-400"
+      />
+    </div>
+  </div>
+);
+
+const EditTicketDialog = ({ isOpen, ticket, onClose, onSubmit, loading }) => {
+  const emptyComponent = { code: "", serialNumber: "" };
+  const [form, setForm] = useState({
+    dealerName: "", location: "", agentName: "", complaintRegarding: [],
+    type: "", problemDescription: "", purchaseDate: "", complainDate: "",
+    status: "Pending", warrantyStatus: "", statusRemark: "",
+    battery: emptyComponent, charger: emptyComponent, motor: emptyComponent, controller: emptyComponent,
+  });
+
+  useEffect(() => {
+    if (!ticket) return;
+    const toDate = (d) => d ? new Date(d).toISOString().split("T")[0] : "";
+    setForm({
+      dealerName: ticket.dealerName || "",
+      location: ticket.location || "",
+      agentName: ticket.agentName || "",
+      complaintRegarding: ticket.complaintRegarding || [],
+      type: ticket.type || "",
+      problemDescription: ticket.problemDescription || "",
+      purchaseDate: toDate(ticket.purchaseDate),
+      complainDate: toDate(ticket.complainDate),
+      status: ticket.status || "Pending",
+      warrantyStatus: ticket.warrantyStatus || "",
+      statusRemark: ticket.statusRemark || "",
+      battery: { code: ticket.battery?.code || "", serialNumber: ticket.battery?.serialNumber || "" },
+      charger: { code: ticket.charger?.code || "", serialNumber: ticket.charger?.serialNumber || "" },
+      motor: { code: ticket.motor?.code || "", serialNumber: ticket.motor?.serialNumber || "" },
+      controller: { code: ticket.controller?.code || "", serialNumber: ticket.controller?.serialNumber || "" },
+    });
+  }, [ticket]);
+
+  if (!isOpen || !ticket) return null;
+
+  const set = (key, val) => setForm((prev) => ({ ...prev, [key]: val }));
+
+  const toggleComplaint = (opt) => {
+    set("complaintRegarding", form.complaintRegarding.includes(opt)
+      ? form.complaintRegarding.filter((c) => c !== opt)
+      : [...form.complaintRegarding, opt]
+    );
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSubmit(form);
+  };
+
+  const field = (label, key, type = "text", required = false) => (
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-1">
+        {label} {required && <span className="text-red-500">*</span>}
+      </label>
+      <input
+        type={type}
+        value={form[key]}
+        onChange={(e) => set(key, e.target.value)}
+        required={required}
+        className="w-full p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-orange-400"
+      />
+    </div>
+  );
+
+  return (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl border border-gray-100 flex flex-col max-h-[90vh]">
+        {/* Header */}
+        <div className="flex items-center gap-3 p-6 border-b border-gray-100">
+          <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+            <svg className="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+          </div>
+          <div>
+            <h3 className="text-xl font-semibold text-gray-900">Edit Ticket</h3>
+            <p className="text-sm text-gray-500">#{ticket.ticketId}</p>
+          </div>
+          <button onClick={onClose} className="ml-auto p-2 hover:bg-gray-100 rounded-lg transition-colors">
+            <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Scrollable body */}
+        <form onSubmit={handleSubmit} className="overflow-y-auto flex-1 p-6 space-y-6">
+          {/* Basic Info */}
+          <div>
+            <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Basic Info</h4>
+            <div className="grid grid-cols-2 gap-4">
+              {field("Dealer Name", "dealerName", "text", true)}
+              {field("Location", "location", "text", true)}
+              {field("Agent Name", "agentName", "text", true)}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Type <span className="text-red-500">*</span></label>
+                <select value={form.type} onChange={(e) => set("type", e.target.value)} required
+                  className="w-full p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-orange-400 bg-white">
+                  <option value="">Select type</option>
+                  {TYPE_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Dates */}
+          <div>
+            <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Dates</h4>
+            <div className="grid grid-cols-2 gap-4">
+              {field("Purchase Date", "purchaseDate", "date", true)}
+              {field("Complaint Date", "complainDate", "date")}
+            </div>
+          </div>
+
+          {/* Complaint Regarding */}
+          <div>
+            <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Complaint Regarding</h4>
+            <div className="flex flex-wrap gap-2">
+              {COMPLAINT_OPTIONS.map((opt) => (
+                <button key={opt} type="button" onClick={() => toggleComplaint(opt)}
+                  className={`px-3 py-1.5 rounded-full text-sm font-medium border-2 transition-all ${
+                    form.complaintRegarding.includes(opt)
+                      ? "border-orange-500 bg-orange-50 text-orange-700"
+                      : "border-gray-200 text-gray-600 hover:border-gray-300"
+                  }`}>
+                  {opt}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Component Details */}
+          <div>
+            <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Component Details</h4>
+            <div className="grid grid-cols-2 gap-4">
+              <ComponentFields label="Battery" value={form.battery} onChange={(v) => set("battery", v)} />
+              <ComponentFields label="Charger" value={form.charger} onChange={(v) => set("charger", v)} />
+              <ComponentFields label="Motor" value={form.motor} onChange={(v) => set("motor", v)} />
+              <ComponentFields label="Controller" value={form.controller} onChange={(v) => set("controller", v)} />
+            </div>
+          </div>
+
+          {/* Problem Description */}
+          <div>
+            <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Description</h4>
+            <textarea value={form.problemDescription} onChange={(e) => set("problemDescription", e.target.value)}
+              rows={3} placeholder="Problem description..."
+              className="w-full p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-orange-400 resize-none" />
+          </div>
+
+          {/* Status */}
+          <div>
+            <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Status</h4>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <select value={form.status} onChange={(e) => set("status", e.target.value)}
+                  className="w-full p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-orange-400 bg-white">
+                  {STATUS_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Warranty Status</label>
+                <select value={form.warrantyStatus} onChange={(e) => set("warrantyStatus", e.target.value)}
+                  className="w-full p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-orange-400 bg-white">
+                  <option value="">Not set</option>
+                  {WARRANTY_OPTIONS.filter(Boolean).map((o) => <option key={o} value={o}>{o}</option>)}
+                </select>
+              </div>
+            </div>
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Status Remark</label>
+              <textarea value={form.statusRemark} onChange={(e) => set("statusRemark", e.target.value)}
+                rows={2} placeholder="Optional remark..."
+                className="w-full p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-orange-400 resize-none" />
+            </div>
+          </div>
+        </form>
+
+        {/* Footer */}
+        <div className="flex justify-end gap-3 p-6 border-t border-gray-100">
+          <button type="button" onClick={onClose}
+            className="px-6 py-2.5 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium">
+            Cancel
+          </button>
+          <button onClick={handleSubmit} disabled={loading}
+            className="px-6 py-2.5 bg-orange-600 text-white rounded-xl hover:bg-orange-700 disabled:opacity-50 transition-all font-medium shadow-lg">
+            {loading
+              ? <div className="flex items-center gap-2"><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Saving...</div>
+              : "Save Changes"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 /* ─── Helper: render component detail cell ─── */
 const ComponentCell = ({ detail }) => {
   if (!detail || (!detail.code && !detail.serialNumber)) {
@@ -171,6 +394,7 @@ const TicketTable = ({ isAdmin = false, onRefresh }) => {
   });
   const [showStatusDialog, setShowStatusDialog] = useState(false);
   const [showCompleteDialog, setShowCompleteDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
@@ -251,6 +475,34 @@ const TicketTable = ({ isAdmin = false, onRefresh }) => {
       setActionLoading(false);
       setShowStatusDialog(false);
       setShowCompleteDialog(false);
+      setSelectedTicket(null);
+    }
+  };
+
+  const handleEditTicket = async (form) => {
+    setActionLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        `https://eashwa-backend.vercel.app/api/tickets/${selectedTicket._id}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify(form),
+        }
+      );
+      if (response.ok) {
+        fetchTickets();
+        if (onRefresh) onRefresh();
+      } else {
+        const err = await response.json();
+        throw new Error(err.message || "Failed to update ticket");
+      }
+    } catch (error) {
+      alert("Error updating ticket: " + error.message);
+    } finally {
+      setActionLoading(false);
+      setShowEditDialog(false);
       setSelectedTicket(null);
     }
   };
@@ -452,8 +704,7 @@ const TicketTable = ({ isAdmin = false, onRefresh }) => {
                     "Ticket ID", "Dealer Name", "Location", "Agent Name",
                     "Complaint", "Battery", "Charger", "Motor", "Controller",
                     "Type", "Problem Description", "Purchase Date", "Complaint Date",
-                    "Status", "Warranty Status", "Status Remark",
-                    ...(!isAdmin ? ["Actions"] : []),
+                    "Status", "Warranty Status", "Status Remark", "Actions",
                   ].map((col) => (
                     <th
                       key={col}
@@ -505,7 +756,7 @@ const TicketTable = ({ isAdmin = false, onRefresh }) => {
                       ) : <span className="text-gray-300">—</span>}
                     </td>
                     <td className="px-4 py-4">
-                      <div className="max-w-[200px] text-sm text-gray-700 truncate" title={ticket.problemDescription}>
+                      <div className="min-w-[200px] max-w-[280px] text-sm text-gray-700 break-words whitespace-normal">
                         {ticket.problemDescription || <span className="text-gray-300">—</span>}
                       </div>
                     </td>
@@ -543,23 +794,23 @@ const TicketTable = ({ isAdmin = false, onRefresh }) => {
                         ) : <span className="text-gray-300">—</span>}
                       </div>
                     </td>
-                    {!isAdmin && (
-                      <td className="px-4 py-4">
-                        {ticket.status === "Pending" ? (
-                          <div className="flex flex-col gap-2">
-                            <button onClick={() => handleActionClick(ticket, "Complete")} disabled={actionLoading} className="px-3 py-1.5 bg-emerald-500 text-white text-xs rounded-lg hover:bg-emerald-600 transition-colors disabled:opacity-50 font-medium shadow-sm">
-                              Complete
-                            </button>
-                            {/* <button onClick={() => handleActionClick(ticket, "Pending")} disabled={actionLoading} className="px-3 py-1.5 bg-amber-500 text-white text-xs rounded-lg hover:bg-amber-600 transition-colors disabled:opacity-50 font-medium shadow-sm">
-                              Pending
-                            </button>
-                            <button onClick={() => handleActionClick(ticket, "Out of Warranty")} disabled={actionLoading} className="px-3 py-1.5 bg-red-500 text-white text-xs rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50 font-medium shadow-sm whitespace-nowrap">
-                              Out of Warranty
-                            </button> */}
-                          </div>
-                        ) : <span className="text-gray-300">—</span>}
-                      </td>
-                    )}
+                    <td className="px-4 py-4">
+                      {isAdmin ? (
+                        <button
+                          onClick={() => { setSelectedTicket(ticket); setShowEditDialog(true); }}
+                          disabled={actionLoading}
+                          className="px-3 py-1.5 bg-orange-500 text-white text-xs rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50 font-medium shadow-sm"
+                        >
+                          Edit
+                        </button>
+                      ) : ticket.status === "Pending" ? (
+                        <div className="flex flex-col gap-2">
+                          <button onClick={() => handleActionClick(ticket, "Complete")} disabled={actionLoading} className="px-3 py-1.5 bg-emerald-500 text-white text-xs rounded-lg hover:bg-emerald-600 transition-colors disabled:opacity-50 font-medium shadow-sm">
+                            Complete
+                          </button>
+                        </div>
+                      ) : <span className="text-gray-300">—</span>}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -630,6 +881,13 @@ const TicketTable = ({ isAdmin = false, onRefresh }) => {
         isOpen={showCompleteDialog}
         onClose={() => { setShowCompleteDialog(false); setSelectedTicket(null); }}
         onSubmit={(warrantyStatus, statusRemark) => handleStatusUpdate(selectedTicket._id, "Complete", warrantyStatus, statusRemark)}
+        loading={actionLoading}
+      />
+      <EditTicketDialog
+        isOpen={showEditDialog}
+        ticket={selectedTicket}
+        onClose={() => { setShowEditDialog(false); setSelectedTicket(null); }}
+        onSubmit={handleEditTicket}
         loading={actionLoading}
       />
     </div>

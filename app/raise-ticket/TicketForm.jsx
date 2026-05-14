@@ -4,13 +4,14 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 
-const COMPLAINT_OPTIONS = ["Battery", "Charger", "Motor", "Controller"];
+const COMPLAINT_OPTIONS = ["Battery", "Charger", "Motor", "Controller", "Other"];
 
 const COMPONENT_KEYS = {
   Battery: "battery",
   Charger: "charger",
   Motor: "motor",
   Controller: "controller",
+  Other: "other",
 };
 
 const TicketForm = () => {
@@ -31,6 +32,7 @@ const TicketForm = () => {
     charger: { code: "", serialNumber: "" },
     motor: { code: "", serialNumber: "" },
     controller: { code: "", serialNumber: "" },
+    other: { code: "", serialNumber: "" },
     type: "",
     problemDescription: "",
     purchaseDate: "",
