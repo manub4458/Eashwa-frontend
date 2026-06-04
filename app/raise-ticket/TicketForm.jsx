@@ -178,10 +178,9 @@ const TicketForm = () => {
   });
 
   const inputCls = (field) =>
-    `w-full p-3.5 border-2 rounded-xl focus:ring-4 focus:ring-orange-200 focus:border-orange-500 transition-all duration-200 ${
-      errors[field]
-        ? "border-red-300 bg-red-50"
-        : "border-gray-200 hover:border-gray-300"
+    `w-full p-3.5 border-2 rounded-xl focus:ring-4 focus:ring-orange-200 focus:border-orange-500 transition-all duration-200 ${errors[field]
+      ? "border-red-300 bg-red-50"
+      : "border-gray-200 hover:border-gray-300"
     }`;
 
   return (
@@ -290,11 +289,10 @@ const TicketForm = () => {
                   return (
                     <label
                       key={option}
-                      className={`flex items-center space-x-3 cursor-pointer px-4 py-3 rounded-xl border-2 transition-all duration-200 ${
-                        checked
+                      className={`flex items-center space-x-3 cursor-pointer px-4 py-3 rounded-xl border-2 transition-all duration-200 ${checked
                           ? "border-orange-400 bg-orange-50"
                           : "border-gray-200 hover:border-orange-300"
-                      }`}
+                        }`}
                     >
                       <input
                         type="checkbox"
@@ -381,6 +379,7 @@ const TicketForm = () => {
                   className={inputCls("type")}
                 >
                   <option value="">Select Type</option>
+                  <option value="Repair">Repair</option>
                   <option value="Replacement">Replacement</option>
                   <option value="Short">Short</option>
                   <option value="Bill">Bill</option>

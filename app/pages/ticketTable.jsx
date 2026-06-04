@@ -84,13 +84,12 @@ const CompleteDialog = ({ isOpen, onClose, onSubmit, loading }) => {
                   key={opt}
                   type="button"
                   onClick={() => { setWarrantyStatus(opt); setStatusRemark(""); }}
-                  className={`py-3 px-4 rounded-xl border-2 text-sm font-semibold transition-all ${
-                    warrantyStatus === opt
-                      ? opt === "In Warranty"
-                        ? "border-emerald-500 bg-emerald-50 text-emerald-700"
-                        : "border-red-500 bg-red-50 text-red-700"
-                      : "border-gray-200 text-gray-600 hover:border-gray-300"
-                  }`}
+                  className={`py-3 px-4 rounded-xl border-2 text-sm font-semibold transition-all ${warrantyStatus === opt
+                    ? opt === "In Warranty"
+                      ? "border-emerald-500 bg-emerald-50 text-emerald-700"
+                      : "border-red-500 bg-red-50 text-red-700"
+                    : "border-gray-200 text-gray-600 hover:border-gray-300"
+                    }`}
                 >
                   {opt}
                 </button>
@@ -152,7 +151,7 @@ const CompleteDialog = ({ isOpen, onClose, onSubmit, loading }) => {
 const COMPLAINT_OPTIONS = ["Battery", "Charger", "Motor", "Controller", "Other"];
 const STATUS_OPTIONS = ["Pending", "Complete", "Out of Warranty"];
 const WARRANTY_OPTIONS = ["", "In Warranty", "Out of Warranty"];
-const TYPE_OPTIONS = ["Replacement", "Short", "Bill"];
+const TYPE_OPTIONS = ["Repair", "Replacement", "Short", "Bill"];
 
 const ComponentFields = ({ label, value, onChange }) => (
   <div className="space-y-2">
@@ -294,11 +293,10 @@ const EditTicketDialog = ({ isOpen, ticket, onClose, onSubmit, loading }) => {
             <div className="flex flex-wrap gap-2">
               {COMPLAINT_OPTIONS.map((opt) => (
                 <button key={opt} type="button" onClick={() => toggleComplaint(opt)}
-                  className={`px-3 py-1.5 rounded-full text-sm font-medium border-2 transition-all ${
-                    form.complaintRegarding.includes(opt)
-                      ? "border-orange-500 bg-orange-50 text-orange-700"
-                      : "border-gray-200 text-gray-600 hover:border-gray-300"
-                  }`}>
+                  className={`px-3 py-1.5 rounded-full text-sm font-medium border-2 transition-all ${form.complaintRegarding.includes(opt)
+                    ? "border-orange-500 bg-orange-50 text-orange-700"
+                    : "border-gray-200 text-gray-600 hover:border-gray-300"
+                    }`}>
                   {opt}
                 </button>
               ))}
@@ -414,6 +412,7 @@ const TicketTable = ({ isAdmin = false, onRefresh }) => {
     Replacement: "bg-blue-50 text-blue-700 border-blue-200",
     Short: "bg-purple-50 text-purple-700 border-purple-200",
     Bill: "bg-teal-50 text-teal-700 border-teal-200",
+    Repair: "bg-orange-50 text-orange-700 border-orange-200",
   };
 
   const fetchTickets = async (page = pagination.page) => {

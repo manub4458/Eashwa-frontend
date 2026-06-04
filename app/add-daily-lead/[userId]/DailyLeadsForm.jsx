@@ -22,9 +22,16 @@ const DailyLeadsForm = ({ userId }) => {
 
   console.log("User ID from URL Params:", userId, formData);
 
-  const onClose = () => {
-    router.push(`/employee-detail/${userId}`);
+  // Send the user back to the daily-leads listing, opened on the month/year
+  // of the entry they were working on (defaults to today's month).
+  const goToListing = () => {
+    const d = new Date(formData.date);
+    const month = d.getMonth() + 1;
+    const year = d.getFullYear();
+    router.push(`/admin-daily-leads/${userId}?month=${month}&year=${year}`);
   };
+
+  const onClose = goToListing;
 
   useEffect(() => {
     if (userId && !formData.user) {
@@ -94,7 +101,7 @@ const DailyLeadsForm = ({ userId }) => {
           autoClose: 3000,
         });
 
-        router.push(`/employee-detail/${userId}`);
+        goToListing();
       } else {
         const errorData = await response.json();
         throw new Error(errorData.message || "Failed to add daily leads");

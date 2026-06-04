@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
 import { FiEdit, FiTrash2, FiDownload } from "react-icons/fi";
 import * as XLSX from "xlsx";
@@ -9,7 +9,13 @@ import * as XLSX from "xlsx";
 const AdminDailyLeadsDashboard = () => {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const userId = params.userId;
+
+  // Open the month/year passed via query params (e.g. after add/edit),
+  // otherwise default to the current month/year for a fresh visit.
+  const monthParam = Number(searchParams.get("month"));
+  const yearParam = Number(searchParams.get("year"));
 
   const [data, setData] = useState({
     dailyLeads: [],
@@ -18,8 +24,12 @@ const AdminDailyLeadsDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editLeadId, setEditLeadId] = useState(null);
-  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth() + 1);
-  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+  const [currentMonth, setCurrentMonth] = useState(
+    monthParam >= 1 && monthParam <= 12 ? monthParam : new Date().getMonth() + 1,
+  );
+  const [currentYear, setCurrentYear] = useState(
+    yearParam > 2000 ? yearParam : new Date().getFullYear(),
+  );
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const LIMIT = 10;
@@ -141,7 +151,11 @@ const AdminDailyLeadsDashboard = () => {
   };
 
   const handleEdit = (leadId) => {
-    router.push(`/edit-daily-lead/${leadId}?userId=${userId}`);
+    // Carry the month/year currently in view so editing returns to the same
+    // listing month, even if the entry's date is changed to another month.
+    router.push(
+      `/edit-daily-lead/${leadId}?userId=${userId}&month=${currentMonth}&year=${currentYear}`,
+    );
   };
 
   // Derived metrics

@@ -34,6 +34,7 @@ const MyTicketTable = () => {
     Replacement: "bg-blue-50 text-blue-700 border-blue-200",
     Short: "bg-purple-50 text-purple-700 border-purple-200",
     Bill: "bg-teal-50 text-teal-700 border-teal-200",
+    Repair: "bg-orange-50 text-orange-700 border-orange-200",
   };
 
   const fetchMyTickets = async () => {
@@ -79,10 +80,10 @@ const MyTicketTable = () => {
   const formatDate = (dateString) =>
     dateString
       ? new Date(dateString).toLocaleDateString("en-IN", {
-          day: "2-digit",
-          month: "short",
-          year: "numeric",
-        })
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      })
       : "—";
 
   return (
@@ -253,11 +254,11 @@ const MyTicketTable = () => {
                           <ComponentRow label="Motor" detail={ticket.motor} />
                           <ComponentRow label="Controller" detail={ticket.controller} />
                           {!ticket.battery?.code && !ticket.battery?.serialNumber &&
-                           !ticket.charger?.code && !ticket.charger?.serialNumber &&
-                           !ticket.motor?.code && !ticket.motor?.serialNumber &&
-                           !ticket.controller?.code && !ticket.controller?.serialNumber && (
-                            <span className="text-gray-300 text-xs">—</span>
-                          )}
+                            !ticket.charger?.code && !ticket.charger?.serialNumber &&
+                            !ticket.motor?.code && !ticket.motor?.serialNumber &&
+                            !ticket.controller?.code && !ticket.controller?.serialNumber && (
+                              <span className="text-gray-300 text-xs">—</span>
+                            )}
                         </div>
                       </td>
 

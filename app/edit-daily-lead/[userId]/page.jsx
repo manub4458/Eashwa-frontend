@@ -14,10 +14,6 @@ const DailyLeadsForm = () => {
   const leadId = params.userId; // or params.leadId depending on your route
   const userId = searchParams.get("userId");
 
-  const onClose = () => {
-    router.push(`/admin-daily-leads/${userId}`);
-  };
-
   const [formData, setFormData] = useState({
     user: userId || "",
     date: new Date().toISOString().split("T")[0],
@@ -31,6 +27,30 @@ const DailyLeadsForm = () => {
   });
   const [loading, setLoading] = useState(!!leadId);
   const [errors, setErrors] = useState({});
+
+  // Return to the listing on the month/year the user was viewing when they
+  // opened this entry (passed from the listing). This keeps them on the same
+  // month even if they change the entry's date to a different month. Fall back
+  // to the entry's own date when those params aren't present (e.g. deep link).
+  const goToListing = () => {
+    const originMonth = Number(searchParams.get("month"));
+    const originYear = Number(searchParams.get("year"));
+
+    let month;
+    let year;
+    if (originMonth >= 1 && originMonth <= 12 && originYear > 2000) {
+      month = originMonth;
+      year = originYear;
+    } else {
+      const d = new Date(formData.date);
+      month = d.getMonth() + 1;
+      year = d.getFullYear();
+    }
+
+    router.push(`/admin-daily-leads/${userId}?month=${month}&year=${year}`);
+  };
+
+  const onClose = goToListing;
 
   useEffect(() => {
     if (leadId) {
@@ -134,7 +154,7 @@ const DailyLeadsForm = () => {
       if (!response.ok) throw new Error("Failed to save");
 
       toast.success(leadId ? "Updated successfully" : "Added successfully");
-      router.push(`/admin-daily-leads/${userId}`);
+      goToListing();
     } catch (error) {
       toast.error(error.message || "Error saving");
     } finally {
