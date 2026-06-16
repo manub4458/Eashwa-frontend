@@ -337,7 +337,7 @@ const VisitingForm = () => {
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
-      timeZone: "UTC", // 👈 keep it in UTC
+      timeZone: "Asia/Kolkata", // 👈 show in IST
     });
   }
 
